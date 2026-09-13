@@ -1,0 +1,27 @@
+{
+  "purpose": "Local acceptance expectations, not an official Sheets API payload or a cloud receipt",
+  "range": "A1:E6",
+  "cells_file": "sheet-cells.json",
+  "edit": {"range":"B3","cells_file":"sheet-edit.json"},
+  "restore": {"range":"B3","cells_file":"sheet-restore.json"},
+  "expected_values": {
+    "baseline": {"A2":"本地图片","B3":3,"C2":12.5,"D2":25,"D3":24,"D4":20,"D5":21,"B6":10,"D6":90,"E2":true,"E4":false},
+    "edited": {"B3":5,"D3":40,"B6":12,"D6":106},
+    "restored": {"B3":3,"D3":24,"B6":10,"D6":90}
+  },
+  "expected_formulas": {"D2":"=B2*C2","D3":"=B3*C3","D4":"=B4*C4","D5":"=B5*C5","B6":"=SUM(B2:B5)","D6":"=SUM(D2:D5)"},
+  "expected_styles": {
+    "A1":{"font_weight":"bold","font_color":"#1D4ED8","background_color":"#E8F3FF","font_size":14},
+    "C2":{"number_format":"0.00"},
+    "D2":{"number_format":"¥#,##0.00"},
+    "D6":{"font_weight":"bold","font_color":"#1F7A1F","background_color":"#E8F8E8","number_format":"¥#,##0.00"}
+  },
+  "preserve_cells": ["C6","E6"],
+  "checks": [
+    "Use the official response row_indices and col_indices to locate cells; do not infer their coordinates from array offsets.",
+    "Read values and formulas separately, preserve raw responses, and reject incomplete/truncated acceptance reads.",
+    "After editing B3, every other explicit value, formula and style must remain unchanged; formula results may recalculate.",
+    "Restore only B3. Do not replay the full matrix for recovery.",
+    "If an API write outcome is uncertain, read before any retry."
+  ]
+}

@@ -1,0 +1,49 @@
+<title>在文章里，把想法说清楚</title>
+<p>这是一份真正保存在电脑上的文档。你可以直接改正文，也可以选中一句话留下评论。等你告诉 AI「我改好了」，它就能读取文件，接着完善这篇文章。</p>
+<callout emoji="💡" background-color="light-blue"><p>先试一试：把这一句改成你的想法，再选中它，写一条修改意见。编辑和只读模式都能评论。</p></callout>
+<h1>01 · 从对话走到文档</h1>
+<p>对话适合讨论方向；具体到一段文章时，我们希望意见就留在对应的位置。比如把这句话写得<b>更直接</b>，给这个判断补上<em>依据</em>，或删去一段<del>重复的解释</del>。</p>
+<blockquote><p>文章由人和 AI 一起修改，决定权留在人手里。</p></blockquote>
+<h2>一次最小的协作</h2>
+<ol><li>AI 写好本地初稿。</li><li>人在浏览器里阅读、改字、评论。<ul><li>正文改动写回 XML 文件。</li><li>评论、原文和处理记录写进旁边的 JSON 文件。</li></ul></li><li>告诉 AI 已经反馈，再继续讨论与修改。</li></ol>
+<h1>02 · 让不同内容都能读</h1>
+<p>不只有普通段落。这里放入表格、合并单元格、代码、清单、引用、样式和媒体占位，方便一起检验编辑效果。</p>
+<table><colgroup><col width="170"/><col width="220"/><col width="240"/></colgroup><thead><tr><th background-color="light-gray"><p>内容</p></th><th background-color="light-gray"><p>你可以做什么</p></th><th background-color="light-gray"><p>保存到哪里</p></th></tr></thead><tbody><tr><td><p>正文</p></td><td><p>修改、补充、调整表达</p></td><td><p>原 XML 文件</p></td></tr><tr><td><p>评论</p></td><td><p>选文提意见、回复、解决</p></td><td><p>相邻 review.json</p></td></tr><tr><td colspan="2" background-color="light-blue"><p>这是一格横向合并的单元格，可以直接改字。</p></td><td><p>保留合并结构</p></td></tr><tr><td rowspan="2"><p>纵向合并</p></td><td><p>第一行内容</p></td><td><p>保留 rowspan</p></td></tr><tr><td><p>第二行内容</p></td><td><p>也能选文评论</p></td></tr></tbody></table>
+<h2>代码与行内格式</h2>
+<p>行内代码 <code>review.comments</code> 用于查看评论。<span text-color="blue">短语可以着色</span>，也可以<u>加下划线</u>。这句话之后换行：<br/>这是同一段中的第二行。表情与中文也要保留：你好，🌱。</p>
+<pre lang="javascript" caption="AI 读取旁置反馈"><code>const review = JSON.parse(await readFile('draft.review.json', 'utf8'));
+for (const comment of review.comments) {
+  if (comment.status === 'open') console.log(comment.anchor.quote, comment.body);
+}</code></pre>
+<h2>待办与链接</h2>
+<img path="@./assets/colors.png" caption="一张本地示例图片：三种浅色块"/>
+<checkbox done="true">让正文与评论自动保存到真实文件。</checkbox>
+<checkbox done="false">用这篇样稿测试表格、代码与选文评论。</checkbox>
+<checkbox done="false">满意以后，再决定是否发布到飞书。</checkbox>
+<p>格式参考来自 <a href="https://github.com/larksuite/cli">飞书官方 CLI</a>。本地编辑无需飞书登录。</p>
+<h1>03 · 在图里的具体位置提意见</h1>
+<p>点击白板中的「本地初稿」「人类评审」或「AI 修订」节点，再写评论。意见会记录到该节点，之后点击评论引用就能回到它；编辑和只读模式都能使用。</p>
+<whiteboard id="demo-collaboration-svg" type="svg"><![CDATA[<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 180" width="720" height="180">
+  <defs><marker id="arrow-head" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#8f959e"/></marker></defs>
+  <g id="local-draft"><rect x="24" y="44" width="180" height="88" rx="12" fill="#f0f4ff" stroke="#3370ff"/><text x="114" y="82" text-anchor="middle" font-family="sans-serif" font-size="20" fill="#1f2329">本地初稿</text><text x="114" y="110" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#646a73">正文保存在 XML</text></g>
+  <path id="draft-to-review" d="M204 88 L264 88" fill="none" stroke="#8f959e" stroke-width="2" marker-end="url(#arrow-head)"><title>从初稿进入评审</title></path>
+  <g id="human-review"><rect x="270" y="44" width="180" height="88" rx="12" fill="#ffffff" stroke="#8f959e"/><text x="360" y="82" text-anchor="middle" font-family="sans-serif" font-size="20" fill="#1f2329">人类评审</text><text x="360" y="110" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#646a73">评论写进旁置 JSON</text></g>
+  <path id="review-to-revision" d="M450 88 L510 88" fill="none" stroke="#8f959e" stroke-width="2" marker-end="url(#arrow-head)"><title>把意见交给 AI</title></path>
+  <g id="ai-revision"><rect x="516" y="44" width="180" height="88" rx="12" fill="#f0f4ff" stroke="#3370ff"/><text x="606" y="82" text-anchor="middle" font-family="sans-serif" font-size="20" fill="#1f2329">AI 修订</text><text x="606" y="110" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#646a73">读取意见后修改正文</text></g>
+</svg>]]></whiteboard>
+<h2>Mermaid 流程图也可以逐节点评论</h2>
+<p>试着点击「需要调整」或「确认稿」。图源里的节点名保持不变时，改节点文字仍能保留对应的评论位置。这里的评论保存到本地，不会自动发送到飞书。</p>
+<whiteboard id="demo-review-flow" type="mermaid"><![CDATA[flowchart LR
+  Draft[本地初稿] --> Review{人类评审}
+  Review --> Revise[需要调整]
+  Revise --> Review
+  Review --> Approved[确认稿]
+  classDef step fill:#ffffff,stroke:#8f959e,color:#1f2329
+  classDef selected fill:#f0f4ff,stroke:#3370ff,color:#1f2329
+  class Draft,Revise step
+  class Review,Approved selected
+]]></whiteboard>
+<h2>附件和复杂结构继续保留</h2>
+<p>下面是示意附件：<source token="demo_attachment_placeholder" name="示意附件.pdf"/> 附件后面的这句话必须完整保留。示例 token 不是实际飞书资源。</p>
+<h1>04 · 轮到你了</h1>
+<p>这套协作方式里，哪一步最有用？哪一句还说得不清楚？直接在文档里留下你的看法。</p>

@@ -1,0 +1,15 @@
+.document-identity .projects-control .project-picker{position:relative;flex:0 1 220px;min-width:140px;max-width:100%}
+.projects-control .project-picker-trigger{display:flex;justify-content:space-between;align-items:center;gap:7px;width:100%;min-width:0;padding:6px 4px;border:0;background:#fff;color:#1f2329;font-size:13px;font-weight:600;text-align:left}
+.project-picker-trigger>.project-picker-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.project-picker-trigger>.project-picker-action{display:inline-flex;align-items:center;gap:4px;flex:none;margin-left:auto;color:#646a73;font-size:11px;font-weight:400;white-space:nowrap}
+.project-picker-action>svg{flex:none;color:#8f959e}
+.project-picker-trigger[aria-expanded=true]{background:#f2f5fa}
+.project-picker-list{position:fixed;z-index:100;overflow-y:auto;overscroll-behavior:contain;box-sizing:border-box;margin:0;padding:5px;border:1px solid #dee0e3;border-radius:8px;background:#fff;box-shadow:0 8px 28px #1f232926;scroll-padding:5px}
+.project-picker-list .project-picker-option{display:flex;justify-content:flex-start;align-items:flex-start;gap:12px;width:100%;padding:10px;border:0;border-radius:5px;text-align:left;white-space:normal;color:#373c43;font-size:12px;background:transparent}
+.project-picker-list .project-picker-option.highlighted,.project-picker-list .project-picker-option:hover{background:#f0f5ff}
+.project-picker-option-text{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.project-picker-option-name{overflow-wrap:anywhere;line-height:1.6;font-weight:500}
+.project-picker-option-path{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5;font-size:10px;color:#8f959e}
+.project-picker-current{display:flex;align-items:center;gap:3px;flex:none;line-height:1.6;font-size:10px;color:#3370ff}
+@media(max-width:1000px){.document-identity .projects-control .project-picker{flex-basis:180px}}
+@media(max-width:560px){.document-identity .projects-control .project-picker{flex:1;max-width:none}}

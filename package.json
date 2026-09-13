@@ -1,0 +1,67 @@
+{
+  "name": "feishu-doc-local",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "npm run build && npm start",
+    "build": "vite build && node scripts/build-server.mjs && node scripts/copy-distribution-notices.mjs",
+    "start": "node dist/server/start.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "licenses:check": "node scripts/generate-third-party-notices.mjs --check --verify-bundle",
+    "obsidian:build": "node obsidian-plugin/build.mjs",
+    "obsidian:test": "npm --prefix obsidian-plugin test",
+    "build:browser": "vite build --config vite.browser.config.ts && node scripts/finalize-browser-build.mjs",
+    "preview:browser": "vite preview --config vite.browser.config.ts",
+    "obsidian:sync:build": "npm --prefix obsidian-sync-plugin run build",
+    "obsidian:sync:test": "npm --prefix obsidian-sync-plugin test",
+    "release:package": "node scripts/package-release.mjs"
+  },
+  "dependencies": {
+    "@tiptap/core": "3.31.3",
+    "@tiptap/extension-code-block": "3.31.3",
+    "@tiptap/extension-list": "3.31.3",
+    "@tiptap/extension-table": "3.31.3",
+    "@tiptap/pm": "3.31.3",
+    "@tiptap/react": "3.31.3",
+    "@tiptap/starter-kit": "3.31.3",
+    "diff": "9.0.0",
+    "dompurify": "^3.4.15",
+    "highlight.js": "11.11.1",
+    "katex": "^0.18.7",
+    "lowlight": "3.3.0",
+    "lucide-react": "1.31.0",
+    "mermaid": "^12.0.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "saxes": "6.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.1",
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.2",
+    "esbuild": "0.28.2",
+    "jsdom": "27.0.1",
+    "typescript": "5.9.3",
+    "vite": "8.2.2",
+    "vitest": "3.2.7"
+  },
+  "description": "本地飞书文档：先在本地编辑、评论和与 AI 协作，再选择同步到飞书。",
+  "license": "MIT",
+  "author": "github.com/To-Re",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/To-Re/feishu-doc-local.git"
+  },
+  "homepage": "https://github.com/To-Re/feishu-doc-local",
+  "bugs": {
+    "url": "https://github.com/To-Re/feishu-doc-local/issues"
+  }
+}

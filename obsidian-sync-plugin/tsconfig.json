@@ -1,0 +1,1 @@
+{"extends":"../tsconfig.json","compilerOptions":{"types":["node"],"baseUrl":"."},"include":["src/**/*.ts","src/**/*.tsx","tests/**/*.ts","vitest.config.ts"]}

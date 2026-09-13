@@ -1,0 +1,22 @@
+.document-context .document-identity .projects-control{flex-wrap:wrap;column-gap:8px;row-gap:6px}
+.document-identity .project-action-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:none;padding:7px 9px;border:1px solid #dee0e3;border-radius:5px;background:#fff;color:#373c43;font-size:12px;line-height:18px;white-space:nowrap}
+.document-identity .project-action-create{color:#245bdb;border-color:#b4c9ff}
+.document-identity .project-action-button:hover:not(:disabled){background:#f2f5fc}
+.document-identity .project-management{flex:none}
+.project-management .project-operations-panel{position:fixed;z-index:65;padding:16px;max-width:calc(100vw - 24px);overscroll-behavior:contain}
+.project-management .project-operations-panel .project-settings{border:0;margin:0;padding:0}
+.project-management .project-settings label:first-child{margin-top:0}
+.project-management .project-settings input:not([type=checkbox]){font-family:inherit}
+.project-management .configuration-settings{margin:0}
+.project-management .configuration-settings code{font:11px/1.6 monospace;overflow-wrap:anywhere}
+.project-management .configuration-path-actions{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:12px}
+.project-management .configuration-path-actions>button{width:auto;min-width:56px;padding:6px 11px;font-size:12px;border:1px solid #dee0e3;border-radius:5px}
+.project-management .configuration-path-actions>.primary{background:#3370ff;color:#fff;border-color:#3370ff}
+.project-management .configuration-settings .project-error{color:#b42318}
+.project-action-tooltip{position:fixed;z-index:90;box-sizing:border-box;padding:10px 12px;border-radius:6px;background:#292d34;color:#fff;font-size:12px;font-weight:400;line-height:1.65;white-space:normal;overflow-wrap:anywhere;box-shadow:0 4px 14px #1f232926;pointer-events:none}
+@media(max-width:760px){
+  .document-context .document-identity{align-items:flex-start}
+  .document-context .document-identity .projects-control .project-picker{flex-basis:100%;max-width:none}
+  .document-identity .project-action-button{padding:6px 8px}
+  .document-identity .project-management>summary{padding:7px 3px}
+}

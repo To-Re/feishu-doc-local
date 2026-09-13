@@ -1,0 +1,67 @@
+.browser-app{min-height:100vh;background:#fff;color:#1f2329}
+.browser-host-toolbar{border:0;padding:0;margin:0;min-width:0;flex:1}.browser-host-toolbar:has(>div:empty){display:none}
+.browser-header{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:18px 24px 12px;border-bottom:1px solid #dee0e3;background:#fff}
+.browser-brand{display:flex;align-items:center;gap:10px}.browser-brand strong{font-size:18px}.browser-brand>span{font-size:11px;background:#f2f3f5;color:#646a73;border-radius:4px;padding:3px 6px}
+.browser-file-actions{display:flex;gap:8px}.browser-file-actions>button,.browser-refresh-list,.browser-banner button{display:inline-flex;align-items:center;gap:6px;font-size:12px;border:1px solid #dee0e3;border-radius:5px;padding:7px 10px;background:#fff}
+.browser-save-state{margin-left:auto;font-size:12px;color:#646a73;white-space:nowrap}.browser-current-path{flex-basis:100%;font:11px/1.6 ui-monospace,monospace;color:#646a73;overflow-wrap:anywhere}
+.browser-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 24px;padding:10px 14px;border:1px solid #d6e4ff;background:#f0f5ff;border-radius:5px;font-size:12px;line-height:1.7;color:#335b9e}
+.browser-error{border-color:#f3c6c3;color:#9b2c24;background:#fff5f4}.browser-banner button{flex:none}.browser-banner:has(button[aria-label]){padding-right:8px}.browser-banner button[aria-label]{border:0;background:transparent;padding:4px}
+.browser-workspace{display:grid;grid-template-columns:minmax(150px,200px) minmax(0,1fr) minmax(240px,300px);align-items:start;gap:22px;margin:20px auto 60px;padding:0 24px;max-width:1650px}
+.browser-navigation{min-width:0}.browser-navigation-tabs{display:flex;width:max-content;max-width:100%;margin-bottom:12px}.browser-navigation-tabs>button{padding:5px 9px;font-size:12px}
+.browser-workspace.browser-outline-collapsed{grid-template-columns:52px minmax(0,1fr) minmax(240px,300px)}.browser-outline-collapsed .browser-navigation-tabs{flex-direction:column}
+.browser-host-app{min-height:0}.browser-host-app .browser-workspace{margin-bottom:24px}.browser-host-app .browser-current-path{user-select:text}
+.browser-documents{min-width:0;font-size:12px}.browser-documents h2{font-size:13px;font-weight:600;margin:8px 0 12px;overflow-wrap:anywhere}
+.browser-documents>button{display:block;width:100%;text-align:left;font-size:12px;padding:9px 10px;border-radius:5px;overflow-wrap:anywhere;color:#646a73}.browser-documents>button.selected{background:#edf3ff;color:#3370ff}
+.browser-documents .browser-refresh-list{margin-top:16px;text-align:center}.browser-documents>p{color:#8f959e;line-height:1.7}.browser-article{min-width:0}
+.browser-toolbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding-bottom:14px}.browser-toolbar .mode-switch>button{display:inline-flex;gap:5px;align-items:center;white-space:nowrap}
+.browser-comment-selection{display:inline-flex;align-items:center;gap:5px;color:#3370ff;font-size:12px;border:1px solid #b4c9ff;padding:7px 10px;border-radius:5px}
+.browser-paper{border:1px solid #dee0e3;border-radius:5px;padding:32px 36px;min-height:620px}.browser-paper[hidden]{display:none}.browser-paper .document-content{min-height:520px}
+.browser-comments{min-width:0;padding-top:5px}.browser-comments h2{font-size:15px;margin:6px 0 16px}.browser-comments h2 span{background:#f2f3f5;font-weight:400;font-size:11px;padding:2px 5px;border-radius:4px}
+.browser-source-controls{min-width:0;margin:0;padding:0;border:0}.browser-source-controls[hidden]{display:none}
+.browser-muted{font-size:11px;line-height:1.8;color:#8f959e;overflow-wrap:anywhere}.browser-comments textarea{min-height:62px;font-size:12px}.browser-comments .comment-card form{margin-top:12px;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.browser-comments .comment-card form>button{font-size:11px;padding:5px 9px;border:1px solid #dee0e3;border-radius:4px}.browser-comment-actions{display:flex;justify-content:flex-end;gap:8px;font-size:12px}.browser-comment-actions .small-primary{margin:0}
+.browser-resolve{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#646a73}.browser-comments .comment-card>strong{font-size:12px}.browser-comments .comment-card>small{color:#8f959e;font-size:11px}
+.browser-article>.browser-banner{margin:0 0 12px}.browser-app .source-editor{min-height:500px}.browser-app .source-editor textarea{min-height:430px}
+@media(max-width:1100px){.browser-workspace{grid-template-columns:150px minmax(0,1fr);gap:16px}.browser-comments{grid-column:2}.browser-paper{padding:24px}.browser-save-state{margin-left:0}}
+@media(max-width:1100px){.browser-workspace.browser-outline-collapsed{grid-template-columns:52px minmax(0,1fr)}}
+@media(max-width:680px){.browser-header{padding:14px 12px;gap:10px}.browser-brand{width:100%}.browser-file-actions{flex-wrap:wrap}.browser-banner{margin:10px 12px;flex-wrap:wrap}.browser-workspace{grid-template-columns:minmax(0,1fr);padding:0 12px;gap:16px;margin-top:12px}.browser-documents{display:flex;flex-wrap:wrap;gap:6px}.browser-documents h2{width:100%;margin:0}.browser-documents>button{width:auto;max-width:100%;border:1px solid #eff0f1}.browser-documents .browser-refresh-list{margin:0}.browser-comments{grid-column:1}.browser-paper{padding:20px 16px}.browser-toolbar{gap:8px}.browser-app .source-editor{min-height:350px}}
+@media(max-width:680px){.browser-workspace.browser-outline-collapsed{grid-template-columns:minmax(0,1fr)}.browser-outline-collapsed .browser-navigation-tabs{flex-direction:row}.browser-navigation .document-outline-body{max-height:240px}}
+/* The same controls work in a browser page and inside a narrow host pane. */
+.browser-app{container-type:inline-size}
+.browser-current-path{display:flex;align-items:center;gap:6px;min-width:0}
+.browser-current-path>span:first-child{min-width:0;overflow-wrap:anywhere;user-select:text}
+.browser-current-path>button{display:inline-flex;flex:none;padding:4px;border-radius:4px;color:#646a73}
+.browser-current-path>button:hover{background:#f2f3f5;color:#3370ff}
+.browser-format-tools{display:flex;align-items:center;gap:4px;border-left:1px solid #dee0e3;padding-left:10px}
+.browser-format-tools>button{display:inline-flex;align-items:center;justify-content:center;padding:7px;color:#646a73;border-radius:4px}
+.browser-format-tools>button:hover{background:#f2f3f5;color:#3370ff}
+.browser-comments-toggle{display:inline-flex;align-items:center;gap:5px;margin-left:auto;font-size:12px;color:#646a73;white-space:nowrap;padding:6px}
+.browser-comments-heading{display:flex;align-items:center;justify-content:space-between}
+.browser-comments-heading>button{display:inline-flex;color:#646a73;padding:5px}
+.browser-comments[hidden],.browser-documents[hidden]{display:none}
+.browser-comments .browser-reply-toggle{margin-left:12px;color:#646a73;font-size:11px}
+.browser-navigation .project-sidebar{position:static;width:auto;border:0;padding:10px 0 0;max-height:none}
+.browser-navigation .project-tree{margin:0;padding:0}
+.browser-navigation .project-root{margin:0 0 8px;padding:0}
+.browser-navigation .project-heading{padding:0 0 10px}
+.browser-app .browser-workspace.browser-comments-hidden{grid-template-columns:minmax(150px,200px) minmax(0,1fr)}
+.browser-app .browser-workspace.browser-comments-hidden.browser-outline-collapsed{grid-template-columns:52px minmax(0,1fr)}
+.browser-app .resource-preview{min-height:500px;max-width:100%;margin:0}
+.browser-app .resource-preview pre{max-height:65vh;overflow:auto}
+@container(max-width:1100px){
+  .browser-app .browser-workspace{grid-template-columns:150px minmax(0,1fr);gap:16px}
+  .browser-app .browser-comments{grid-column:2}
+  .browser-app .browser-workspace.browser-outline-collapsed{grid-template-columns:52px minmax(0,1fr)}
+  .browser-app .browser-comments-toggle{position:sticky;right:0;background:#fff}
+}
+@container(max-width:680px){
+  .browser-app .browser-file-actions{flex-wrap:wrap;min-width:0}
+  .browser-app .browser-workspace,.browser-app .browser-workspace.browser-comments-hidden,.browser-app .browser-workspace.browser-outline-collapsed,.browser-app .browser-workspace.browser-comments-hidden.browser-outline-collapsed{grid-template-columns:minmax(0,1fr)}
+  .browser-app .browser-comments{grid-column:1}
+  .browser-app .browser-header{padding:14px 12px;gap:10px}
+  .browser-app .browser-toolbar{gap:8px}
+  .browser-app .browser-paper{padding:20px 16px}
+  .browser-app .browser-brand{width:100%}
+  .browser-app .browser-save-state{margin-left:0}
+  .browser-app .browser-navigation .document-outline-body{max-height:220px}
+}

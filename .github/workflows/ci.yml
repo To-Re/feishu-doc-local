@@ -1,0 +1,37 @@
+name: macOS checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run build:browser
+      - run: npm ci --prefix obsidian-plugin
+      - run: npm run typecheck --prefix obsidian-plugin
+      - run: npm test --prefix obsidian-plugin
+      - run: npm ci --prefix obsidian-sync-plugin
+      - run: npm run typecheck --prefix obsidian-sync-plugin
+      - run: npm test --prefix obsidian-sync-plugin
+      - run: npm run build --prefix obsidian-sync-plugin
+      - run: node scripts/generate-third-party-notices.mjs --check --verify-bundle

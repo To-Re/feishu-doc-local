@@ -1,0 +1,12 @@
+.bind-cloud-dialog { outline: none; }
+.bind-cloud-context { min-width: 0; padding-bottom: 12px; border-bottom: 1px solid #eff0f1; }
+.bind-cloud-context > span { margin-right: 10px; color: #646a73; font-size: 12px; }
+.bind-cloud-context > strong { font-weight: 500; overflow-wrap: anywhere; }
+.bind-cloud-context label { margin-bottom: 0; }
+.bind-cloud-context input { color: #646a73; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; }
+.bind-cloud-validation:empty { display: none; }
+.bind-cloud-dialog summary[aria-disabled="true"] { cursor: default; color: #8f959e; }
+@media (max-width: 480px) {
+  .bind-cloud-dialog .project-dialog-actions { gap: 8px; }
+  .bind-cloud-dialog .project-dialog-actions > button { max-width: 100%; white-space: normal; }
+}

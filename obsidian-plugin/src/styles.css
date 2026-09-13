@@ -1,0 +1,66 @@
+.feishu-doc-local-view{box-sizing:border-box;background:#fff;color:#1f2329;padding:20px 24px 48px;overflow:auto;--accent:#3370ff;--border:#dee0e3;--workspace-header-height:0px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.feishu-doc-local-view .fdl-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.feishu-doc-local-view .fdl-header strong{font-size:16px;overflow-wrap:anywhere}
+.feishu-doc-local-view .fdl-read-only{padding:2px 7px;border-radius:4px;background:#f2f3f5;color:#646a73;font-size:11px}
+.feishu-doc-local-view .fdl-header button{margin-left:auto;background:#fff;border:1px solid #dee0e3;border-radius:5px;color:#373c43;box-shadow:none;font-size:12px}
+.feishu-doc-local-view .fdl-path{font:11px/1.6 ui-monospace,monospace;color:#646a73;overflow-wrap:anywhere}
+.feishu-doc-local-view .fdl-help,.feishu-doc-local-view .fdl-warnings{color:#646a73;font-size:12px;line-height:1.7}
+.feishu-doc-local-view .fdl-warnings [role=alert]{color:#b42318}
+.feishu-doc-local-view .fdl-paper{max-width:900px;min-width:0;padding:28px 30px;margin:18px auto;border:1px solid #dee0e3;border-radius:5px;background:#fff}
+.feishu-doc-local-view .ProseMirror{position:relative;word-wrap:break-word;white-space:pre-wrap;white-space:break-spaces;font-variant-ligatures:none;font-feature-settings:"liga" 0}
+.feishu-doc-local-view .ProseMirror pre{white-space:pre-wrap}
+.feishu-doc-local-view .ProseMirror li{position:relative}
+.feishu-doc-local-view .ProseMirror:focus{outline:2px solid #b4c9ff;outline-offset:5px}
+.feishu-doc-local-view .document-content{min-height:0}
+.feishu-doc-local-view .document-content input[type=checkbox]{pointer-events:auto}
+.feishu-doc-local-view .fdl-comments{max-width:900px;margin:24px auto;font-size:13px;line-height:1.75}
+.feishu-doc-local-view .fdl-comments h2{font-size:16px;color:#1f2329}
+.feishu-doc-local-view .fdl-comments article{padding:14px;border:1px solid #dee0e3;border-radius:5px;margin:12px 0}
+.feishu-doc-local-view .fdl-comments blockquote{border-left:2px solid #bbbfc4;margin:12px 0;padding-left:12px;color:#646a73}
+.feishu-doc-local-view .fdl-comments p{white-space:pre-wrap}
+.feishu-doc-local-view .fdl-source{font-size:12px;max-width:900px;margin:24px auto}
+.feishu-doc-local-view .fdl-source pre{max-height:400px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#f7f8fa;color:#373c43;padding:16px;border-radius:5px}
+@media(max-width:600px){.feishu-doc-local-view{padding:14px 12px 30px}.feishu-doc-local-view .fdl-paper{padding:20px 14px}}
+.feishu-doc-local-view{padding:0;position:relative;container-type:inline-size;--workspace-header-height:0px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.feishu-doc-local-view > .feishu-doc-local-mount{flex:1;min-height:0;min-width:0}
+.feishu-doc-local-view > .feishu-doc-local-mount>.browser-host-app{height:100%;min-height:0;display:flex;flex-direction:column;font-size:14px}
+.feishu-doc-local-view .browser-host-app>.browser-header,.feishu-doc-local-view .browser-host-app>.browser-banner{flex:none}
+.feishu-doc-local-view .browser-header{padding:14px 18px}
+.feishu-doc-local-view .browser-app .browser-workspace{flex:1;min-height:0;max-width:none;padding:18px;margin:0;gap:18px;align-items:stretch;overflow:hidden;grid-template-columns:180px minmax(0,1fr) minmax(240px,300px);grid-template-rows:minmax(0,1fr)}
+.feishu-doc-local-view .browser-workspace>.browser-navigation,.feishu-doc-local-view .browser-workspace>.browser-article,.feishu-doc-local-view .browser-workspace>.browser-comments{min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;grid-row:1;grid-column:auto}
+.feishu-doc-local-view .browser-workspace>.browser-navigation{display:flex;flex-direction:column}
+.feishu-doc-local-view .browser-navigation-tabs,.feishu-doc-local-view .document-outline-heading{flex:none}
+.feishu-doc-local-view .browser-navigation>.document-outline{display:flex;flex-direction:column;min-height:0;flex:1}
+.feishu-doc-local-view .browser-navigation .document-outline-body{flex:1;min-height:0;max-height:none;overflow:auto;overscroll-behavior:contain}
+.feishu-doc-local-view .browser-comments-heading{position:sticky;top:0;background:#fff;z-index:2}
+.feishu-doc-local-view .browser-paper{min-height:480px;padding:26px}
+.feishu-doc-local-view .browser-save-state{font-size:11px}
+.feishu-doc-local-view .browser-toolbar{position:sticky;top:0;background:#fff;z-index:5;padding-top:6px}
+.feishu-doc-local-view .modal-overlay{position:absolute;min-height:420px}
+.feishu-doc-local-view .browser-comments textarea{color:#1f2329;background:#fff}
+.feishu-doc-local-view button{box-shadow:none;height:auto;line-height:1.4}
+.feishu-doc-local-view .browser-app .browser-workspace.browser-outline-collapsed{grid-template-columns:42px minmax(0,1fr) minmax(240px,300px)}
+.feishu-doc-local-view .browser-app .browser-workspace.browser-comments-hidden{grid-template-columns:180px minmax(0,1fr)}
+.feishu-doc-local-view .browser-app .browser-workspace.browser-comments-hidden.browser-outline-collapsed{grid-template-columns:42px minmax(0,1fr)}
+@container(max-width:1100px){
+  .feishu-doc-local-view .browser-app .browser-workspace{grid-template-columns:150px minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,30%);gap:12px}
+  .feishu-doc-local-view .browser-workspace>.browser-navigation{grid-row:1 / -1;grid-column:1}
+  .feishu-doc-local-view .browser-workspace>.browser-article{grid-row:1;grid-column:2}
+  .feishu-doc-local-view .browser-workspace>.browser-comments{grid-row:2;grid-column:2;border-top:1px solid #dee0e3;padding-top:8px}
+  .feishu-doc-local-view .browser-app .browser-workspace.browser-outline-collapsed{grid-template-columns:42px minmax(0,1fr)}
+  .feishu-doc-local-view .browser-app .browser-workspace.browser-comments-hidden{grid-template-columns:150px minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+  .feishu-doc-local-view .browser-app .browser-workspace.browser-comments-hidden.browser-outline-collapsed{grid-template-columns:42px minmax(0,1fr)}
+}
+@container(max-width:680px){
+  .feishu-doc-local-view .browser-app .browser-workspace,.feishu-doc-local-view .browser-app .browser-workspace.browser-comments-hidden,.feishu-doc-local-view .browser-app .browser-workspace.browser-outline-collapsed,.feishu-doc-local-view .browser-app .browser-workspace.browser-comments-hidden.browser-outline-collapsed{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,22%) minmax(0,1fr) minmax(0,28%);padding:12px}
+  .feishu-doc-local-view .browser-workspace>.browser-navigation{grid-column:1;grid-row:1;flex-direction:row;gap:10px}
+  .feishu-doc-local-view .browser-workspace>.browser-article{grid-column:1;grid-row:2}
+  .feishu-doc-local-view .browser-workspace>.browser-comments{grid-column:1;grid-row:3}
+  .feishu-doc-local-view .browser-navigation-tabs{flex-direction:column}
+  .feishu-doc-local-view .browser-outline-collapsed .browser-navigation-tabs{flex-direction:row}
+  .feishu-doc-local-view .browser-app .browser-workspace.browser-comments-hidden{grid-template-rows:minmax(0,22%) minmax(0,1fr)}
+  .feishu-doc-local-view .browser-app .browser-workspace.browser-outline-collapsed{grid-template-rows:40px minmax(0,1fr) minmax(0,28%)}
+  .feishu-doc-local-view .browser-app .browser-workspace.browser-outline-collapsed.browser-comments-hidden{grid-template-rows:40px minmax(0,1fr)}
+  .feishu-doc-local-view .browser-paper{padding:20px}
+  .feishu-doc-local-view .browser-header{gap:8px}
+}

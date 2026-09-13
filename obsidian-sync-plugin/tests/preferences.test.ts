@@ -1,0 +1,9 @@
+import {describe,it,expect} from 'vitest';
+import {defaultPreferences,readPreferences,validatePreferences} from '../src/preferences';
+describe('persisted CLI configuration',()=>{
+  it('starts unconfigured and permits a saved blank executable without spawning',()=>{const value=defaultPreferences();expect(value.command).toBe('');expect(readPreferences(null)).toEqual(value);expect(readPreferences(value)).toEqual(value);expect(()=>validatePreferences(value)).toThrow('绝对路径');});
+  it.each([42,[],{}, {command:'/bin/cli',args:'--token private',catalogPath:'/tmp/projects.json'}, {command:'/bin/cli',args:[],catalogPath:'/tmp/\u0000projects.json'}, {command:'/bin/cli',args:[],catalogPath:'relative.json'}, {command:'/bin/cli',args:[],catalogPath:'/tmp/projects.json',secret:'private value'}])('rejects malformed persisted settings without exposing values: %j',value=>{expect(()=>readPreferences(value)).toThrow('原配置未改动');try{readPreferences(value);}catch(error){expect((error as Error).message).not.toContain('private');}});
+  it('copies a validated argument array and preserves the explicitly selected catalog',()=>{const value={command:'/usr/local/bin/lark-cli',args:['--as','user'],catalogPath:'/configured/projects.json'};const parsed=readPreferences(value);value.args.push('changed');expect(parsed.args).toEqual(['--as','user']);expect(parsed.catalogPath).toBe('/configured/projects.json');});
+});
+
+it('accepts explicit Node paths and preserves old configurations without Node',()=>{const base={command:'/opt/tools/lark-cli',args:[],catalogPath:'/configured/projects.json'};expect(readPreferences({...base,nodePath:'/opt/runtime/node'}).nodePath).toBe('/opt/runtime/node');expect(readPreferences({...base,nodePath:''})).toEqual(base);expect(()=>readPreferences({...base,nodePath:'node'})).toThrow('原配置未改动');expect(()=>readPreferences({...base,nodePath:'/opt/node\u0000'})).toThrow('原配置未改动');});

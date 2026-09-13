@@ -1,0 +1,9 @@
+@startuml
+participant "人类" as Human
+participant "本地文件" as Local
+participant "AI" as AI
+Human -> Local: 编辑与评论
+AI -> Local: 读取反馈
+AI -> Local: 修订正文
+Local --> Human: 查看新版本
+@enduml

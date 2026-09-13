@@ -1,0 +1,38 @@
+.xml-diff{min-width:0;width:100%;color:#1f2329;font-size:12px;line-height:1.6}
+.xml-diff-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:0 0 8px}
+.xml-diff .xml-diff-modes{display:inline-flex;padding:2px;border:1px solid #dee0e3;border-radius:6px;background:#f5f6f7}
+.xml-diff .xml-diff-modes button{min-height:28px;padding:3px 12px;border:0;border-radius:4px;background:transparent;color:#646a73;font:inherit;cursor:pointer}
+.xml-diff .xml-diff-modes button[aria-pressed=true]{background:#fff;color:#1f2329;box-shadow:0 1px 3px #00000012}
+.xml-diff-counts{display:flex;gap:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.xml-diff-counts small{align-self:center;font-size:11px;color:#646a73}
+.xml-diff-added-count{color:#176b36}.xml-diff-removed-count{color:#a12b34}
+.xml-diff .xml-diff-notice,.xml-diff .xml-diff-identical{margin:8px 0;padding:10px 12px;border:1px solid #dee0e3;border-radius:5px;background:#fafbfc;color:#646a73;overflow-wrap:anywhere}
+.xml-diff-scroll{max-height:560px;max-height:min(55dvh,560px);overflow:auto;overscroll-behavior:contain;border:1px solid #dee0e3;border-radius:5px;background:#fff}
+.xml-diff-labels{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);position:sticky;top:0;z-index:1;background:#f7f8fa;border-bottom:1px solid #dee0e3}
+.xml-diff-labels strong{min-width:0;padding:8px 12px;overflow-wrap:anywhere;font-size:12px;font-weight:500}
+.xml-diff-labels strong+strong{border-left:1px solid #dee0e3}
+.xml-diff-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch}
+.xml-diff-line{display:grid;grid-template-columns:4ch 1.4em minmax(0,1fr);min-width:0;min-height:1.75em;padding:2px 8px 2px 0;font:12px/1.75 "SFMono-Regular",Consolas,"Liberation Mono",monospace;tab-size:2}
+.xml-diff-split .xml-diff-line+.xml-diff-line{border-left:1px solid #dee0e3}
+.xml-diff-number{padding:0 4px;color:#737982;text-align:right;user-select:none;font-variant-numeric:tabular-nums}
+.xml-diff-sign{text-align:center;user-select:none}
+.xml-diff .xml-diff-line code{min-width:0;margin:0;padding:0;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}
+.xml-diff-line mark{padding:0;border-radius:2px;color:inherit;background:transparent}
+.xml-diff-line .xml-diff-whitespace{position:relative;display:inline-block;vertical-align:baseline;white-space:normal}
+.xml-diff-whitespace::before{content:attr(data-whitespace);pointer-events:none}
+.xml-diff-whitespace-source{position:absolute;inset:0;overflow:hidden;white-space:pre;opacity:0;user-select:text}
+.xml-diff-removed{background:#ffebe9}.xml-diff-added{background:#e6ffec}.xml-diff-empty{background:#fafbfc}
+.xml-diff-removed mark{background:#ffc1bb}.xml-diff-added mark{background:#abf2bc}
+.xml-diff-removed .xml-diff-sign{color:#a12b34}.xml-diff-added .xml-diff-sign{color:#176b36}
+.xml-diff-unified .xml-diff-labels{grid-template-columns:minmax(0,1fr)}
+.xml-diff-unified .xml-diff-labels strong+strong{border-left:0;padding-top:0}
+.xml-diff-unified .xml-diff-row{display:block}
+.xml-diff-unified-line{grid-template-columns:4ch 4ch 1.4em minmax(0,1fr)}
+.xml-diff-fold{padding:4px 8px;border-top:1px solid #edf0f3;border-bottom:1px solid #edf0f3;background:#f6f8fa;text-align:center}
+.xml-diff .xml-diff-fold button{max-width:100%;padding:3px 10px;border:0;border-radius:4px;background:transparent;color:#3370ff;font:inherit;cursor:pointer;overflow-wrap:anywhere}
+.xml-diff .xml-diff-fold button:hover{background:#eaf0ff}
+.xml-diff-pages{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:8px;color:#646a73}
+.xml-diff .xml-diff-pages button{padding:4px 10px;border:1px solid #dee0e3;border-radius:4px;background:#fff;color:#1f2329;font:inherit;cursor:pointer}
+.xml-diff .xml-diff-pages button:disabled{opacity:.45;cursor:default}
+.xml-diff button:focus-visible,.xml-diff-scroll:focus-visible{outline:2px solid #3370ff;outline-offset:2px}
+@media(max-width:560px){.xml-diff-line{font-size:11px}.xml-diff-labels strong{padding:6px 8px}.xml-diff-counts{gap:8px}.xml-diff-pages{font-size:11px}}

@@ -1,0 +1,120 @@
+<title align="center">飞书 DocxXML 样式核对 · 公开测试样稿</title>
+<p align="center">内容均为虚构的公开测试材料，不含用户、群、文档或媒体 token。</p>
+<p>S00 · 修改定位句：请把「等待核对」改成「完成核对」，检查正文与评论是否都保存到本地。</p>
+<callout emoji="🔎" background-color="light-blue" border-color="blue"><p>比对方法：用每节的 S 编号定位，在相同窗口宽度和 100% 缩放下，对照本地编辑、本地只读和飞书文档。未执行的检查应记为待测。</p></callout>
+
+<h1 seq="auto">S01 · 标题层级与自动编号</h1>
+<p>本节从一级标题连续下降到九级，用来检查层级、字号、间距和自动编号。实际写作优先使用一至六级。</p>
+<h2 seq="auto">S01.2 · 二级标题</h2>
+<p>二级标题下的一段正文。</p>
+<h3 seq="auto">S01.3 · 三级标题</h3>
+<p>三级标题下的一段正文。</p>
+<h4 seq="auto">S01.4 · 四级标题</h4>
+<p>四级标题下的一段正文。</p>
+<h5 seq="auto">S01.5 · 五级标题</h5>
+<p>五级标题下的一段正文。</p>
+<h6 seq="auto">S01.6 · 六级标题</h6>
+<p>六级标题下的一段正文。</p>
+<h7 seq="auto">S01.7 · 七级标题</h7>
+<p>深层标题兼容性测试。</p>
+<h8 seq="auto">S01.8 · 八级标题</h8>
+<p>深层标题兼容性测试。</p>
+<h9 seq="auto">S01.9 · 九级标题</h9>
+<p>这是本节的最深层级。</p>
+
+<h1>S02 · 对齐、段落与富文本</h1>
+<p align="left">S02.L · 左对齐。短句、中文标点与 Latin text 应保持正常排版。</p>
+<p align="center">S02.C · 居中对齐。</p>
+<p align="right">S02.R · 右对齐。</p>
+<p>S02.F · <b>粗体</b>、<em>斜体</em>、<u>下划线</u>、<del>删除线</del>、<code>inline_code()</code>，以及 <b><em>同时加粗与斜体</em></b>。</p>
+<p>S02.B · 同一段的第一行。<br/>这是手动换行的第二行，段落间距不应被重复插入。</p>
+<p>S02.E · 字符保真：中文，English，数字 123；&amp;、&lt;、&gt;、&quot;引号&quot;；emoji 😀 📝 🌱；组合字符 é。</p>
+<p>S02.A · 普通链接：<a href="https://example.com/?a=1&amp;b=2">公开示例网址</a>。预览链接：<a type="url-preview" href="https://github.com/larksuite/cli">飞书官方 CLI</a>。</p>
+
+<h1>S03 · 文字颜色与背景</h1>
+<p>S03.T · <span text-color="red">红</span>、<span text-color="orange">橙</span>、<span text-color="yellow">黄</span>、<span text-color="green">绿</span>、<span text-color="blue">蓝</span>、<span text-color="purple">紫</span>、<span text-color="gray">灰</span>。</p>
+<p>S03.B · <span background-color="light-red">待修正</span>、<span background-color="light-orange">需注意</span>、<span background-color="light-yellow">待讨论</span>、<span background-color="light-green">已确认</span>、<span background-color="light-blue">参考信息</span>、<span background-color="light-purple">备选方案</span>、<span background-color="medium-gray">中性标签</span>。</p>
+<p>S03.M · <span text-color="blue" background-color="light-blue"><b>颜色与粗体叠加</b></span>，后面的普通文字应恢复默认样式。</p>
+
+<h1>S04 · 列表、编号与待办</h1>
+<ul><li>一级无序项目。<ul><li>二级无序项目。</li><li>另一条二级项目。</li></ul></li><li>回到一级项目。</li></ul>
+<ol><li seq="3">从第三步开始。<ul><li>有序列表内的无序说明。</li></ul></li><li seq="auto">下一步自动编号。<ol><li>嵌套的第一小步。</li><li>嵌套的第二小步。</li></ol></li></ol>
+<checkbox done="false">S04.T1 · 尚未完成，可以在编辑模式中勾选。</checkbox>
+<checkbox done="true">S04.T2 · 已经完成；只读模式中不应改变状态。</checkbox>
+<checkbox done="false" align="right">S04.T3 · 右对齐待办。</checkbox>
+
+<h1>S05 · 引用与高亮块</h1>
+<blockquote><p>S05.Q · 引用第一段：把意见留在具体位置，有助于明确下一步修改。</p><p>引用第二段包含 <b>强调</b> 和 <a href="https://example.com">公开链接</a>。</p></blockquote>
+<callout emoji="💡" background-color="light-blue" border-color="blue"><p>S05.C1 · 信息提示，默认文字颜色。</p><ul><li>高亮块内的列表。</li><li>高亮块内的第二项。</li></ul></callout>
+<callout emoji="✅" background-color="light-green" border-color="green"><p>S05.C2 · 完成提示。</p><checkbox done="true">块内待办</checkbox></callout>
+<callout emoji="⚠️" background-color="medium-yellow" border-color="orange" text-color="red"><p>S05.C3 · 强提醒配色，仅用于测试颜色与对比度。</p></callout>
+<hr/>
+<p>S05.H · 上方是独立分隔线。</p>
+
+<h1>S06 · 代码与转义</h1>
+<pre lang="go" caption="S06.G · Go 代码标题"><code>package main
+
+func main() {
+    if 2 &lt; 3 {
+        println("hello &amp; world")
+    }
+}</code></pre>
+<pre lang="javascript" caption="S06.J · JavaScript 缩进与空行"><code>const result = { ok: true, count: 2 };
+
+if (result.ok &amp;&amp; result.count &gt; 0) {
+  console.log('示例输出');
+}</code></pre>
+
+<h1>S07 · 表格、列宽与合并</h1>
+<p>S07.A · 普通表格：三列指定为 320、160、240，检查列宽、表头背景和垂直对齐。</p>
+<table><colgroup><col width="320"/><col width="160"/><col width="240"/></colgroup><thead><tr><th background-color="light-gray"><p>项目</p></th><th background-color="light-gray"><p>状态</p></th><th background-color="light-gray"><p>说明</p></th></tr></thead><tbody><tr><td vertical-align="top"><p>顶部对齐</p></td><td background-color="light-green"><p>已确认</p></td><td><p>第一行说明。<br/>第二行说明。</p></td></tr><tr><td vertical-align="middle"><p>垂直居中</p></td><td background-color="light-yellow"><p>待讨论</p></td><td><p>较长的内容用于检查换行。中文与 English words 会共同撑开这一行的高度。</p></td></tr><tr><td vertical-align="bottom"><p>底部对齐</p></td><td><p><b>强调</b>与<em>斜体</em></p></td><td><p>单元格内可选文评论。<br/>这里还有第二行。</p></td></tr></tbody></table>
+<p>S07.B · 合并表格：横向表头、纵向合并和列宽 span；被合并的位置没有重复单元格。</p>
+<table><colgroup><col width="200"/><col width="260" span="2"/></colgroup><thead><tr><th colspan="2" background-color="medium-gray"><p>合并的两列表头</p></th><th background-color="light-gray"><p>第三列</p></th></tr></thead><tbody><tr><td rowspan="2" vertical-align="middle"><p>跨越两行</p></td><td><p>单元格待改写</p></td><td><p>第一行第三列</p></td></tr><tr><td><p>第二行第二列</p></td><td><p>第二行第三列</p></td></tr></tbody></table>
+
+<h1>S08 · 公式</h1>
+<p>S08.A · 行内公式 <latex>E = mc^2</latex> 与前后正文在同一行。</p>
+<p>S08.B · 上下标与分式：<latex>x_{t+1} = \alpha x_t + (1-\alpha)y_t</latex>，<latex>\sum_{i=1}^{n} i = \frac{n(n+1)}{2}</latex>。</p>
+<p align="center">S08.C · 居中段落中的矩阵公式：<latex>\begin{pmatrix}a &amp; b \\ c &amp; d\end{pmatrix}</latex></p>
+
+<h1>S09 · 分栏</h1>
+<p>S09.A · 等宽双栏。</p>
+<grid><column width-ratio="0.5"><p><b>左栏 · 0.5</b></p><p>左栏的正文可以直接修改，也应能选文评论。</p></column><column width-ratio="0.5"><p><b>右栏 · 0.5</b></p><p>右栏包含 <span text-color="blue">蓝色短语</span>。</p></column></grid>
+<p>S09.B · 三栏，宽度比例为 0.25、0.5、0.25。</p>
+<grid><column width-ratio="0.25"><p><b>窄左栏</b></p><p>简短说明。</p></column><column width-ratio="0.5"><p><b>宽中栏</b></p><p>这里放一段更长的说明，检查宽度比例与换行是否正确。</p></column><column width-ratio="0.25"><p><b>窄右栏</b></p><p>补充说明。</p></column></grid>
+
+<h1>S10 · 本地图片与附件</h1>
+<p>S10.I · 本地图片样片，指定 360 × 90，用于核对图像、尺寸与说明文字。</p>
+<img path="@./assets/colors.png" width="360" height="90" caption="S10.I · 三种颜色的本地样片" name="颜色样片.png"/>
+<p>S10.F1 · 行内附件：<source path="@./assets/colors.png" name="S10-颜色附件.png"/> 附件后面的正文应保留。</p>
+<source path="@./assets/colors.png" name="S10-F2-独立附件.png"/>
+<figure view-type="Card"><source path="@./assets/colors.png" name="S10-F3-卡片附件.png"/></figure>
+<figure view-type="Preview"><source path="@./assets/colors.png" name="S10-F4-预览附件.png"/></figure>
+
+<h1>S11 · 白板</h1>
+<p>S11.M · 以下使用内嵌 Mermaid 创建白板，无需预先填写媒体 token。本地是否能渲染白板内容与飞书能否创建是两项独立检查。</p>
+<whiteboard type="mermaid">graph LR
+    A[本地初稿] --&gt; B[人类评论]
+    B --&gt; C[AI 修订]
+    C --&gt; B</whiteboard>
+<p>S11.B · 以下为空白白板创建入口，用于核对返回的真实资源引用。</p>
+<whiteboard type="blank"/>
+
+<h1>S12 · 扩展块与真实云资源</h1>
+<p>S12.B · 公开网址书签。</p>
+<bookmark name="公开示例站点" href="https://example.com"/>
+<p>S12.O · 仅打开公开链接的按钮。</p>
+<button action="OpenLink" src="https://github.com/larksuite/cli" background-color="light-blue">查看飞书官方 CLI</button>
+<p>S12.T · 不发送提醒的时间块，测试时间为 2026 年 9 月 13 日 10:00（UTC+8）。</p>
+<time expire-time="1789264800000" should-notify="false">测试时间</time>
+<p>S12.S · 创建空白电子表格，不复制既有数据。</p>
+<sheet type="blank"/>
+<p>以下项目还需准备独立样例或真实云资源，本稿不放入虚构 token。补齐本地样例，或在飞书测试文档中创建、选取公开测试实体后，再 fetch 为真实参考材料。</p>
+<ul><li>S12.1 · 人员提及、文档提及和参考文献卡片。</li><li>S12.2 · 已有电子表格复制、任务卡片与群名片。</li><li>S12.3 · 子页面列表、OKR 与现有白板复制。</li><li>S12.4 · HTML5 内容块与其完整 reference_map。</li></ul>
+<p>云验证记录应包含文档链接、测试时间、截图编号、fetch 的 XML 与 reference_map；本地占位显示不能记为云内容已适配。</p>
+
+<h1>S13 · 评论、编辑与往返检查</h1>
+<p>S13.R1 · 重复文字，重复文字。请选择第二处「重复文字」，在句首插字后确认评论仍位于第二处。</p>
+<p>S13.R2 · 选中这段末尾与下一段开头，建立跨段评论。</p>
+<p>S13.R3 · 下一段开头。然后删除完整选区，评论应保留原引用并显示已删除。</p>
+<p>S13.R4 · emoji 😀 与中文共同编辑，偏移使用 UTF-16；粘贴带粗体语法的文字后，评论不应错位。</p>
+<p>S13.R5 · 切换编辑和只读；重新打开文件；读取外部改稿；检查旧撤销历史不会覆盖新的外部版本。</p>

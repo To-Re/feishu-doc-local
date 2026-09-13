@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>飞书样式核对 · HTML 粘贴子集</title>
+<style>body{margin:32px;background:#fff;color:#1f2329;font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif;font-size:16px}main{max-width:820px;margin:auto}a{color:#2467c9}li{line-height:1.7;margin:6px 0}pre{overflow-x:auto}</style>
+</head>
+<body>
+<!-- Clipboard source: copy #compatibility-paste innerHTML as text/html.
+     The actual Feishu document title is set separately.
+     This is a common HTML subset, not an official DocxXML import.
+     Deep headings h7-h9, checkboxes, callouts and S08-S12 require real Feishu UI checks.
+     Code captions are visible labels preceding pre/code, not a claim of native caption import. -->
+<main id="compatibility-paste">
+<p style="text-align:center;margin:10px 0;line-height:1.7">内容均为虚构的公开测试材料，不含用户、群、文档或媒体 token。</p>
+<p style="margin:10px 0;line-height:1.7">S00 · 修改定位句：请把「等待核对」改成「完成核对」，检查正文与评论是否都保存到本地。</p>
+<h1 style="margin:24px 0 12px;line-height:1.4">S01 · 标题层级与自动编号</h1>
+<p style="margin:10px 0;line-height:1.7">本节从一级标题连续下降到九级，用来检查层级、字号、间距和自动编号。实际写作优先使用一至六级。</p>
+<h2 style="margin:24px 0 12px;line-height:1.4">S01.2 · 二级标题</h2>
+<p style="margin:10px 0;line-height:1.7">二级标题下的一段正文。</p>
+<h3 style="margin:24px 0 12px;line-height:1.4">S01.3 · 三级标题</h3>
+<p style="margin:10px 0;line-height:1.7">三级标题下的一段正文。</p>
+<h4 style="margin:24px 0 12px;line-height:1.4">S01.4 · 四级标题</h4>
+<p style="margin:10px 0;line-height:1.7">四级标题下的一段正文。</p>
+<h5 style="margin:24px 0 12px;line-height:1.4">S01.5 · 五级标题</h5>
+<p style="margin:10px 0;line-height:1.7">五级标题下的一段正文。</p>
+<h6 style="margin:24px 0 12px;line-height:1.4">S01.6 · 六级标题</h6>
+<p style="margin:10px 0;line-height:1.7">六级标题下的一段正文。</p>
+<h1 style="margin:24px 0 12px;line-height:1.4">S02 · 对齐、段落与富文本</h1>
+<p style="text-align:left;margin:10px 0;line-height:1.7">S02.L · 左对齐。短句、中文标点与 Latin text 应保持正常排版。</p>
+<p style="text-align:center;margin:10px 0;line-height:1.7">S02.C · 居中对齐。</p>
+<p style="text-align:right;margin:10px 0;line-height:1.7">S02.R · 右对齐。</p>
+<p style="margin:10px 0;line-height:1.7">S02.F · <b>粗体</b>、<em>斜体</em>、<u>下划线</u>、<del>删除线</del>、<code style="font-family:monospace">inline_code()</code>，以及 <b><em>同时加粗与斜体</em></b>。</p>
+<p style="margin:10px 0;line-height:1.7">S02.B · 同一段的第一行。<br>这是手动换行的第二行，段落间距不应被重复插入。</p>
+<p style="margin:10px 0;line-height:1.7">S02.E · 字符保真：中文，English，数字 123；&amp;、&lt;、&gt;、&quot;引号&quot;；emoji 😀 📝 🌱；组合字符 é。</p>
+<p style="margin:10px 0;line-height:1.7">S02.A · 普通链接：<a href="https://example.com/?a=1&amp;b=2">公开示例网址</a>。预览链接：<a href="https://github.com/larksuite/cli">飞书官方 CLI</a>。</p>
+<h1 style="margin:24px 0 12px;line-height:1.4">S03 · 文字颜色与背景</h1>
+<p style="margin:10px 0;line-height:1.7">S03.T · <span style="color:#c9372c">红</span>、<span style="color:#b85b00">橙</span>、<span style="color:#946800">黄</span>、<span style="color:#23804b">绿</span>、<span style="color:#2467c9">蓝</span>、<span style="color:#7543ba">紫</span>、<span style="color:#596579">灰</span>。</p>
+<p style="margin:10px 0;line-height:1.7">S03.B · <span style="background-color:#fff0ee">待修正</span>、<span style="background-color:#fff4e5">需注意</span>、<span style="background-color:#fff9df">待讨论</span>、<span style="background-color:#eaf7ef">已确认</span>、<span style="background-color:#edf4ff">参考信息</span>、<span style="background-color:#f4edfc">备选方案</span>、<span style="background-color:#dce1e8">中性标签</span>。</p>
+<p style="margin:10px 0;line-height:1.7">S03.M · <span style="color:#2467c9;background-color:#edf4ff"><b>颜色与粗体叠加</b></span>，后面的普通文字应恢复默认样式。</p>
+<h1 style="margin:24px 0 12px;line-height:1.4">S04 · 列表、编号与待办</h1>
+<ul><li>一级无序项目。<ul><li>二级无序项目。</li><li>另一条二级项目。</li></ul></li><li>回到一级项目。</li></ul>
+<ol start="3"><li value="3">从第三步开始。<ul><li>有序列表内的无序说明。</li></ul></li><li>下一步自动编号。<ol><li>嵌套的第一小步。</li><li>嵌套的第二小步。</li></ol></li></ol>
+<h1 style="margin:24px 0 12px;line-height:1.4">S05 · 引用与高亮块</h1>
+<blockquote style="border-left:3px solid #c9cdd4;margin:18px 0;padding:2px 18px;color:#646a73"><p style="margin:10px 0;line-height:1.7">S05.Q · 引用第一段：把意见留在具体位置，有助于明确下一步修改。</p><p style="margin:10px 0;line-height:1.7">引用第二段包含 <b>强调</b> 和 <a href="https://example.com">公开链接</a>。</p></blockquote>
+<hr>
+<p style="margin:10px 0;line-height:1.7">S05.H · 上方是独立分隔线。</p>
+<h1 style="margin:24px 0 12px;line-height:1.4">S06 · 代码与转义</h1>
+<p><strong>S06.G · Go 代码标题</strong></p><pre style="white-space:pre;font-family:monospace;background-color:#f5f6f7;padding:16px;line-height:1.6"><code style="font-family:monospace">package main
+
+func main() {
+    if 2 &lt; 3 {
+        println(&quot;hello &amp; world&quot;)
+    }
+}</code></pre>
+<p><strong>S06.J · JavaScript 缩进与空行</strong></p><pre style="white-space:pre;font-family:monospace;background-color:#f5f6f7;padding:16px;line-height:1.6"><code style="font-family:monospace">const result = { ok: true, count: 2 };
+
+if (result.ok &amp;&amp; result.count &gt; 0) {
+  console.log(&#x27;示例输出&#x27;);
+}</code></pre>
+<h1 style="margin:24px 0 12px;line-height:1.4">S07 · 表格、列宽与合并</h1>
+<p style="margin:10px 0;line-height:1.7">S07.A · 普通表格：三列指定为 320、160、240，检查列宽、表头背景和垂直对齐。</p>
+<table style="border-collapse:collapse;table-layout:fixed;width:720px;max-width:100%;margin:18px 0"><colgroup><col width="320" style="width:320px"><col width="160" style="width:160px"><col width="240" style="width:240px"></colgroup><thead><tr><th style="background-color:#f3f5f7;border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">项目</p></th><th style="background-color:#f3f5f7;border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">状态</p></th><th style="background-color:#f3f5f7;border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">说明</p></th></tr></thead><tbody><tr><td style="vertical-align:top;border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">顶部对齐</p></td><td style="background-color:#eaf7ef;border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">已确认</p></td><td style="border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">第一行说明。<br>第二行说明。</p></td></tr><tr><td style="vertical-align:middle;border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">垂直居中</p></td><td style="background-color:#fff9df;border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">待讨论</p></td><td style="border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">较长的内容用于检查换行。中文与 English words 会共同撑开这一行的高度。</p></td></tr><tr><td style="vertical-align:bottom;border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">底部对齐</p></td><td style="border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7"><b>强调</b>与<em>斜体</em></p></td><td style="border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">单元格内可选文评论。<br>这里还有第二行。</p></td></tr></tbody></table>
+<p style="margin:10px 0;line-height:1.7">S07.B · 合并表格：横向表头、纵向合并和列宽 span；被合并的位置没有重复单元格。</p>
+<table style="border-collapse:collapse;table-layout:fixed;width:720px;max-width:100%;margin:18px 0"><colgroup><col width="200" style="width:200px"><col width="260" span="2" style="width:260px"></colgroup><thead><tr><th colspan="2" style="background-color:#dce1e8;border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">合并的两列表头</p></th><th style="background-color:#f3f5f7;border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">第三列</p></th></tr></thead><tbody><tr><td rowspan="2" style="vertical-align:middle;border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">跨越两行</p></td><td style="border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">单元格待改写</p></td><td style="border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">第一行第三列</p></td></tr><tr><td style="border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">第二行第二列</p></td><td style="border:1px solid #c9cdd4;padding:10px 12px"><p style="margin:10px 0;line-height:1.7">第二行第三列</p></td></tr></tbody></table>
+<h1 style="margin:24px 0 12px;line-height:1.4">S13 · 评论、编辑与往返检查</h1>
+<p style="margin:10px 0;line-height:1.7">S13.R1 · 重复文字，重复文字。请选择第二处「重复文字」，在句首插字后确认评论仍位于第二处。</p>
+<p style="margin:10px 0;line-height:1.7">S13.R2 · 选中这段末尾与下一段开头，建立跨段评论。</p>
+<p style="margin:10px 0;line-height:1.7">S13.R3 · 下一段开头。然后删除完整选区，评论应保留原引用并显示已删除。</p>
+<p style="margin:10px 0;line-height:1.7">S13.R4 · emoji 😀 与中文共同编辑，偏移使用 UTF-16；粘贴带粗体语法的文字后，评论不应错位。</p>
+<p style="margin:10px 0;line-height:1.7">S13.R5 · 切换编辑和只读；重新打开文件；读取外部改稿；检查旧撤销历史不会覆盖新的外部版本。</p>
+</main>
+</body>
+</html>

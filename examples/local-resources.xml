@@ -1,0 +1,14 @@
+<h1>S14 · 本地资源往返</h1>
+<p>以下内容是公开测试材料。图片与附件都从原始本地文件上传；既有文章和评论应保持不变。</p>
+<p>S14.I · 原图为 720 × 180，显示为 360 × 90。</p>
+<img path="@./assets/colors.png" width="360" height="90" caption="S14.I · 显示尺寸与原图分开保存"/>
+<p>S14.F · 第一份附件之前 <source path="@./assets/colors.png" name="行内颜色样片.png"/> 两份附件之间 <source path="@./assets/resource-a/note.txt" name="行内说明.txt"/> 第二份附件之后，文字必须完整保留。</p>
+<p>S14.CA · 同名附件 A：正文标识应为 S14-A。</p>
+<figure view-type="Card"><source path="@./assets/resource-a/note.txt" name="note.txt"/></figure>
+<p>S14.CB · 同名附件 B：正文标识应为 S14-B，不能错绑成 A。</p>
+<figure view-type="Card"><source path="@./assets/resource-b/note.txt" name="note.txt"/></figure>
+<p>S14.P · 图片附件预览。</p>
+<figure view-type="Preview"><source path="@./assets/colors.png" name="预览颜色样片.png"/></figure>
+<p>S14.CSV · CSV 是原始附件，文件名显示不代表已有可编辑电子表格。</p>
+<figure view-type="Card"><source path="@./assets/resource-check.csv" name="资源核对.csv"/></figure>
+<p>S14.END · 本节之后不应残留临时占位标记，也不应改动前面章节。</p>

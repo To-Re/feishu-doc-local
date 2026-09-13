@@ -1,0 +1,22 @@
+<h1>S15 · 白板图源与本地编辑</h1>
+<p>这组公开样例分别验证 Mermaid、SVG、PlantUML 和空白画板；图源、云端节点与页面需要逐项核对。</p>
+<h2>S15.M · Mermaid 流程图</h2>
+<p>选中下面的白板，在侧栏把“初稿”改成“修订稿”，确认预览、保存和撤销。</p>
+<whiteboard type="mermaid"><![CDATA[flowchart LR
+  A[本地初稿] --> B{人类评审}
+  B -->|需要调整| C[AI 修订]
+  C --> B
+  B -->|确认| D[发布飞书]
+  style A fill:#e8f0fe,stroke:#6687c5
+  style D fill:#e7f4e4,stroke:#689369
+]]></whiteboard>
+<h2>S15.S · SVG 结构图</h2>
+<p>验证形状、文字、连线、配色与实际节点。原 SVG 作为文件保留。</p>
+<whiteboard type="svg" path="@./assets/review-map.svg"/>
+<h2>S15.P · PlantUML 时序图</h2>
+<p>验证文件图源上传与回读；本地无 PlantUML 渲染器时使用下载的云端预览。</p>
+<whiteboard type="plantuml" path="@./assets/review-sequence.puml"/>
+<h2>S15.B · 空白画板</h2>
+<p>此块专门测试空白画板创建，空内容不代表复杂图已绘制完成。</p>
+<whiteboard type="blank"/>
+<p>S15.END · 本节之外的旧正文与资源不应变化。</p>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="210" viewBox="0 0 680 210">
+  <rect x="20" y="55" width="175" height="90" rx="12" fill="#e8f0fe" stroke="#6687c5" stroke-width="2"/>
+  <text x="107" y="93" text-anchor="middle" font-size="20" fill="#263b53">本地文件</text>
+  <text x="107" y="122" text-anchor="middle" font-size="14" fill="#50637a">XML + 评论 JSON</text>
+  <line x1="195" y1="100" x2="248" y2="100" stroke="#697b91" stroke-width="2"/>
+  <polyline points="238,94 248,100 238,106" fill="none" stroke="#697b91" stroke-width="2"/>
+  <rect x="255" y="55" width="170" height="90" rx="12" fill="#fff3d6" stroke="#c9a655" stroke-width="2"/>
+  <text x="340" y="94" text-anchor="middle" font-size="20" fill="#654e22">人类与 AI</text>
+  <text x="340" y="122" text-anchor="middle" font-size="14" fill="#7b6539">阅读 · 评论 · 修订</text>
+  <line x1="425" y1="100" x2="478" y2="100" stroke="#697b91" stroke-width="2"/>
+  <polyline points="468,94 478,100 468,106" fill="none" stroke="#697b91" stroke-width="2"/>
+  <rect x="485" y="55" width="175" height="90" rx="12" fill="#e7f4e4" stroke="#689369" stroke-width="2"/>
+  <text x="572" y="93" text-anchor="middle" font-size="20" fill="#304d30">飞书文档</text>
+  <text x="572" y="122" text-anchor="middle" font-size="14" fill="#4e714d">确认后发布</text>
+</svg>
