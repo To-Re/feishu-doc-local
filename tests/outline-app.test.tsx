@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { Editor } from '@tiptap/core';
 import { App } from '../src/ui/App';
-import type { Snapshot } from '../src/core/types';
+import { createReview, type Snapshot } from '../src/core/types';
 
 const captured=vi.hoisted(()=>({editor:null as Editor|null}));
 vi.mock('../src/ui/Reader',async importOriginal=>{
@@ -37,6 +37,25 @@ async function open(){
 const mode=(name:string)=>screen.getByRole('button',{name});
 
 describe('Node editor outline integration',()=>{
+  it.each(['编辑','只读'])('locates visible resolved quotes in %s without changing selection or creating a draft',async name=>{
+    const review=createReview(handle.name,xml);
+    review.comments=[{id:'resolved',author:'评审者',body:'检查此句',createdAt:'2026-01-01T00:00:00Z',status:'resolved',replies:[],anchor:{from:8,to:11,quote:'选中评',state:'attached'}}];
+    disk={...disk,review};
+    const scroll=vi.fn();vi.stubGlobal('requestAnimationFrame',(callback:FrameRequestCallback)=>{callback(0);return 1;});
+    const original=Element.prototype.scrollIntoView;Element.prototype.scrollIntoView=scroll;
+    try {
+      const editor=await open();fireEvent.click(mode(name));
+      expect(editor.view.dom.querySelectorAll('.comment-highlight')).toHaveLength(0);
+      fireEvent.click(mode('查看已解决评论'));
+      expect(editor.view.dom.querySelector('.comment-highlight')?.textContent).toBe('选中评');
+      const before=editor.state.selection;
+      fireEvent.click(mode('选中评'));expect(scroll).toHaveBeenCalled();
+      expect(editor.state.selection).toBe(before);expect(screen.queryByLabelText('评论内容')).toBeNull();
+      fireEvent.click(mode('隐藏已解决评论'));
+      expect(editor.view.dom.querySelectorAll('.comment-highlight')).toHaveLength(0);
+    } finally {Element.prototype.scrollIntoView=original;}
+  });
+
   it('shows the outline by default and preserves file tree state when switching navigation tabs',async()=>{
     await open();expect(screen.getByRole('button',{name:'目录'}).getAttribute('aria-pressed')).toBe('true');
     expect(screen.queryByRole('complementary',{name:'项目资源'})).toBeNull();

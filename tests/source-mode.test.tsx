@@ -119,11 +119,14 @@ describe('whole-document source mode through the real editor', () => {
   });
 
   it('opens an existing comment quotation in the read-only article from unchanged source mode', async () => {
-    await open(); enterSource(); fireEvent.click(screen.getByRole('button', { name: '原文' }));
+    await open(); enterSource();
+    const selection=captured.editor!.state.selection,quote=captured.editor!.view.dom.querySelector('.comment-highlight')!;
+    quote.scrollIntoView=vi.fn();fireEvent.click(screen.getByRole('button', { name: '原文' }));
     expect(mode('只读').getAttribute('aria-pressed')).toBe('true');
     expect(screen.getByLabelText('文章正文').closest('section')?.hidden).toBe(false);
     expect(captured.editor!.isEditable).toBe(false);
-    expect(captured.editor!.state.selection.from).toBe(1); expect(captured.editor!.state.selection.to).toBe(3);
+    expect(captured.editor!.state.selection).toBe(selection);expect(quote.scrollIntoView).toHaveBeenCalled();
+    expect(screen.queryByLabelText('评论内容')).toBeNull();
     expect(writes()).toHaveLength(0); expect(disk.review!.comments[0].anchor.state).toBe('attached');
   });
 

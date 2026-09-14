@@ -258,13 +258,56 @@ describe('Obsidian host shared editor',()=>{
     expect(screen.queryByText('请补例子')).toBeNull();fireEvent.click(screen.getByRole('button',{name:'查看已解决评论'}));
     fireEvent.click(screen.getByRole('button',{name:'重新打开'}));await act(async()=>controller.flush());expect(disk.review!.comments[0].status).toBe('open');
   });
-  it('locates a quoted text range in read-only mode and returns from source mode',async()=>{
+  it('scrolls the quote from read-only and source modes without changing selection or creating a draft',async()=>{
     await open('<p>文本评论定位</p>');await compose('准确定位');fireEvent.click(screen.getByRole('button',{name:'添加评论'}));await act(async()=>controller.flush());
+    act(()=>mocks.editor!.commands.setTextSelection(1));
+    const previousSelection=mocks.editor!.state.selection;
+    const nativeSelection=document.getSelection()?.toString();
+    const ranges:string[]=[];
+    vi.spyOn(Range.prototype,'getClientRects').mockImplementation(function(this:Range){ranges.push(this.toString());return [new DOMRect(20,1600,60,20)] as unknown as DOMRectList;});
     fireEvent.click(screen.getByRole('button',{name:'只读'}));fireEvent.click(screen.getByRole('button',{name:'文本评'}));
-    expect(document.getSelection()?.toString()).toBe('文本评');
+    expect(ranges).toContain('文本评');expect(mocks.editor!.state.selection).toBe(previousSelection);
+    expect(document.getSelection()?.toString()).toBe(nativeSelection);expect(screen.queryByRole('button',{name:'评论选中内容'})).toBeNull();
+    ranges.length=0;
     fireEvent.click(screen.getByRole('button',{name:'源码'}));fireEvent.click(screen.getByRole('button',{name:'文本评'}));
-    await waitFor(()=>expect(screen.queryByLabelText('文档源码')).toBeNull());expect(document.getSelection()?.toString()).toBe('文本评');
+    await waitFor(()=>expect(ranges).toContain('文本评'));expect(screen.queryByLabelText('文档源码')).toBeNull();
+    expect(mocks.editor!.state.selection).toBe(previousSelection);expect(document.getSelection()?.toString()).toBe(nativeSelection);
+    expect(controller.capture()).toBeNull();
     expect(writes).toHaveLength(1);
+  });
+  it.each(['编辑','只读'])('%s locates full open and resolved quotes in the host scroll pane and toggles their original marks',async mode=>{
+    const prefix='前面的长段落。'.repeat(80),quote='完整引用😀é。'.repeat(65),suffix='其余正文';
+    fixture('<p>'+prefix+quote+suffix+'</p><source path="@notes.txt"/>');
+    const anchor={from:prefix.length+1,to:prefix.length+1+quote.length,quote,state:'attached' as const};
+    disk.review!.comments=[{id:'resolved-range',author:'协作者',body:'已处理的长引用',createdAt:'2026-09-14T00:00:00Z',status:'resolved',anchor,replies:[]},
+      {id:'open-range',author:'协作者',body:'待处理的引用',createdAt:'2026-09-14T00:00:00Z',status:'open',anchor:{from:1,to:5,quote:prefix.slice(0,4),state:'attached'},replies:[]}];
+    host.initial.snapshot=copy(disk);render(<BrowserApp host={host}/>);await waitFor(()=>expect(mocks.editor).not.toBeNull());
+    fireEvent.click(screen.getByRole('button',{name:mode}));
+    const body=screen.getByLabelText('文章正文'),pane=screen.getByRole('region',{name:'文档编辑区'}),sidebar=screen.getByRole('complementary',{name:'评论与内容编辑'});
+    pane.style.overflowY='auto';Object.defineProperties(pane,{clientHeight:{value:500},scrollHeight:{value:4000}});
+    vi.spyOn(pane,'getBoundingClientRect').mockReturnValue(new DOMRect(0,100,800,500));
+    pane.scrollTop=100;sidebar.scrollTop=75;
+    const ranges:string[]=[];
+    vi.spyOn(Range.prototype,'getClientRects').mockImplementation(function(this:Range){ranges.push(this.toString());return [new DOMRect(20,2100,100,20)] as unknown as DOMRectList;});
+    const beforeSelection=mocks.editor!.state.selection,beforeXML=disk.xml;
+    expect(body.querySelector('[data-comment-id="resolved-range"]')).toBeNull();
+    expect(body.querySelector('[data-comment-id="open-range"]')?.textContent).toBe(prefix.slice(0,4));
+    fireEvent.click(screen.getByRole('button',{name:'查看已解决评论'}));
+    expect(body.querySelector('[data-comment-id="resolved-range"]')?.textContent).toBe(quote);
+    const button=screen.getByRole('button',{name:quote});expect(button.textContent).toBe(quote);
+    fireEvent.click(button);
+    expect(ranges).toContain(quote);expect(pane.scrollTop).toBe(1860);expect(sidebar.scrollTop).toBe(75);
+    expect(mocks.editor!.state.selection).toBe(beforeSelection);expect(screen.queryByRole('button',{name:'评论选中内容'})).toBeNull();
+    fireEvent.click(screen.getByRole('button',{name:'隐藏已解决评论'}));
+    expect(body.querySelector('[data-comment-id="resolved-range"]')).toBeNull();expect(body.querySelector('[data-comment-id="open-range"]')).not.toBeNull();
+    // Navigating from an explicitly listed resource returns to the same Reader.
+    fireEvent.click(screen.getByRole('button',{name:'文件'}));
+    fireEvent.click(within(screen.getByRole('complementary',{name:'项目资源'})).getByRole('button',{name:'notes.txt'}));
+    expect(body.closest('article')?.hidden).toBe(true);
+    ranges.length=0;fireEvent.click(screen.getByRole('button',{name:prefix.slice(0,4)}));
+    await waitFor(()=>expect(ranges).toContain(prefix.slice(0,4)));expect(body.closest('article')?.hidden).toBe(false);
+    expect(mocks.editor!.state.selection).toBe(beforeSelection);expect(controller.capture()).toBeNull();
+    expect(writes).toHaveLength(0);expect(disk.xml).toBe(beforeXML);expect(fetch).not.toHaveBeenCalled();
   });
   it('locates the exact whiteboard component rather than a same-named component on another board',async()=>{
     fixture('<whiteboard token="board-one"/><whiteboard token="board-two"/>');
@@ -277,6 +320,22 @@ describe('Obsidian host shared editor',()=>{
     fireEvent.click(screen.getByRole('button',{name:'只读'}));fireEvent.click(screen.getByRole('button',{name:'【白板节点：同名节点】'}));
     expect(components[0].classList.contains('lr-whiteboard-component-selected')).toBe(true);expect(components[1].classList.contains('lr-whiteboard-component-selected')).toBe(false);
     expect(disk.review!.comments[0].anchor.target?.board).toBe('token:board-one');expect(fetch).not.toHaveBeenCalled();
+  });
+  it('locates a resolved formula atom without selecting it or opening its source editor',async()=>{
+    fixture('<p>正文</p><latex>x^2</latex>');
+    disk.review!.comments=[{id:'formula-comment',author:'协作者',body:'已检查公式',createdAt:'2026-09-14T00:00:00Z',status:'resolved',
+      anchor:{from:4,to:5,quote:'公式：x^2',state:'attached'},replies:[]}];
+    host.initial.snapshot=copy(disk);render(<BrowserApp host={host}/>);await waitFor(()=>expect(mocks.editor).not.toBeNull());
+    const before=mocks.editor!.state.selection,atom=document.querySelector('.lr-latex-block')!,scroll=vi.fn();
+    Object.defineProperty(atom,'scrollIntoView',{configurable:true,value:scroll});
+    expect(atom.classList.contains('comment-highlight')).toBe(false);
+    fireEvent.click(screen.getByRole('button',{name:'查看已解决评论'}));
+    expect(atom.classList.contains('comment-highlight')).toBe(true);
+    fireEvent.click(screen.getByRole('button',{name:'公式：x^2'}));
+    expect(scroll).toHaveBeenCalledWith({block:'center',inline:'nearest'});expect(mocks.editor!.state.selection).toBe(before);
+    expect(screen.queryByLabelText('公式表达式')).toBeNull();expect(screen.queryByRole('button',{name:'评论选中内容'})).toBeNull();
+    fireEvent.click(screen.getByRole('button',{name:'隐藏已解决评论'}));expect(atom.classList.contains('comment-highlight')).toBe(false);
+    expect(writes).toHaveLength(0);expect(controller.capture()).toBeNull();
   });
   it('mounts optional cloud actions once, disables them during sync and disposes on close',async()=>{
     fixture();const clipboard=vi.fn(async()=>{}),click=vi.fn(),dispose=vi.fn();

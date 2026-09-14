@@ -69,6 +69,28 @@ async function addComment(body='请补充例子'){
 }
 
 describe('standalone browser document workflow',()=>{
+  it.each(['open','resolved'] as const)('reopens a legacy %s cloud import at the precise quote and preserves the disk revision until a normal save',async status=>{
+    const prefix='第一篇正文前文。',quote='已保存的完整引用😀。'.repeat(60),suffix='不属于引用的后文';
+    const xml='<p id="paragraph">'+prefix+quote+suffix+'</p>',loaded=snapshot(xml),review=loaded.review!;
+    const cloud={id:'remote',author:'协作者',body:'云端留下的意见',createdAt:'2026-09-14T00:00:00Z',status,quote,blockId:'paragraph',replies:[]};
+    const id='cloud:test-document:remote';
+    review.comments=[{id,author:cloud.author,body:cloud.body,createdAt:cloud.createdAt,status,
+      anchor:{from:1,to:prefix.length+quote.length+suffix.length+1,quote,state:'attached'},replies:[]}];
+    review.cloudSync={version:1,documentId:'test-document',url:'https://example.feishu.cn/docx/test-document',
+      links:[{localId:id,cloudId:cloud.id,body:cloud.body,cloudBody:cloud.body,status,replies:{},remote:cloud}]};
+    const originalReview=copy(review);disk.set('a.xml',loaded);await open();
+    if(status==='resolved')fireEvent.click(screen.getByRole('button',{name:'查看已解决评论'}));
+    const mark=screen.getByLabelText('文章正文').querySelector('.comment-highlight');
+    expect(mark?.textContent).toBe(quote);expect(screen.getByRole('button',{name:quote}).textContent).toBe(quote);
+    const ranges:string[]=[];
+    vi.spyOn(Range.prototype,'getClientRects').mockImplementation(function(this:Range){ranges.push(this.toString());return [new DOMRect(0,900,100,20)] as unknown as DOMRectList;});
+    fireEvent.click(screen.getByRole('button',{name:quote}));expect(ranges).toContain(quote);
+    expect(writes).toHaveLength(0);expect(disk.get('a.xml')!.review).toEqual(originalReview);
+    fireEvent.click(screen.getByRole('button',{name:status==='open'?'解决':'重新打开'}));
+    await waitFor(()=>expect(writes).toHaveLength(1));
+    expect(writes[0].revision).toBe('r0');expect(writes[0].review.comments[0].anchor).toEqual({from:prefix.length+1,to:prefix.length+quote.length+1,quote,state:'attached'});
+    expect(writes[0].xml).toBe(xml);expect(writes[0].review.cloudSync).toEqual(originalReview.cloudSync);expect(fetch).not.toHaveBeenCalled();
+  });
   it('renders cloud author ids as labels with a separate resolved status while preserving quotes and stored identities',async()=>{
     const review=disk.get('a.xml')!.review!;
     const base={author:'ou_sample_account',body:'导入的意见',createdAt:'2026-09-14T00:00:00Z',status:'open' as const,

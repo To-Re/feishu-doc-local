@@ -37,6 +37,8 @@ interface Props {
   /** Optional storage adapter for hosts without the local HTTP server. */
   readResourceText?: (path: string, signal: AbortSignal) => Promise<string>;
   comments: ReviewComment[];
+  /** Keep body marks consistent with the comments visible in the sidebar. */
+  showResolved?: boolean;
   getReview: () => Review;
   getDraft: () => Anchor | null;
   onEdit: (xml: string, comments: ReviewComment[], draft: Anchor | null) => void;
@@ -91,7 +93,7 @@ export function Reader(props: Props) {
         addProseMirrorPlugins() {
           return [new Plugin({key:new PluginKey('reviewHighlights'),props:{decorations(state) {
             const marks = latest.current.getReview().comments
-              .filter(c => c.status === 'open' && c.anchor.state === 'attached' && !c.anchor.target)
+              .filter(c => (c.status === 'open' || latest.current.showResolved) && c.anchor.state === 'attached' && !c.anchor.target)
               .filter(c => c.anchor.from >= 0 && c.anchor.to <= state.doc.content.size && c.anchor.to > c.anchor.from)
               .map(c => {
                 const node=state.doc.nodeAt(c.anchor.from);
@@ -152,13 +154,13 @@ export function Reader(props: Props) {
   },[props.xml,editor]);
   useEffect(() => {
     if (!editor) return;
-    const refresh=()=>applyWhiteboardComponentHighlights(editor,latest.current.getReview().comments);
+    const refresh=()=>applyWhiteboardComponentHighlights(editor,latest.current.getReview().comments,latest.current.showResolved);
     editor.view.dispatch(editor.state.tr.setMeta('reviewRefresh',true));
     refresh();
     editor.view.dom.addEventListener('whiteboard-preview-ready',refresh);
     editor.on('transaction',refresh);
     return()=>{editor.view.dom.removeEventListener('whiteboard-preview-ready',refresh);editor.off('transaction',refresh);};
-  },[props.comments,editor]);
+  },[props.comments,props.showResolved,editor]);
   // Refresh only resource node views. A cache update is not an XML edit or reload.
   useEffect(() => { if (editor) editor.view.dispatch(editor.state.tr.setMeta(RESOURCE_REFRESH,true).setMeta('addToHistory',false)); },[resourceSignature,editor]);
   return <>

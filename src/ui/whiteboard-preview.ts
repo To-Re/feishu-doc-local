@@ -43,6 +43,9 @@ function bindComponents(container:HTMLElement,svg:Element,components:Map<Element
     if(event instanceof KeyboardEvent && !['Enter',' ','Spacebar'].includes(event.key))return;
     const match=find(event);if(!match)return;
     event.preventDefault();event.stopPropagation();
+    // A real user selection takes ownership from quote navigation. Hiding a
+    // resolved comment must not subsequently clear this selected component.
+    match.element.removeAttribute('data-comment-navigation');
     for(const element of components.keys())element.classList.toggle('lr-whiteboard-component-selected',element===match.element);
     options.onComponentSelect?.({kind:'whiteboard-component',board,...match.component});
   };

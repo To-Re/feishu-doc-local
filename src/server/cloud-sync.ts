@@ -2,7 +2,7 @@ import { open, unlink, lstat } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { createReview, type Review, type Snapshot, type ReviewComment } from '../core/types';
 import type { CloudComment, CloudIntent, CloudLink, CloudSyncReport, CloudTransport } from '../core/cloud-types';
-import { indexCloudBlocks, cloudCommentAnchor, localCloudBlock } from '../core/cloud-blocks';
+import { indexCloudBlocks, cloudCommentAnchor, localCloudBlock, normalizeImportedCloudAnchors } from '../core/cloud-blocks';
 import { invalidateAnchors } from '../core/anchors';
 import { FileError, type openLocalFile } from './files';
 
@@ -73,7 +73,9 @@ async function runSync(file:LocalFile,expectedRevision:string,{documentId,url,tr
     const comment=review.comments.find(item=>item.id===link!.localId);
     if(!comment){issue('有已同步评论在本地被删除；保留云端评论，不自动删除或重新导入。');continue;}
     if(comment.anchor.state==='attached'&&!cloud.whole){
-      const currentBlock=localCloudBlock(comment.anchor,localBlocks,remoteBlocks);
+      // A selected quote can live inside a child paragraph while the remote
+      // reference names its callout/list ancestor. Validate that stated scope.
+      const currentBlock=localCloudBlock(comment.anchor,cloud.blockId?localBlocks.filter(block=>block.id===cloud.blockId):localBlocks,remoteBlocks);
       const location=cloudCommentAnchor(cloud,localBlocks);
       if(location.state!=='attached'||!currentBlock||(cloud.blockId&&currentBlock.id!==cloud.blockId)||
         (cloud.boardToken&&currentBlock.boardToken!==cloud.boardToken)){
@@ -100,6 +102,7 @@ async function runSync(file:LocalFile,expectedRevision:string,{documentId,url,tr
     }
     link.remote=clone(cloud);
   }
+  review=normalizeImportedCloudAnchors(review,snapshot.xml);
   await persist(); // CAS before any remote mutation; imports and binding become durable.
 
   let halt=false;

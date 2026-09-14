@@ -53,8 +53,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 5845,
-      "sha256": "135a820643774366f480bb8c7a24b25543d394e5b87b0d354d3c4b3270974aed"
+      "bytes": 6187,
+      "sha256": "d4e284570ac6b417787e9a0826d5be451d977e834e5d492592c675ddf3adf42c"
     },
     {
       "path": "SECURITY.md",
@@ -1348,8 +1348,8 @@
     },
     {
       "path": "obsidian-plugin/README.md",
-      "bytes": 3610,
-      "sha256": "6345cc3d8bace98c3aefe0c11d3759df0c673d6f73dc15b1038fc8f0a2f5386a"
+      "bytes": 3951,
+      "sha256": "272ab35d991dfc989e62e5473a5c849af42cbb209a68a8aabee7b143dc2e113e"
     },
     {
       "path": "obsidian-plugin/build.mjs",
@@ -1377,6 +1377,11 @@
       "sha256": "f26d5c5f8c9d4c3aa54b8b083f0dffb0d1c64264033da180d2b5545f4036a25b"
     },
     {
+      "path": "obsidian-plugin/src/docxml-file.ts",
+      "bytes": 2600,
+      "sha256": "d20c33ea799d11f629deae187550acd94aa9ad7f86b76ffbf4dc8a14678ac528"
+    },
+    {
       "path": "obsidian-plugin/src/drafts.ts",
       "bytes": 6318,
       "sha256": "dffb8a4f55448c71b6856ef5a3f2a24e6ca4f72e750e77f29af8f2f943505040"
@@ -1388,8 +1393,8 @@
     },
     {
       "path": "obsidian-plugin/src/plugin.tsx",
-      "bytes": 24221,
-      "sha256": "13a25e8a40afcc015c31d43a7df0304338ff1dcf024149ef2b8f8884acd37836"
+      "bytes": 25019,
+      "sha256": "d0923faa32e7fbdd47c99e3740f3f6468ba6b37d909b693a742b2c125b90d4da"
     },
     {
       "path": "obsidian-plugin/src/render.ts",
@@ -1412,14 +1417,19 @@
       "sha256": "ee6991b77675c69cbbac48c03750e35069cd7957ef68ca80fa6f7689e9252fba"
     },
     {
+      "path": "obsidian-plugin/tests/docxml-file.test.ts",
+      "bytes": 2796,
+      "sha256": "9bb2269a60e48788442426a95cf09bf235301d86cb8c8dc5861178e97280be8f"
+    },
+    {
       "path": "obsidian-plugin/tests/drafts.test.ts",
       "bytes": 4826,
       "sha256": "68cea44e1ee09d0ac571ca0a6f23b8f0ddb190102460bb5522a468c91ca435ad"
     },
     {
       "path": "obsidian-plugin/tests/host.test.ts",
-      "bytes": 19634,
-      "sha256": "5921f4b82456c6604298a00dc6cc1fa6174b8183396734912353f22dab2b2d54"
+      "bytes": 23384,
+      "sha256": "53861c76eb4ad249cb7809427f7621f722857824715b1aa1d0f96b3342fa2d80"
     },
     {
       "path": "obsidian-plugin/tests/render.test.ts",
@@ -1613,8 +1623,8 @@
     },
     {
       "path": "src/browser/BrowserApp.tsx",
-      "bytes": 45867,
-      "sha256": "3dfa79aa6c13e60111d66a2a34e0a9a3029dc5e39db62c3cad1f3bd714569f25"
+      "bytes": 44583,
+      "sha256": "4e790aad386c9a884931a33af66ef389d35cfafc7ec74feb862af1760d0ac2cb"
     },
     {
       "path": "src/browser/browser.css",
@@ -1643,8 +1653,8 @@
     },
     {
       "path": "src/core/cloud-blocks.ts",
-      "bytes": 3001,
-      "sha256": "33963332d786567a6234033097ae8c67b0b1f5d7f621ecce98c54b9eee43e223"
+      "bytes": 6116,
+      "sha256": "aa54a7eb06e453cb29f2fa84dcdcd7f03e1f37c3fe4aa33be69505a9d63cdaff"
     },
     {
       "path": "src/core/cloud-state.ts",
@@ -1723,8 +1733,8 @@
     },
     {
       "path": "src/server/cloud-sync.ts",
-      "bytes": 13425,
-      "sha256": "bdc4f948424a6ac7e1fa8f5f553e5da8b3cba28f6da34e903cc1c9e3a0e9a882"
+      "bytes": 13740,
+      "sha256": "dcb4986df20b2f28a941d3306f7d24201c55b0c095fac0d7a3202475798f6745"
     },
     {
       "path": "src/server/content-cli.ts",
@@ -1783,8 +1793,8 @@
     },
     {
       "path": "src/ui/App.tsx",
-      "bytes": 63736,
-      "sha256": "1e7b1dbe0e831f45cc25bc543c03b5f68845a70f9da37153612399737eb8f65b"
+      "bytes": 62265,
+      "sha256": "ece8e5540a8a67a676d5a4ff549b04bb4416b32b4b0412e58aae4a81ecd08041"
     },
     {
       "path": "src/ui/BindCloud.tsx",
@@ -1838,8 +1848,8 @@
     },
     {
       "path": "src/ui/Reader.tsx",
-      "bytes": 10246,
-      "sha256": "f79a36cd4382bb71047d90957752bd9e00f3d75a0c982a51a9b8a2a8b08cca72"
+      "bytes": 10430,
+      "sha256": "e5d3145a6170f0504a98e656b54532095addb9ba07ff3be30314cba541cb87b5"
     },
     {
       "path": "src/ui/SegmentedControl.tsx",
@@ -1880,6 +1890,11 @@
       "path": "src/ui/comment-author.ts",
       "bytes": 239,
       "sha256": "f7dc29858099c3a3b292b756ba019e7cfbdd6267092c7c9f21d271add349a4f8"
+    },
+    {
+      "path": "src/ui/comment-navigation.ts",
+      "bytes": 5868,
+      "sha256": "95eee4bc077ebaaf3c5389f0673e1c4dc07b518850712c6b3aab931689bed2da"
     },
     {
       "path": "src/ui/content-sync-presentation.ts",
@@ -1938,18 +1953,18 @@
     },
     {
       "path": "src/ui/styles.css",
-      "bytes": 50945,
-      "sha256": "4d5be4ed704e4327c1794fd3ef421e4a38d6753cac240c864f05486f78e39178"
+      "bytes": 50937,
+      "sha256": "7b5679af3b194a5837c2041807ead435418fc644404e26c869d9f6d6e53dc416"
     },
     {
       "path": "src/ui/whiteboard-comments.ts",
-      "bytes": 3938,
-      "sha256": "6ff8be56148487d87c21abdab18b4a79567a2e7896285725ca28d633eda827ed"
+      "bytes": 4320,
+      "sha256": "d2b7bb41bf61204bba3e9a0bcbc49b5c636b3efbc4f46c0386a807d63422d729"
     },
     {
       "path": "src/ui/whiteboard-preview.ts",
-      "bytes": 20248,
-      "sha256": "0d15763f756e97fb08c91680bb31c9462e3e42ee04bd3336d72a261ba8bb8446"
+      "bytes": 20464,
+      "sha256": "1b3c1f7361ce228d65db69bafcd30be20183ee6e9f271632baaf17ccf1d52b92"
     },
     {
       "path": "src/ui/xml-diff.css",
@@ -1973,8 +1988,8 @@
     },
     {
       "path": "tests/browser-app.test.tsx",
-      "bytes": 22872,
-      "sha256": "264a0a79760c842744506407affcf6aa2911e7957a6086391d97262404ceaea0"
+      "bytes": 25154,
+      "sha256": "669a2f56ee1dc585dd690acb916f9e1b7618ce1ee8f31f09a4cc8d725ac4ad34"
     },
     {
       "path": "tests/browser-files.test.ts",
@@ -1983,8 +1998,8 @@
     },
     {
       "path": "tests/browser-host.test.tsx",
-      "bytes": 27867,
-      "sha256": "465a1617aa647ae17243143838830d7e775f3cf6cdceb46171c1d70871efa9ae"
+      "bytes": 33550,
+      "sha256": "9ea718ad379ba9b65f6369e0e3b500f56c46095d310e7ce44b9c30cdd8388a3a"
     },
     {
       "path": "tests/cloud-blocks-audit.test.ts",
@@ -2002,9 +2017,14 @@
       "sha256": "a5e29e6fae451b722a41e1b3fa5f9032188d6f5ff1f7d536f5b8bdf562a155b3"
     },
     {
+      "path": "tests/cloud-quote-anchors.test.ts",
+      "bytes": 8807,
+      "sha256": "c49f3b3c03c711f8ae2ef6fd660db30325532e480ace9fb1e28e5ec88ca0b3cf"
+    },
+    {
       "path": "tests/cloud-sync-audit.test.ts",
-      "bytes": 6948,
-      "sha256": "9d66063b5ff76c6523efc7181c89da58ef641a646028365ffebde77bb44a29ff"
+      "bytes": 9749,
+      "sha256": "bd068792b355066c054b63ddf0b9471a89c6bcb9f31a49eb8b7f04564a65ce44"
     },
     {
       "path": "tests/cloud-sync-http.test.ts",
@@ -2108,8 +2128,8 @@
     },
     {
       "path": "tests/outline-app.test.tsx",
-      "bytes": 7120,
-      "sha256": "25198a54e5701d563c17d2bf8573f9af9a2c007ff19d724bae46c2b51d99f742"
+      "bytes": 8497,
+      "sha256": "2d1c37c7d701a891f281d58f699cf9e806c8568094022d5162e2bd30377acd71"
     },
     {
       "path": "tests/project-bind-server.test.ts",
@@ -2118,8 +2138,8 @@
     },
     {
       "path": "tests/project-explorer.test.tsx",
-      "bytes": 11361,
-      "sha256": "1517c9473b456e27370b874f348dbabd745fa537ee371a73700968ee0837f2b2"
+      "bytes": 11310,
+      "sha256": "00718c662df864e98d9d4a896490602266bc8f086fc2a63175cc07483be49713"
     },
     {
       "path": "tests/project-files.test.ts",
@@ -2198,8 +2218,8 @@
     },
     {
       "path": "tests/source-mode.test.tsx",
-      "bytes": 16207,
-      "sha256": "2f3290f15c493b74685880e15038b8c5ec4524c73f1d53d11b290b32c43ff120"
+      "bytes": 16425,
+      "sha256": "3c08156d5233e9a21a4b980ccef2162fa21fd172893ab9b65e2ad2d2dd3bc1a4"
     },
     {
       "path": "tests/ui-races.test.tsx",
@@ -2213,8 +2233,8 @@
     },
     {
       "path": "tests/whiteboard-comment-ui.test.tsx",
-      "bytes": 11201,
-      "sha256": "4005dac95e0be592689dda85063353272d02fd6d1e58f8fe06c40ccee678229e"
+      "bytes": 12273,
+      "sha256": "d4349f20f7093d2a5a62d956d706bcc724a575fbd665aacf6857b76f50f3ac46"
     },
     {
       "path": "tests/whiteboard-comments.test.ts",

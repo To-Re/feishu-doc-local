@@ -4,7 +4,7 @@ import { FolderOpen, Plus, PencilLine, BookOpen, Code, MessageSquarePlus, Messag
 import { Reader, FormulaEditor } from '../ui/Reader';
 import { ProjectExplorer, ResourcePreview, type ResourceScrollPosition } from '../ui/ProjectExplorer';
 import { projectFiles, type ProjectFile } from '../core/project-files';
-import { locateWhiteboardComponent } from '../ui/whiteboard-comments';
+import { locateComment } from '../ui/comment-navigation';
 import { SourceEditor } from '../ui/SourceEditor';
 import { WhiteboardEditor } from '../ui/WhiteboardEditor';
 import { DocumentOutline, scrollToHeading } from '../ui/DocumentOutline';
@@ -12,6 +12,7 @@ import type { SourceDraftSnapshot } from '../ui/source-drafts';
 import { containDialogFocus } from '../ui/Projects';
 import { displayAuthor } from '../ui/comment-author';
 import { invalidateAnchors } from '../core/anchors';
+import { normalizeImportedCloudAnchors } from '../core/cloud-blocks';
 import { parseDocxXML } from '../core/docxml';
 import { RESOURCE_REFRESH } from '../core/resources';
 import { createReview, uid, type Anchor, type Review, type ReviewComment, type Snapshot } from '../core/types';
@@ -93,7 +94,7 @@ export function BrowserApp({host}:{host?:EditorHost}={}) {
   }
   function normalize(document:BrowserDocument,snapshot:Snapshot):Draft {
     parseDocxXML(snapshot.xml);
-    const review=snapshot.review||createReview(document.handle.name,snapshot.xml);
+    const review=normalizeImportedCloudAnchors(snapshot.review||createReview(document.handle.name,snapshot.xml),snapshot.xml);
     const changedOutside=review.document.xml!==snapshot.xml;
     return{document,xml:snapshot.xml,review:changedOutside?{...review,comments:invalidateAnchors(review.comments),document:{...review.document,xml:snapshot.xml}}:review,revision:snapshot.revision,resourceRevision:document.resourceRevision,version:0,savedVersion:0};
   }
@@ -310,29 +311,13 @@ export function BrowserApp({host}:{host?:EditorHost}={}) {
     catch{if(mounted.current)setNotice('复制失败，可以选中文件路径后手动复制。');}
   }
   function locate(anchor:Anchor){
-    if(!editor||editor.isDestroyed||anchor.state!=='attached'||anchor.from<0||anchor.to>editor.state.doc.content.size)return;
     if(invalidSourceRef.current){setNotice('请先修正或还原无效源码，再定位评论。');return;}
+    if(controlsLocked){setNotice('文档正在处理，请稍后再定位评论。');return;}
     setSelectedResource(null);
     const locating=()=>{
-      if(editor.isDestroyed)return;
-      if(anchor.target){
-        const result=locateWhiteboardComponent(editor,anchor);
-        if(!result.element){setNotice(result.reason||'白板组件位置待确认，评论已保留。');return;}
-        editor.commands.setNodeSelection(anchor.from);
-        editor.view.dom.querySelectorAll('.lr-whiteboard-component-selected').forEach(element=>element.classList.remove('lr-whiteboard-component-selected'));
-        result.element.classList.add('lr-whiteboard-component-selected');result.element.scrollIntoView?.({block:'center',inline:'nearest'});setSelection(anchor);return;
-      }
-      const node=editor.state.doc.nodeAt(anchor.from),chain=editor.chain();
-      const atom=node?.isAtom&&!node.isText&&anchor.to===anchor.from+node.nodeSize;
-      if(atom)chain.setNodeSelection(anchor.from);else chain.setTextSelection({from:anchor.from,to:anchor.to});
-      if(editor.isEditable)chain.focus().scrollIntoView().run();
-      else{
-        chain.run();const dom=editor.view.dom,doc=dom.ownerDocument,range=doc.createRange();dom.focus({preventScroll:true});
-        const nodeDOM=atom?editor.view.nodeDOM(anchor.from):null;
-        if(nodeDOM)range.selectNode(nodeDOM);
-        else{const from=editor.view.domAtPos(anchor.from),to=editor.view.domAtPos(anchor.to);range.setStart(from.node,from.offset);range.setEnd(to.node,to.offset);}
-        const native=doc.getSelection();native?.removeAllRanges();native?.addRange(range);editor.commands.scrollIntoView();
-      }
+      if(!mounted.current)return;
+      const result=locateComment(editorRef.current,anchor);
+      setNotice(result.reason||'');
     };
     if(modeRef.current==='source'){changeMode('read');window.requestAnimationFrame(locating);}else if(selectedResource)window.requestAnimationFrame(locating);else locating();
   }
@@ -403,7 +388,7 @@ export function BrowserApp({host}:{host?:EditorHost}={}) {
       {documentActive&&mode==='source'&&<SourceEditor value={invalidSource?.value??draft.xml} error={invalidSource?.error} readOnly={!draft.document||controlsLocked} onChange={editSource}/>}
       <article className="browser-paper" hidden={!documentActive||mode==='source'}><Reader key={viewKey} xml={draft.xml} readOnly={!draft.document||mode!=='edit'||controlsLocked||!!invalidSource}
         assetURL={path=>draft.document?.assetURL(path)||'data:,'} readResourceText={async(path,signal)=>{if(!draft.document)throw new Error('示例没有本地资源');return(await draft.document.readResource(path,signal)).text;}}
-        comments={draft.review.comments} getReview={()=>current.current.review} getDraft={()=>pendingRef.current} onReady={setEditor} onError={setError}
+        comments={draft.review.comments} showResolved={showResolved} getReview={()=>current.current.review} getDraft={()=>pendingRef.current} onReady={setEditor} onError={setError}
         onSelection={setSelection} onEdit={(xml,comments,anchor)=>{if(modeRef.current==='source'||invalidSourceRef.current||busyRef.current||hostLockedRef.current)return;setPending(anchor);change(xml,{...current.current.review,comments},'在浏览器编辑正文');}}/>
       </article>{!documentActive&&selectedFile&&draft.document&&<ResourcePreview key={draft.document.handle.id+':'+selectedFile.path} file={selectedFile} handle={draft.document.handle} xml={draft.xml} review={draft.review} initialScroll={resourcePositions.current.get(draft.document.handle.id+':'+selectedFile.path)} onScrollChange={position=>resourcePositions.current.set(draft.document!.handle.id+':'+selectedFile.path,position)} access={{assetURL:resource=>draft.document!.assetURL(resource),readResource:(resource,signal)=>draft.document!.readResource(resource,signal),refresh:async()=>{await draft.document!.read();}}}/>}</section>
       <aside ref={commentsPanel} id={commentsId} tabIndex={-1} hidden={!commentsOpen} className="browser-comments" aria-label="评论与内容编辑"><div className="browser-comments-heading"><h2>评论 <span>{draft.review.comments.filter(comment=>comment.status==='open').length}</span></h2><button aria-label="关闭评论面板" onClick={()=>setCommentsOpen(false)}><X size={16}/></button></div>

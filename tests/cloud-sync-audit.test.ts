@@ -13,12 +13,12 @@ afterEach(async () => { await Promise.all(folders.splice(0).map(folder => rm(fol
 const timestamp = '2026-09-12T00:00:00.000Z';
 const xml = '<title id="docA">测试</title><whiteboard id="board_block" token="new_board"/>';
 const native = (extra: Partial<CloudComment> = {}): CloudComment => ({ id: 'cloud_comment', body: '意见', author: '飞书用户', createdAt: timestamp, status: 'open', quote: '白板', blockId: 'board_block', boardToken: 'new_board', whole: false, replies: [], ...extra });
-async function setup(initial: CloudComment[] = [], locals: ReviewComment[] = []) {
+async function setup(initial: CloudComment[] = [], locals: ReviewComment[] = [], documentXML=xml) {
   const folder = await mkdtemp(join(tmpdir(), 'review-cloud-audit-')); folders.push(folder);
-  const path = join(folder, 'draft.xml'); await writeFile(path, xml);
-  const file = await openLocalFile(path), review = createReview('draft.xml', xml); review.comments = locals;
-  await file.save(xml, review, (await file.read()).revision);
-  const remote: CloudSnapshot = { documentId: 'docA', xml, comments: structuredClone(initial) };
+  const path = join(folder, 'draft.xml'); await writeFile(path, documentXML);
+  const file = await openLocalFile(path), review = createReview('draft.xml', documentXML); review.comments = locals;
+  await file.save(documentXML, review, (await file.read()).revision);
+  const remote: CloudSnapshot = { documentId: 'docA', xml:documentXML, comments: structuredClone(initial) };
   const calls: string[] = [];
   const transport: CloudTransport = {
     async read() { return structuredClone(remote); },
@@ -38,6 +38,41 @@ async function setup(initial: CloudComment[] = [], locals: ReviewComment[] = [])
 }
 
 describe('cloud sync independent protocol and identity audit', () => {
+  it('keeps the exact quote attached when the cloud block reference names its callout ancestor', async () => {
+    const textXML='<title id="docA">测试</title><callout id="callout"><p id="paragraph">使用方法：用每节内容检查。</p></callout>';
+    const t=await setup([native({quote:'方法：用每节',blockId:'callout',boardToken:undefined,status:'resolved'})],[],textXML);
+    const paragraph=indexCloudBlocks(textXML).find(block=>block.id==='paragraph')!;
+    const first=await t.run(),again=await t.run();
+    expect(first.report.issues).toEqual([]);expect(again.report.issues).toEqual([]);
+    expect(first.snapshot.review!.comments[0].anchor).toEqual({from:paragraph.from+3,to:paragraph.from+9,quote:'方法：用每节',state:'attached'});
+    expect(again.snapshot.review!.comments[0]).toEqual(first.snapshot.review!.comments[0]);
+    expect(t.calls).toEqual([]);
+  });
+
+  it('repairs a saved broad import on sync while retaining refreshed raw data, replies and resolved status', async () => {
+    const textXML='<title id="docA">测试</title><callout id="callout"><p id="paragraph">检查标题层级与字号关系。</p></callout>';
+    const t=await setup([native({quote:'题层级与',blockId:'callout',boardToken:undefined,status:'resolved',raw:{generation:1},
+      replies:[{id:'remote-reply',body:'保留云端回复',author:'作者',createdAt:timestamp}]})],[],textXML);
+    const first=await t.run(),exact=first.snapshot.review!.comments[0].anchor;
+    const callout=indexCloudBlocks(textXML).find(block=>block.id==='callout')!;
+    await t.edit(review=>{review.comments[0].anchor={...exact,from:callout.from+1,to:callout.to-1};});
+    t.remote.comments[0].raw={generation:2,relation:{metadata:'preserve me'}};
+    const result=await t.run(),saved=await t.file.read();
+    expect(result.report.issues).toEqual([]);
+    expect(saved.review!.comments[0]).toEqual(first.snapshot.review!.comments[0]);
+    expect(saved.review!.cloudSync!.links[0].remote).toEqual(t.remote.comments[0]);
+    expect(saved.xml).toBe(textXML);expect(t.calls).toEqual([]);
+  });
+
+  it('does not accept a matching ancestor quote when the remote block identity changed', async () => {
+    const textXML='<title id="docA">测试</title><callout id="callout"><p id="paragraph">方法：用每节内容检查。</p></callout>';
+    const t=await setup([native({quote:'方法：用每节',blockId:'callout',boardToken:undefined})],[],textXML);
+    await t.run();t.remote.xml=textXML.replace('id="callout"','id="replacement"');
+    const result=await t.run();
+    expect(result.snapshot.review!.comments[0].anchor.state).toBe('unverified');
+    expect(result.report.issues.join()).toContain('位置待确认');expect(t.calls).toEqual([]);
+  });
+
   it('does not send an old component comment to a replacement board that now occupies the same block', async () => {
     const block = indexCloudBlocks(xml).find(b => b.id === 'board_block')!;
     const comment: ReviewComment = { id: 'old_node', body: '针对旧画板的意见', author: '我', createdAt: timestamp, status: 'open', replies: [],

@@ -6,6 +6,7 @@ import { EDITOR_ACTION_EVENT, LOCAL_EDITOR_ACTION_EVENT, EDITOR_TOOLBAR_EVENT, E
 import { validateBrowserReview } from '../../src/browser/review';
 import { DraftStore, safeDraftPath } from './drafts';
 import { openObsidianDirectory } from './store';
+import { assertDocxXML, assertDocxXMLFile } from './docxml-file';
 
 export const VIEW_TYPE='feishu-doc-local-xml';
 const SYNC_EVENT='feishu-doc-local:acquire-sync';
@@ -27,7 +28,9 @@ export class FeishuXMLView extends FileView {
   getViewType(){return VIEW_TYPE;}
   getDisplayText(){return this.file?.basename||'本地飞书文档';}
   getIcon(){return 'file-code';}
-  canAcceptExtension(extension:string){return extension.toLowerCase()==='xml';}
+  // Obsidian only supplies an extension here, not content. Accepting "xml"
+  // would let ordinary configuration files reuse this editor's current leaf.
+  canAcceptExtension(_extension:string){return false;}
   uses(path:string){return this.activePath===path||this.requestedPath===path;}
   documentPath(){return this.requestedPath||this.activePath;}
   private enqueue(action:()=>Promise<void>){const next=this.lifecycle.catch(()=>undefined).then(action);this.lifecycle=next;return next;}
@@ -35,6 +38,15 @@ export class FeishuXMLView extends FileView {
     // Invalidate older loads immediately, before waiting for the previous editor.
     const generation=++this.generation,path=file.path;this.requestedPath=path;
     return this.enqueue(async()=>{
+      try{await assertDocxXMLFile(this.app.vault,file);}
+      catch(error){
+        if(generation!==this.generation)return;
+        this.requestedPath=this.activePath;
+        if(this.activePath){this.file=this.app.vault.getFileByPath(this.activePath);new Notice('未切换文档：'+message(error));}
+        else this.showError(message(error));
+        return;
+      }
+      if(generation!==this.generation)return;
       try{await this.stopCurrent();}
       catch(error){if(generation===this.generation){this.requestedPath=this.activePath;if(this.activePath)this.file=this.app.vault.getFileByPath(this.activePath);new Notice('未切换文档：'+message(error));}throw error;}
       if(generation!==this.generation)return;
@@ -47,6 +59,7 @@ export class FeishuXMLView extends FileView {
         store=await openObsidianDirectory(this.app.vault,parentPath(path));
         const opened=await store.open(file.name),snapshot=await opened.read();
         if(generation!==this.generation||file.path!==path){store.dispose();return;}
+        assertDocxXML(snapshot.xml);
         const recovery=this.plugin.takeRecovery(this.leaf);
         session=await this.plugin.drafts.open(path,recovery);
         if(generation!==this.generation||this.plugin.isLocked(path)){session.close();store.dispose();return;}
@@ -61,7 +74,7 @@ export class FeishuXMLView extends FileView {
           openDocument:()=>this.plugin.choose(),createDocument:()=>this.plugin.newDocument(parentPath(path)),
           openSync:()=>this.plugin.openExtension('sync',path),openProjects:()=>this.plugin.openExtension('projects',path),
           mountToolbar:container=>this.plugin.mountToolbar(path,container,()=>this.session===ownedSession&&this.activePath===path&&this.requestedPath===path&&file.path===path),
-          persistRecovery:value=>ownedSession.write(value),onReady:controller=>{if(generation===this.generation&&this.session===ownedSession)this.controller=controller;}};
+          persistRecovery:value=>ownedSession.write(value),onReady:controller=>{if(this.session===ownedSession)this.controller=controller;}};
         const mount=this.contentEl.createDiv({cls:'feishu-doc-local-mount'});this.root=createRoot(mount);this.root.render(<BrowserApp host={host}/>);
       }catch(error){session?.close();store?.dispose();if(generation===this.generation){this.store=null;this.session=null;this.showError(message(error),file);}}
     });
@@ -93,7 +106,7 @@ export class FeishuXMLView extends FileView {
 }
 
 class XMLPicker extends FuzzySuggestModal<TFile> {
-  constructor(private plugin:FeishuDocLocalPlugin){super(plugin.app);this.setPlaceholder('选择库中的飞书 XML 文档');}
+  constructor(private plugin:FeishuDocLocalPlugin){super(plugin.app);this.setPlaceholder('选择飞书 XML 文档（打开前校验 DocxXML 子集）');}
   getItems(){return this.app.vault.getFiles().filter(file=>file.extension.toLowerCase()==='xml');}
   getItemText(file:TFile){return file.path;}
   onChooseItem(file:TFile){void this.plugin.open(file).catch(error=>new Notice(message(error)));}
@@ -164,8 +177,9 @@ export default class FeishuDocLocalPlugin extends Plugin {
   private views(){return this.app.workspace.getLeavesOfType(VIEW_TYPE).map(leaf=>leaf.view).filter((view):view is FeishuXMLView=>view instanceof FeishuXMLView);}
   async onload(){
     this.drafts.load(await this.loadData());this.registerView(VIEW_TYPE,leaf=>new FeishuXMLView(leaf,this));
-    try{this.registerExtensions(['xml'],VIEW_TYPE);}catch{new Notice('XML 已关联其他插件，可用“打开 XML 文档”命令打开。');}
-    this.addCommand({id:'open-xml',name:'打开 XML 文档',callback:()=>this.choose()});
+    // The public registration API is extension-wide. Keep default XML handling
+    // intact and opt into this view only after a user selects a DocxXML file.
+    this.addCommand({id:'open-xml',name:'打开飞书 XML 文档',callback:()=>this.choose()});
     this.addCommand({id:'new-xml',name:'新建本地文档',callback:()=>this.newDocument()});
     this.addCommand({id:'recover-draft',name:'恢复未保存草稿',callback:()=>this.showRecovery()});
     this.registerEvent(this.app.workspace.on('file-menu',(menu,file)=>{if(file instanceof TFile&&file.extension.toLowerCase()==='xml')menu.addItem(item=>item.setTitle('用本地飞书文档打开').setIcon('file-code').onClick(()=>void this.open(file).catch(error=>new Notice(message(error))))); }));
@@ -225,6 +239,7 @@ export default class FeishuDocLocalPlugin extends Plugin {
   isLocked(path:string){return this.locks.has(path);}
   takeRecovery(leaf:WorkspaceLeaf){const id=this.recoveryRequests.get(leaf);this.recoveryRequests.delete(leaf);return id;}
   async open(file:TFile,recovery?:string){
+    await assertDocxXMLFile(this.app.vault,file);
     const leaf=this.app.workspace.getLeaf(true);if(recovery)this.recoveryRequests.set(leaf,recovery);
     try{await leaf.setViewState({type:VIEW_TYPE,active:true,state:{file:file.path}});}finally{this.recoveryRequests.delete(leaf);}
   }
@@ -283,6 +298,7 @@ export default class FeishuDocLocalPlugin extends Plugin {
     if(this.drafts.list().some(record=>record.path===path&&!record.active))throw new Error('这篇文档还有未处理的恢复草稿，请先通过“恢复未保存草稿”查看并处理，再同步。');
     this.locks.add(path);const acquired:Lease[]=[];
     try{
+      await assertDocxXMLFile(this.app.vault,this.app.vault.getFileByPath(path)!);
       for(const view of this.views())if(view.uses(path))acquired.push(await view.acquireSync());
       await this.drafts.settled();
       if(this.drafts.list().some(record=>record.path===path))throw new Error('本地草稿仍未处理，未开始飞书同步。');

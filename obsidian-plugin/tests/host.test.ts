@@ -9,7 +9,7 @@ const state=vi.hoisted(()=>({roots:[] as Array<{host:EditorHost;unmount:ReturnTy
 vi.mock('obsidian',()=>{
   class TFile {path:string;name:string;basename:string;extension='xml';parent:{path:string};stat={size:5,mtime:1};constructor(path:string){this.path=path;this.name=path.split('/').at(-1)!;this.basename=this.name.replace(/\.\w+$/,'');this.extension=this.name.split('.').at(-1)!;this.parent={path:path.includes('/')?path.slice(0,path.lastIndexOf('/')):''};}}
   class FileView {app:any;contentEl:HTMLElement;leaf:any;file:any=null;constructor(leaf:any){this.leaf=leaf;this.app=leaf.app;this.contentEl=document.createElement('section');document.body.append(this.contentEl);}}
-  class Plugin {app:any;constructor(app:any){this.app=app;}saveData=vi.fn(async()=>{state.log.push('persist');});loadData=async()=>null;registerView(type:string,factory:any){this.app.workspace.factory=factory;}registerExtensions(){}addCommand(){}registerEvent(){} }
+  class Plugin {app:any;constructor(app:any){this.app=app;}saveData=vi.fn(async()=>{state.log.push('persist');});loadData=async()=>null;registerView(type:string,factory:any){this.app.workspace.factory=factory;}registerExtensions=vi.fn();addCommand=vi.fn();registerEvent(){} }
   class Modal {app:any;contentEl:HTMLElement;constructor(app:any){this.app=app;this.contentEl=document.createElement('section');document.body.append(this.contentEl);}open(){void(this as any).onOpen?.();}close(){(this as any).onClose?.();}}
   class FuzzySuggestModal extends Modal {setPlaceholder(){} }
   class Notice {constructor(message:string){state.notices.push(message);}}
@@ -59,6 +59,43 @@ beforeEach(async()=>{
 afterEach(()=>{document.body.replaceChildren();vi.restoreAllMocks();vi.unstubAllGlobals();});
 
 describe('Obsidian host lifecycle',()=>{
+  it('does not associate all XML files or accept them into an existing reader based on extension',()=>{
+    expect(plugin.registerExtensions).not.toHaveBeenCalled();expect(plugin.addCommand).toHaveBeenCalledWith(expect.objectContaining({id:'open-xml',name:'打开飞书 XML 文档'}));
+    const target=view();expect(target.canAcceptExtension('xml')).toBe(false);expect(target.canAcceptExtension('XML')).toBe(false);
+  });
+  it('rejects an ordinary XML before creating a view, capability or review file, but explicitly opens a DocxXML fragment',async()=>{
+    const ordinary=vault.add('notes/config.xml','<project><p>配置内容</p></project>');
+    await expect(plugin.open(ordinary)).rejects.toThrow('不是可识别');
+    expect(app.workspace.leaves).toHaveLength(0);expect(stores).toHaveLength(0);expect(vault.create).not.toHaveBeenCalled();expect(plugin.drafts.list()).toEqual([]);
+    expect(vault.texts.get(ordinary.path)).toBe('<project><p>配置内容</p></project>');
+    const article=vault.add('notes/article.xml','<p>无标题的已有正文</p>');await plugin.open(article);
+    expect(state.roots).toHaveLength(1);expect(state.roots[0].host.initial.snapshot.xml).toBe('<p>无标题的已有正文</p>');
+  });
+  it('blocks restored ordinary-XML leaves and refuses to replace an active draft with a configuration file',async()=>{
+    const ordinary=vault.add('notes/config.xml','<root/>');const restored=await load(ordinary);
+    expect(restored.contentEl.textContent).toContain('不是可识别');expect(state.roots).toHaveLength(0);expect(stores).toHaveLength(0);
+    const article=vault.add('notes/a.xml'),target=await load(article),controller=ready(undefined,sampleRecovery());target.file=ordinary;
+    await target.onLoadFile(ordinary);
+    expect(target.file).toBe(article);expect(target.documentPath()).toBe(article.path);expect(controller.prepareClose).not.toHaveBeenCalled();
+    expect(state.roots).toHaveLength(1);expect(state.roots[0].unmount).not.toHaveBeenCalled();expect(vault.create).not.toHaveBeenCalled();
+  });
+  it('rechecks the loaded snapshot if a selected DocxXML is replaced with ordinary XML during opening',async()=>{
+    const article=vault.add('notes/a.xml');state.factory=async directory=>{vault.texts.set(article.path,'<project/>');return createStore(directory);};
+    const target=await load(article);expect(target.contentEl.textContent).toContain('不是可识别');expect(state.roots).toHaveLength(0);
+    expect(plugin.drafts.list()).toEqual([]);expect(stores[0].dispose).toHaveBeenCalled();expect(vault.create).not.toHaveBeenCalled();
+  });
+  it('retains a late controller from the live article while an invalid file selection is being checked',async()=>{
+    const article=vault.add('notes/a.xml'),target=await load(article),host=state.roots[0].host,ordinary=vault.add('notes/config.xml','<root/>');
+    const read=deferred<string>(),started=deferred<void>(),originalRead=vault.read;
+    vault.read=async file=>{if(file===ordinary){started.resolve();return read.promise;}return originalRead(file);};
+    const selecting=target.onLoadFile(ordinary);await started.promise;const controller=ready(host,sampleRecovery());
+    read.resolve('<root/>');await selecting;await target.shutdown();
+    expect(controller.prepareClose).toHaveBeenCalledOnce();expect(plugin.drafts.list()).toHaveLength(1);
+    expect((await plugin.drafts.get(plugin.drafts.list()[0].id)).comment).toBe('未发评论');
+  });
+  it('refuses a sync lease for ordinary XML and releases its path lock after rejection',async()=>{
+    const ordinary=vault.add('notes/config.xml','<root/>');await expect(plugin.acquire(ordinary.path)).rejects.toThrow('不是可识别');expect(plugin.isLocked(ordinary.path)).toBe(false);
+  });
   it('serializes concurrent loads and disposes the stale capability without rendering it',async()=>{
     const a=vault.add('notes/a.xml'),b=vault.add('notes/b.xml'),pending=deferred<BrowserDocumentStore>(),started=deferred<void>(),aStore=createStore('notes');
     let first=true;state.factory=async directory=>{if(first){first=false;started.resolve();return pending.promise;}return createStore(directory);};

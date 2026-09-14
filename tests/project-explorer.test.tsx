@@ -44,9 +44,9 @@ describe('project resource navigation',()=>{
     fireEvent.click(screen.getByRole('button',{name:'文件'}));
     const editor=captured.editor!;
     fireEvent.click(screen.getByRole('button',{name:mode}));
-    // jsdom has no layout; let the real editor set its selection without asking
-    // jsdom to physically scroll it. Browser verification covers its screen position.
-    editor.view.setProps({handleScrollToSelection:()=>true});
+    const selection=editor.state.selection;
+    const quote=editor.view.dom.querySelector('.comment-highlight')!;
+    quote.scrollIntoView=vi.fn();
     const tree=within(screen.getByRole('complementary',{name:'项目资源'}));
     pageY=3400;
     fireEvent.click(tree.getByRole('button',{name:'note.txt'}));
@@ -59,9 +59,9 @@ describe('project resource navigation',()=>{
     expect(screen.queryByRole('region',{name:'资源预览'})).toBeNull();
     expect(editor.view.dom.closest('[hidden]')).toBeNull();
     expect((screen.getByLabelText('当前文件路径') as HTMLInputElement).value).toBe('/project/article.xml');
-    expect(editor.state.selection.from).toBe(1);
-    expect(editor.state.selection.to).toBe(3);
-    if(mode==='只读')expect(document.getSelection()?.toString()).toBe('原文');
+    expect(editor.state.selection).toBe(selection);
+    expect(quote.textContent).toBe('原文');expect(quote.scrollIntoView).toHaveBeenCalled();
+    expect(screen.queryByLabelText('评论内容')).toBeNull();
   });
   it('keeps the real editor, undo and comment draft while switching XML, current JSON and resource previews',async()=>{
     render(<App/>);await waitFor(()=>expect(captured.editor).not.toBeNull());

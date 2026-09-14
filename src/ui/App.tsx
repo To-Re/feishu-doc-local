@@ -11,7 +11,9 @@ import { WhiteboardEditor } from './WhiteboardEditor';
 import { ProjectExplorer, ResourcePreview } from './ProjectExplorer';
 import { DocumentOutline, scrollToHeading } from './DocumentOutline';
 import { projectFiles } from '../core/project-files';
+import { locateComment } from './comment-navigation';
 import { locateWhiteboardComponent } from './whiteboard-comments';
+import { normalizeImportedCloudAnchors } from '../core/cloud-blocks';
 import { readWhiteboardSource } from '../core/whiteboard-source';
 import type { CloudSyncReport } from '../core/cloud-types';
 import { CloudSync } from './CloudSync';
@@ -189,7 +191,7 @@ export function App() {
       setContentPreviewOpen(false);setContentPreview(null);setContentError('');setContentMessage('');
       setRestoreOpen(false);setRestorePreview(null);setRestoreError('');
     }
-    const review = snapshot.review || createReview(handle.name,snapshot.xml);
+    const review = normalizeImportedCloudAnchors(snapshot.review || createReview(handle.name,snapshot.xml),snapshot.xml);
     const changedOutside = review.document.xml !== snapshot.xml;
     const nextReview = changedOutside ? {...review,comments:invalidateAnchors(review.comments),document:{...review.document,xml:snapshot.xml}} : review;
     setDraft({handle,xml:snapshot.xml,review:nextReview,revision:snapshot.revision,version:0,savedVersion:0});
@@ -547,37 +549,8 @@ export function App() {
     catch { if(mounted.current)setNotice(kind==='file'?'复制失败，可选中文件路径后手动复制。':'复制失败，可从“打开飞书文档”链接手动复制地址。'); }
   }
   function locate(anchor:Anchor) {
-    if(anchor.state!=='attached'||!editor)return;
-    if(anchor.target) {
-      const result=locateWhiteboardComponent(editor,anchor);
-      if(!result.element){setNotice(result.reason||'白板组件位置待确认，评论已保留。');return;}
-      editor.commands.setNodeSelection(anchor.from);
-      editor.view.dom.querySelectorAll('.lr-whiteboard-component-selected').forEach(element=>element.classList.remove('lr-whiteboard-component-selected'));
-      result.element.classList.add('lr-whiteboard-component-selected');
-      result.element.scrollIntoView({block:'center',inline:'nearest'});
-      setSelection(anchor);setComponentSelected(true);setReviewOpen(false);return;
-    }
-    const node=editor.state.doc.nodeAt(anchor.from), chain=editor.chain();
-    const atom=node?.isAtom&&!node.isText&&anchor.to===anchor.from+node.nodeSize;
-    if(atom)chain.setNodeSelection(anchor.from);
-    else chain.setTextSelection({from:anchor.from,to:anchor.to});
-    if(editor.isEditable)chain.focus().scrollIntoView().run();
-    else {
-      chain.run();
-      // ProseMirror does not take focus in read-only mode. Establish the native
-      // selection as well, so scrolling and visible highlighting use this quote.
-      const dom=editor.view.dom, document=dom.ownerDocument, range=document.createRange();
-      dom.focus({preventScroll:true});
-      const nodeDOM=atom?editor.view.nodeDOM(anchor.from):null;
-      if(nodeDOM)range.selectNode(nodeDOM);
-      else {
-        const from=editor.view.domAtPos(anchor.from),to=editor.view.domAtPos(anchor.to);
-        range.setStart(from.node,from.offset);range.setEnd(to.node,to.offset);
-      }
-      const nativeSelection=document.getSelection();
-      nativeSelection?.removeAllRanges();nativeSelection?.addRange(range);
-      editor.commands.scrollIntoView();
-    }
+    const result=locateComment(editor,anchor);
+    if(!result.located){setNotice(result.reason||'引用位置待确认，评论已保留。');return;}
     setReviewOpen(false);
   }
   function navigate(path:string,anchor?:Anchor) {
@@ -712,7 +685,7 @@ export function App() {
         <ProjectExplorer key={draft.handle.id} open={treeOpen&&navigationTab==='files'} handle={draft.handle} xml={draft.xml} review={draft.review} selected={selectedFile.path} onSelect={file=>navigate(file.path)} dirty={!saved||!!xmlDraft}/>
       </aside>
       <div className="document-stage"><section hidden={!documentActive||mode==='source'} className={'paper '+(mode==='read'?'read-mode':'')} onClick={event=>{if((event.target as Element).closest('.document-content'))revealSelectedSource();}}>
-      <Reader key={draft.handle.id} xml={draft.xml} readOnly={mode!=='edit'||!!xmlDraft||workspaceLocked} assetURL={p=>'/api/asset?id='+encodeURIComponent(draft.handle.id)+'&path='+encodeURIComponent(p)} comments={draft.review.comments} getReview={()=>current.current!.review} getDraft={()=>pendingRef.current} onReady={setEditor} onError={setError} onSelection={selected} onEdit={(xml,comments,anchor)=>{if(mode==='source'||xmlDraftRef.current)return;const d=current.current!;setPending(anchor);changed(xml,{...d.review,comments,operations:[...d.review.operations.filter(o=>o.id!=='current-edit'),{id:'current-edit',type:'document.edit',author:'我',at:new Date().toISOString(),summary:'在浏览器编辑正文；与 baselineXML 比较可查看完整改动'}]});}}/>
+      <Reader key={draft.handle.id} xml={draft.xml} readOnly={mode!=='edit'||!!xmlDraft||workspaceLocked} assetURL={p=>'/api/asset?id='+encodeURIComponent(draft.handle.id)+'&path='+encodeURIComponent(p)} comments={draft.review.comments} showResolved={showResolved} getReview={()=>current.current!.review} getDraft={()=>pendingRef.current} onReady={setEditor} onError={setError} onSelection={selected} onEdit={(xml,comments,anchor)=>{if(mode==='source'||xmlDraftRef.current)return;const d=current.current!;setPending(anchor);changed(xml,{...d.review,comments,operations:[...d.review.operations.filter(o=>o.id!=='current-edit'),{id:'current-edit',type:'document.edit',author:'我',at:new Date().toISOString(),summary:'在浏览器编辑正文；与 baselineXML 比较可查看完整改动'}]});}}/>
 
     </section><section hidden={!documentActive||mode!=='source'}><SourceEditor key={draft.handle.id} value={xmlDraft?.value??draft.xml} error={xmlDraft?.error} readOnly={mode!=='source'||workspaceLocked||opening} onChange={editSource}/></section>{!documentActive&&<ResourcePreview key={draft.handle.id+':'+selectedFile.path} file={selectedFile} handle={draft.handle} review={draft.review} xml={draft.xml} initialScroll={positions.current.get(draft.handle.id+':'+selectedFile.path)?.preview} onScrollChange={preview=>{const key=draft.handle.id+':'+selectedFile.path;positions.current.set(key,{page:positions.current.get(key)?.page||0,preview});}}/>}</div>
     <aside id="review-panel" ref={sidebar} tabIndex={-1} onBlur={event=>{if(narrow&&event.relatedTarget&&!event.currentTarget.contains(event.relatedTarget as Node))setReviewOpen(false);}} onKeyDown={event=>{if(event.key==='Escape'&&narrow){event.stopPropagation();closeReview();}}} aria-label="评论与内容编辑" className={"review-sidebar "+(reviewOpen?"review-open":"")}><div className="sidebar-heading"><h2>评论</h2><button ref={reviewCloseButton} className="close-review" aria-label="关闭评论面板" onClick={closeReview}><X size={17}/></button></div>{!documentActive&&<p className="sidebar-intro">{`以下评论仍属于正文 ${draft.handle.name}。点击 XML 可返回编辑。`}</p>}

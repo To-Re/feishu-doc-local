@@ -18,10 +18,10 @@ export function locateWhiteboardComponent(editor: Editor, anchor: Anchor): White
     (node.type.name !== 'protectedBlock' && node.type.name !== 'protectedInline'))
     return { element: null, reason: '原评论位置已不再是白板，请重新确认。' };
   const dom = editor.view.nodeDOM(anchor.from);
-  if (!(dom instanceof Element) || !editor.view.dom.contains(dom))
+  if (dom?.nodeType !== 1 || !editor.view.dom.contains(dom))
     return { element: null, reason: '白板预览尚未就绪，请稍后再定位。' };
-
-  const boards = [ ...(dom.hasAttribute('data-review-board') ? [dom] : []), ...dom.querySelectorAll('[data-review-board]') ];
+  const rendered = dom as Element;
+  const boards = [ ...(rendered.hasAttribute('data-review-board') ? [rendered] : []), ...rendered.querySelectorAll('[data-review-board]') ];
   if (!boards.length) return { element: null, reason: '白板预览尚未就绪或暂不支持节点定位，请稍后重试。' };
   const matchingBoards = boards.filter(board => board.getAttribute('data-review-board') === anchor.target!.board);
   if (!matchingBoards.length) return { element: null, reason: '白板来源已变化，这条节点评论需要重新确认。' };
@@ -41,12 +41,17 @@ export function locateWhiteboardComponent(editor: Editor, anchor: Anchor): White
 }
 
 /** Update presentation only; no ProseMirror transaction or source XML change is needed. */
-export function applyWhiteboardComponentHighlights(editor: Editor, comments: readonly ReviewComment[]): void {
+export function applyWhiteboardComponentHighlights(editor: Editor, comments: readonly ReviewComment[], showResolved = false): void {
   if (editor.isDestroyed) return;
   for (const element of editor.view.dom.querySelectorAll('.lr-whiteboard-component-commented'))
     element.classList.remove('lr-whiteboard-component-commented');
   for (const comment of comments) {
-    if (comment.status !== 'open' || comment.anchor.state !== 'attached' || !comment.anchor.target) continue;
+    if ((!showResolved && comment.status !== 'open') || comment.anchor.state !== 'attached' || !comment.anchor.target) continue;
     locateWhiteboardComponent(editor, comment.anchor).element?.classList.add('lr-whiteboard-component-commented');
+  }
+  for (const element of editor.view.dom.querySelectorAll('[data-comment-navigation]')) {
+    if (element.classList.contains('lr-whiteboard-component-commented')) continue;
+    element.classList.remove('lr-whiteboard-component-selected');
+    element.removeAttribute('data-comment-navigation');
   }
 }
