@@ -53,8 +53,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 5577,
-      "sha256": "c0da5d2f1329eb45c4aa0b404512841bc4e0ab66197528ae9282b01797513ba1"
+      "bytes": 5570,
+      "sha256": "913f45dd32609069c224da42e14016b70b7f06f621bd4eaf5f73794782c55fcf"
     },
     {
       "path": "SECURITY.md",
@@ -163,8 +163,8 @@
     },
     {
       "path": "docs/assets-and-attribution.md",
-      "bytes": 11261,
-      "sha256": "dc3a4354287799e873a208b934a16f0f9b18bbaf449233af0cce23ced94f1c40"
+      "bytes": 11479,
+      "sha256": "9c458ad59ed1297ec57ac28efa1f18f90f5d8fcaa46e4b0e4aaff58350244f67"
     },
     {
       "path": "docs/browser-version.md",
@@ -185,6 +185,11 @@
       "path": "docs/images/editor-review.jpg",
       "bytes": 72958,
       "sha256": "8f456c94ab2a8957007cf3852634f511f4dc7288b940ada2f76919c297ad49dd"
+    },
+    {
+      "path": "docs/images/obsidian-table.jpg",
+      "bytes": 81636,
+      "sha256": "9ae952a36b10ccad92f5cefc74cdbe3d04389fe95261d8605f8038012e3d28a5"
     },
     {
       "path": "docs/images/sync-preview.jpg",

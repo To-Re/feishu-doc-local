@@ -23,7 +23,9 @@
 
 ![浏览器：S07 · 表格、列宽与合并](docs/images/browser-table.jpg)
 
-<!-- 待真实 Obsidian GUI 截图落盘后，在此展示同一公开样稿的「S07 · 表格、列宽与合并」；预期路径：docs/images/obsidian-table.jpg。 -->
+同一份样稿在 Obsidian 中渲染，正文、目录和评论共用本地文件：
+
+![Obsidian：S07 · 表格、列宽与合并](docs/images/obsidian-table.jpg)
 
 正文同步先预览两端差异，再确认拉取或推送：
 
