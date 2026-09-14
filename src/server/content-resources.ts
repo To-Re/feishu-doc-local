@@ -3,8 +3,8 @@ import {constants} from 'node:fs';
 import {mkdir,open,realpath,lstat,rename} from 'node:fs/promises';
 import {dirname,resolve,relative,extname,sep} from 'node:path';
 import {contentNodes,type ContentNode} from '../core/content-xml';
-import type {ResourceManifest,ResourceMapping} from '../core/types';
-import {localResourcePath} from '../core/project-files';
+import type {ResourceManifest,ResourceMapping,Snapshot} from '../core/types';
+import {localResourcePath,projectFiles} from '../core/project-files';
 import {isResourceMapping} from '../core/resources';
 import {FileError} from './files';
 
@@ -53,6 +53,31 @@ export async function localAssetHashes(xml:string,path:string):Promise<Record<st
     if(node.tag!=='whiteboard')await visit(node.children);
   }}
   await visit(contentNodes(xml));return result;
+}
+
+/** Historical references remain in place. Record their bytes, including a missing-file marker. */
+export async function snapshotResourceHashes(path:string,snapshot:Pick<Snapshot,'xml'|'review'>):Promise<Record<string,string|null>> {
+  const base=await realpath(dirname(path)),result:Record<string,string|null>=Object.create(null);
+  const validatePaths=(nodes:(ContentNode|string)[])=>{for(const node of nodes){
+    if(typeof node==='string')continue;
+    if(['img','source','whiteboard'].includes(node.tag)&&node.attrs.path&&(!node.attrs.path.startsWith('@')||!localResourcePath(node.attrs.path.slice(1))))
+      throw new FileError('快照正文包含不安全的本地资源路径。','INVALID_PATH',400);
+    if(node.tag!=='whiteboard')validatePaths(node.children);
+  }};validatePaths(contentNodes(snapshot.xml));
+  const resources=projectFiles({name:path.split(sep).at(-1)!,path,reviewPath:path.replace(/\.xml$/i,'.review.json')},snapshot.xml,snapshot.review).filter(item=>item.kind==='resource');
+  for(const resource of resources){
+    const relativePath=localResourcePath(resource.path);
+    if(!relativePath||relativePath!==resource.path)throw new FileError('快照资源路径不安全。','INVALID_PATH',400);
+    try{
+      let component=base;
+      for(const part of relativePath.split('/')){
+        component=resolve(component,part);
+        if((await lstat(component)).isSymbolicLink())throw new FileError('快照资源不能使用软链接。','INVALID_PATH',400);
+      }
+      result[relativePath]=hash(await resourceBytes(base,resolve(base,relativePath)));
+    }catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')result[relativePath]=null;else throw error;}
+  }
+  return result;
 }
 
 /** Cache only resources explicitly present in the fetched XML, under a fresh private directory. */

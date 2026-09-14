@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { readFile, realpath, stat } from 'node:fs/promises';
-import { extname, isAbsolute, resolve, sep } from 'node:path';
+import { dirname, extname, isAbsolute, resolve, sep } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -14,6 +14,7 @@ import type { ReviewProject } from '../core/projects';
 import { createReviewProject } from './project-create';
 import { bindReviewProject } from './project-bind';
 import { prepareContent, applyContent, type PreparedContent } from './content-sync';
+import { prepareContentRestore, applyContentRestore, type PreparedContentRestore } from './content-history';
 
 const mime: Record<string,string> = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.gif':'image/gif','.webp':'image/webp','.avif':'image/avif','.svg':'image/svg+xml','.woff2':'font/woff2','.woff':'font/woff','.ttf':'font/ttf','.ico':'image/x-icon'};
 interface Options {
@@ -102,6 +103,12 @@ export async function createLocalServer(staticRoot: string, initialPath: string,
     return {session:await session(handle),snapshot,projects:await options.projects!.store.list(),...(warning?{warning}:{})};
   }
   const previews=new Map<string,PreparedContent>();
+  const restorePreviews=new Map<string,{projectId:string;prepared:PreparedContentRestore}>();
+  async function contentHistoryRoot(){
+    return options.projectSettings
+      ?resolve(dirname((await options.projectSettings.read()).path),'sync-history')
+      :options.projects!.historyRoot;
+  }
   let creating=false;
   let openingRequests=0;
   let picking = false;
@@ -146,7 +153,7 @@ export async function createLocalServer(staticRoot: string, initialPath: string,
           }
         }
         if(options.projects&&url.pathname==='/api/projects'){
-          const {store,transport,historyRoot}=options.projects;
+          const {store,transport}=options.projects;
           if(request.method==='GET'){
             const projects=await store.list();
             json(response,{projects,activeProjectId:projects.find(p=>p.localPath===current.path)?.id,cloudAvailable:!!transport});return;
@@ -156,15 +163,39 @@ export async function createLocalServer(staticRoot: string, initialPath: string,
             if(creating||openingRequests||syncing.size||picking)throw new FileError('正在创建、关联或同步项目，请等待本次完成。','PROJECT_BUSY');
             creating=true;
             try{
-              const result=await createReviewProject(input,store,transport,historyRoot,{adoptPublished:true});
+              const result=await createReviewProject(input,store,transport,await contentHistoryRoot(),{adoptPublished:true});
               json(response,await openedProject(result.project,result.warning));
             }finally{creating=false;}
             return;
           }
         }
+        const restoreRoute=/^\/api\/projects\/([A-Za-z0-9_-]+)\/(restore-preview|restore)$/.exec(url.pathname);
+        if(options.projects&&restoreRoute&&request.method==='POST'){
+          const input=await body(request),{store}=options.projects;
+          const project=await store.get(restoreRoute[1]);
+          if(!project)throw new FileError('项目不存在。','NOT_FOUND',404);
+          if(creating||openingRequests||picking)throw new FileError('请等待当前项目操作完成，再恢复快照。','PROJECT_BUSY');
+          const handle=await openDocument(project.localPath),file=documents.get(handle.id)!;
+          if(creating||openingRequests||picking)throw new FileError('请等待当前项目操作完成，再恢复快照。','PROJECT_BUSY');
+          if(syncing.has(file.path))throw new FileError('当前稿件正在同步或恢复，请等待完成。','CLOUD_BUSY');
+          if(restoreRoute[2]==='restore-preview'){
+            if(typeof input.revision!=='string'||Object.keys(input).some(key=>key!=='revision'))throw new FileError('快照预览参数不正确。','INVALID_REQUEST',400);
+            const prepared=await prepareContentRestore(file,input.revision,await contentHistoryRoot(),[options.projects.historyRoot,resolve(dirname(file.path),'.review-sync-history')]);
+            for(const [key,value] of restorePreviews)if(Date.parse(value.prepared.view.expiresAt)<=Date.now())restorePreviews.delete(key);
+            if(restorePreviews.size>=100)restorePreviews.delete(restorePreviews.keys().next().value!);
+            restorePreviews.set(prepared.view.id,{projectId:project.id,prepared});json(response,prepared.view);return;
+          }
+          if(typeof input.previewId!=='string'||Object.keys(input).some(key=>key!=='previewId'))throw new FileError('恢复参数不正确。','INVALID_REQUEST',400);
+          const entry=restorePreviews.get(input.previewId);
+          if(!entry||entry.projectId!==project.id||entry.prepared.view.localPath!==file.path)throw new FileError('恢复预览不存在或属于其他文档，请重新预览。','CONFLICT');
+          restorePreviews.delete(input.previewId);syncing.add(file.path);
+          try{json(response,await applyContentRestore(file,entry.prepared,await contentHistoryRoot(),[options.projects.historyRoot,resolve(dirname(file.path),'.review-sync-history')]));}
+          finally{syncing.delete(file.path);}
+          return;
+        }
         const projectRoute=/^\/api\/projects\/([A-Za-z0-9_-]+)\/(open|preview|sync|bind)$/.exec(url.pathname);
         if(options.projects&&projectRoute&&request.method==='POST'){
-          const {store,transport,historyRoot}=options.projects;
+          const {store,transport}=options.projects;
           const input=await body(request);
           if(projectRoute[2]==='bind'){
             if(creating||openingRequests||syncing.size||picking)throw new FileError('项目正在创建、切换或同步，请等待完成后再关联。','PROJECT_BUSY');
@@ -175,7 +206,7 @@ export async function createLocalServer(staticRoot: string, initialPath: string,
               if(!project)throw new FileError('项目不存在。','NOT_FOUND',404);
               bindingPath=project.localPath;syncing.add(bindingPath);
               const handle=await openDocument(project.localPath),file=documents.get(handle.id)!;
-              const result=await bindReviewProject(input,project,file,store,transport,historyRoot,{adoptPublished:true});
+              const result=await bindReviewProject(input,project,file,store,transport,await contentHistoryRoot(),{adoptPublished:true});
               previews.clear();
               json(response,await openedProject(result.project,result.warning));
             }finally{if(bindingPath)syncing.delete(bindingPath);creating=false;}
@@ -206,7 +237,7 @@ export async function createLocalServer(staticRoot: string, initialPath: string,
           const prepared=previews.get(input.previewId);
           if(!prepared||prepared.view.projectId!==project.id)throw new FileError('预览不存在或属于其他项目，请重新预览。','CONFLICT');
           previews.delete(input.previewId);syncing.add(file.path);
-          try{json(response,await applyContent(file,project,prepared,transport,historyRoot,{adoptPublished:input.adoptPublished===true}));}
+          try{json(response,await applyContent(file,project,prepared,transport,await contentHistoryRoot(),{adoptPublished:input.adoptPublished===true}));}
           finally{syncing.delete(file.path);}
           return;
         }

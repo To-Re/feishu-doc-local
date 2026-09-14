@@ -17,10 +17,11 @@ import type { CloudSyncReport } from '../core/cloud-types';
 import { CloudSync } from './CloudSync';
 import { Projects, ProjectActionButton, readProjectPreference, writeProjectPreference, type ProjectSettings } from './Projects';
 import { ContentSync, ContentSyncControls } from './ContentSync';
+import { HistoryRestore } from './HistoryRestore';
 import { BindCloud } from './BindCloud';
 import { OpenDocumentDialog } from './OpenDocumentDialog';
 import { ProjectCreationNotice } from './ProjectCreationNotice';
-import type { BindProjectInput, ContentPreview, ContentSyncResult, CreateProjectInput, ProjectList, ProjectOpenResult, ReviewProject, SyncDirection } from '../core/projects';
+import type { BindProjectInput, ContentPreview, ContentRestorePreview, ContentRestoreResult, ContentSyncResult, CreateProjectInput, ProjectList, ProjectOpenResult, ReviewProject, SyncDirection } from '../core/projects';
 import './document-paths.css';
 import type { SourceDraftSnapshot } from './source-drafts';
 
@@ -76,12 +77,17 @@ export function App() {
   const [creatingProject,setCreatingProject] = useState(false);
   const [bindingProject,setBindingProject] = useState<ReviewProject|null>(null);
   const [projectRestoreNeeded,setProjectRestoreNeeded] = useState(false);
-  const [workspaceTask,setWorkspaceTask] = useState<'project'|'content'|'pick'|null>(null);
+  const [workspaceTask,setWorkspaceTask] = useState<'project'|'content'|'restore'|'pick'|null>(null);
   const [direction,setDirection] = useState<SyncDirection>('pull');
+  const [contentPreviewOpen,setContentPreviewOpen] = useState(false);
   const [contentPreview,setContentPreview] = useState<{value:ContentPreview;handleId:string;revision:string;version:number}|null>(null);
   const [previewExpired,setPreviewExpired] = useState(false);
   const [contentError,setContentError] = useState('');
   const [contentMessage,setContentMessage] = useState('');
+  const [restoreOpen,setRestoreOpen] = useState(false);
+  const [restorePreview,setRestorePreview] = useState<{value:ContentRestorePreview;projectId:string;handleId:string;revision:string;version:number}|null>(null);
+  const [restoreExpired,setRestoreExpired] = useState(false);
+  const [restoreError,setRestoreError] = useState('');
   const [pathDialog,setPathDialog] = useState(false);
   const [path,setPath] = useState('');
   const [pathError,setPathError] = useState('');
@@ -183,7 +189,8 @@ export function App() {
       if(current.current)navigation.current={id:handle.id,path:handle.name};
       setSelectedPath(null);
       setSyncReport(null);setSyncError('');
-      setContentPreview(null);setContentError('');setContentMessage('');
+      setContentPreviewOpen(false);setContentPreview(null);setContentError('');setContentMessage('');
+      setRestoreOpen(false);setRestorePreview(null);setRestoreError('');
     }
     const review = snapshot.review || createReview(handle.name,snapshot.xml);
     const changedOutside = review.document.xml !== snapshot.xml;
@@ -270,6 +277,13 @@ export function App() {
     setPreviewExpired(false);const timeout=setTimeout(()=>setPreviewExpired(true),Math.min(remaining,2147483647));
     return()=>clearTimeout(timeout);
   },[contentPreview]);
+  useEffect(()=>{
+    if(!restorePreview){setRestoreExpired(false);return;}
+    const remaining=Date.parse(restorePreview.value.expiresAt)-Date.now();
+    if(!Number.isFinite(remaining)||remaining<=0){setRestoreExpired(true);return;}
+    setRestoreExpired(false);const timeout=setTimeout(()=>setRestoreExpired(true),Math.min(remaining,2147483647));
+    return()=>clearTimeout(timeout);
+  },[restorePreview]);
   async function openDocument(native:boolean) {
     if(syncingRef.current||savingRef.current)return;
     const d=current.current;
@@ -358,9 +372,9 @@ export function App() {
     const live=current.current;
     return !!live&&live.handle.id===sent.handle.id&&live.version===sent.version&&live.revision===sent.revision&&!hasCommentDraft();
   }
-  async function projectTask(kind:'project'|'content'|'pick',action:(sent:Draft)=>Promise<boolean>):Promise<boolean> {
+  async function projectTask(kind:'project'|'content'|'restore'|'pick',action:(sent:Draft)=>Promise<boolean>):Promise<boolean> {
     const start=current.current;
-    const showError=kind==='content'?setContentError:setProjectError;
+    const showError=kind==='content'?setContentError:kind==='restore'?setRestoreError:setProjectError;
     if(!start||syncingRef.current||savingRef.current||opening||blocked.current)return false;
     if(hasCommentDraft()){showError(draftMessage('请先发送或取消评论、回复，应用或还原公式、白板修改，再继续。'));return false;}
     syncingRef.current=true;setWorkspaceTask(kind);showError('');
@@ -368,6 +382,7 @@ export function App() {
     editor?.setEditable(false);
     try {
       if(!(await save())){showError('本地修改尚未保存，请先处理保存问题。');return false;}
+      if(!mounted.current)return false;
       const sent=current.current;
       if(!sent||sent.handle.id!==start.handle.id||sent.version!==sent.savedVersion||hasCommentDraft()){
         showError('保存期间又有新输入，已保留，请完成保存后再继续。');return false;
@@ -396,7 +411,8 @@ export function App() {
     setProjectRestoreNeeded(false);
     setProjects(previous=>({projects:result.projects,activeProjectId:result.session.project?.id,cloudAvailable:previous?.cloudAvailable||false}));refreshProjects();
     if(result.session.project)setDirection(result.session.project.defaultDirection);
-    accept(result.session.document,result.snapshot);setContentPreview(null);setContentError('');setContentMessage('');
+    accept(result.session.document,result.snapshot);setContentPreviewOpen(false);setContentPreview(null);setContentError('');setContentMessage('');
+    setRestoreOpen(false);setRestorePreview(null);setRestoreError('');
     setNotice(created?'':result.warning||'');return true;
   }
   async function switchProject(id:string) {
@@ -455,7 +471,8 @@ export function App() {
   }
   async function previewContent(selectedDirection:SyncDirection=direction) {
     const project=apiRef.current?.project;
-    if(!project?.cloud||project.localPath!==current.current?.handle.path)return;
+    if(!project?.cloud||project.localPath!==current.current?.handle.path||syncingRef.current||savingRef.current||opening||blocked.current)return;
+    setDirection(selectedDirection);setContentPreviewOpen(true);setContentPreview(null);setContentMessage('');setContentError('');
     await projectTask('content',async sent=>{
       const value=await api<ContentPreview>('/api/projects/'+encodeURIComponent(project.id)+'/preview','POST',{revision:sent.revision,direction:selectedDirection});
       if(!mounted.current)return false;
@@ -473,31 +490,49 @@ export function App() {
     if(result.project.id!==project.id)throw new Error('同步回执与当前项目不一致，请重新打开项目。');
     const nextSession={...apiRef.current!,project:result.project,...(result.project.cloud?{cloud:{...result.project.cloud,localPath:result.project.localPath}}:{cloud:undefined})};
     apiRef.current=nextSession;setSession(nextSession);setProjects(previous=>previous?{...previous,projects:previous.projects.map(item=>item.id===project.id?result.project:item)}:previous);
-    accept(sent.handle,result.snapshot);setContentPreview(null);setContentMessage([result.summary,...result.warnings].join(' '));return true;
-  }
-  async function syncContent(selectedDirection:SyncDirection) {
-    const project=apiRef.current?.project;
-    if(!project?.cloud||project.localPath!==current.current?.handle.path)return;
-    setDirection(selectedDirection);setContentPreview(null);
-    await projectTask('content',async sent=>{
-      const value=await api<ContentPreview>('/api/projects/'+encodeURIComponent(project.id)+'/preview','POST',{revision:sent.revision,direction:selectedDirection});
-      if(!mounted.current)return false;
-      if(!unchanged(sent))throw new Error('同步准备期间又有新输入，已保留当前稿件，请重试。');
-      if(value.projectId!==project.id||value.direction!==selectedDirection)throw new Error('同步目标发生变化，请重新选择项目。');
-      if(value.status==='conflict'){
-        setContentPreview({value,handleId:sent.handle.id,revision:sent.revision,version:sent.version});return true;
-      }
-      if(value.status==='equal'){setContentMessage('两端没有待同步的内容。');return true;}
-      return applyPreparedContent(sent,project,value);
-    });
+    accept(sent.handle,result.snapshot);setContentPreviewOpen(false);setContentPreview(null);setContentMessage([result.summary,...result.warnings].join(' '));return true;
   }
   async function executeContent() {
     const preview=contentPreview,project=apiRef.current?.project,d=current.current;
-    if(!preview||!project||!d||preview.value.status==='equal')return;
-    if(preview.value.projectId!==project.id||preview.handleId!==d.handle.id||preview.version!==d.version||preview.revision!==d.revision||!Number.isFinite(Date.parse(preview.value.expiresAt))||Date.parse(preview.value.expiresAt)<=Date.now()){
+    if(!contentPreviewOpen||!preview||!project||!d||preview.value.status==='equal'||syncingRef.current)return;
+    const matches=(sent:Draft)=>preview.value.projectId===apiRef.current?.project?.id&&preview.value.direction===direction&&preview.handleId===sent.handle.id&&preview.version===sent.version&&preview.revision===sent.revision&&Number.isFinite(Date.parse(preview.value.expiresAt))&&Date.parse(preview.value.expiresAt)>Date.now();
+    if(previewExpired||!matches(d)){
       setContentError('当前文档已改变或预览已过期，请重新预览后再同步。');return;
     }
-    await projectTask('content',sent=>applyPreparedContent(sent,project,preview.value));
+    const completed=await projectTask('content',sent=>{
+      if(!matches(sent))throw new Error('当前文档已改变或预览已过期，请重新预览后再同步。');
+      return applyPreparedContent(sent,project,preview.value);
+    });
+    if(!completed&&mounted.current)setPreviewExpired(true);
+  }
+
+  async function previewRestore() {
+    const project=apiRef.current?.project;
+    if(!project||project.localPath!==current.current?.handle.path||projectRestoreNeeded||syncingRef.current||savingRef.current||opening||blocked.current)return;
+    setRestoreOpen(true);setRestorePreview(null);setRestoreError('');setContentPreviewOpen(false);setContentPreview(null);setContentMessage('');
+    await projectTask('restore',async sent=>{
+      const value=await api<ContentRestorePreview>('/api/projects/'+encodeURIComponent(project.id)+'/restore-preview','POST',{revision:sent.revision});
+      if(!mounted.current)return false;
+      if(!unchanged(sent))throw new Error('读取快照期间又有新输入，已保留当前稿件，请重新预览。');
+      if(value.localPath!==sent.handle.path||apiRef.current?.project?.id!==project.id)throw new Error('快照与当前文档不一致，请重新选择项目。');
+      setRestorePreview({value,projectId:project.id,handleId:sent.handle.id,revision:sent.revision,version:sent.version});return true;
+    });
+  }
+  async function executeRestore() {
+    const preview=restorePreview,project=apiRef.current?.project,d=current.current;
+    if(!restoreOpen||!preview||!project||!d||syncingRef.current)return;
+    const matches=(sent:Draft)=>preview.projectId===apiRef.current?.project?.id&&preview.value.localPath===sent.handle.path&&preview.handleId===sent.handle.id&&preview.version===sent.version&&preview.revision===sent.revision&&Number.isFinite(Date.parse(preview.value.expiresAt))&&Date.parse(preview.value.expiresAt)>Date.now();
+    if(restoreExpired||!matches(d)){setRestoreError('当前文档已改变或恢复预览已过期，请重新预览。');return;}
+    const completed=await projectTask('restore',async sent=>{
+      if(!matches(sent))throw new Error('当前文档已改变或恢复预览已过期，请重新预览。');
+      const result=await api<ContentRestoreResult>('/api/projects/'+encodeURIComponent(project.id)+'/restore','POST',{previewId:preview.value.id});
+      if(!mounted.current)return false;
+      if(!unchanged(sent)){
+        blocked.current=true;setConflict(true);setError('恢复期间又有新输入，已保留页内改稿。请核对磁盘结果后处理冲突。');return false;
+      }
+      accept(sent.handle,result.snapshot);setRestoreOpen(false);setRestorePreview(null);setRestoreError('');setContentMessage([result.summary,...result.warnings].join(' '));return true;
+    });
+    if(!completed&&mounted.current)setRestoreExpired(true);
   }
 
   async function reloadDisk() {
@@ -626,7 +661,8 @@ export function App() {
   const legacyCloud=!projectRestoreNeeded&&!session?.project&&session?.cloud?.localPath===draft.handle.path?session.cloud:undefined;
   const cloud=activeProject?.cloud?{...activeProject.cloud,localPath:activeProject.localPath}:legacyCloud;
   const workspaceLocked=syncing||workspaceTask!==null;
-  const previewStale=!!contentPreview&&(previewExpired||contentPreview.handleId!==draft.handle.id||contentPreview.version!==draft.version||contentPreview.revision!==draft.revision||contentPreview.value.projectId!==activeProject?.id);
+  const previewStale=!!contentPreview&&(previewExpired||contentPreview.value.direction!==direction||contentPreview.handleId!==draft.handle.id||contentPreview.version!==draft.version||contentPreview.revision!==draft.revision||contentPreview.value.projectId!==activeProject?.id);
+  const restoreStale=!!restorePreview&&(restoreExpired||restorePreview.handleId!==draft.handle.id||restorePreview.version!==draft.version||restorePreview.revision!==draft.revision||restorePreview.projectId!==activeProject?.id);
   const files=projectFiles(draft.handle,draft.xml,draft.review);
   const selectedFile=files.find(file=>file.path===selectedPath)||files[0];
   const documentActive=selectedFile.kind==='document';
@@ -645,13 +681,13 @@ export function App() {
     <div className="workspace-header" ref={header} onClickCapture={event=>{if((event.target as Element).closest('.project-operations>summary,.project-action-button,.format-overflow>summary,.project-picker-trigger'))setReviewOpen(false);}}>
     <header className="document-context" aria-label="文档工作区">
       <div className="project-context"><div className="document-identity"><button type="button" className="file-panel-toggle" aria-label={treeOpen?'收起文档导航':'展开文档导航'} title={treeOpen?'收起目录与文件':'展开目录与文件'} aria-controls="document-navigation" aria-expanded={treeOpen} onClick={event=>{event.currentTarget.focus({preventScroll:true});setTreeOpen(value=>!value);}}>{treeOpen?<PanelLeftClose size={20}/>:<PanelLeftOpen size={20}/>}</button>
-        {projects?<Projects active={activeProject} list={projects} busy={workspaceLocked||saving||opening} error={projectError} nativePicker={!!session?.nativePicker} homeDirectory={session?.homeDirectory} requiresProjectSelection={projectRestoreNeeded} settings={projectSettings} onSharedChange={changeSharedProjects} onBegin={canBeginProject} onSwitch={id=>void switchProject(id)} onCreate={createProject} onPick={pickProjectPath} onOpen={()=>void openDocument(session?.nativePicker||false)} onCreatingChange={setCreatingProject}/>:<><strong className="local-document-name">{draft.handle.name}</strong><ProjectActionButton kind="open" busy={workspaceLocked||saving||opening} onClick={()=>void openDocument(session?.nativePicker||false)}/></>}
+        {projects?<Projects active={activeProject} list={projects} busy={workspaceLocked||saving||opening} error={projectError} nativePicker={!!session?.nativePicker} homeDirectory={session?.homeDirectory} requiresProjectSelection={projectRestoreNeeded} settings={projectSettings} onSharedChange={changeSharedProjects} onBegin={canBeginProject} onSwitch={id=>void switchProject(id)} onCreate={createProject} onPick={pickProjectPath} onOpen={()=>void openDocument(session?.nativePicker||false)} onRestore={()=>void previewRestore()} onCreatingChange={setCreatingProject}/>:<><strong className="local-document-name">{draft.handle.name}</strong><ProjectActionButton kind="open" busy={workspaceLocked||saving||opening} onClick={()=>void openDocument(session?.nativePicker||false)}/></>}
       </div><nav className="file-path-bar" aria-label="当前文件"><span className="file-path-kind">{documentActive?'正文':'资源'}</span>
         <span className="file-path-value"><span className="file-path-measure" aria-hidden="true">{selectedFullPath}</span><input aria-label="当前文件路径" readOnly title={selectedFullPath} value={selectedFullPath} onFocus={event=>event.currentTarget.select()}/></span>
         <button type="button" className={'path-copy-button'+(filePathCopied?' copied':'')} aria-label="复制文件路径" title={filePathCopied?'已复制文件路径':'复制文件路径'} onClick={()=>void copyPath(selectedFullPath,'file')}>{filePathCopied?<Check size={14} aria-hidden="true"/>:<Copy size={14} aria-hidden="true"/>}</button>
       </nav></div>
       <div className="remote-context"><div className="remote-actions">{activeProject&&!activeProject.cloud&&<button type="button" className="open-cloud-document" disabled={workspaceLocked||saving||opening||conflict} onClick={beginBinding}>关联飞书<ExternalLink size={13}/></button>}{cloud&&<a className="open-cloud-document" href={cloud.url} title={cloud.url} target="_blank" rel="noopener noreferrer">打开飞书文档<ExternalLink size={13}/></a>}
-        {activeProject?.cloud&&<ContentSyncControls busy={workspaceTask==='content'} disabled={workspaceLocked||saving||opening||conflict} onPreview={()=>void previewContent()} onSync={value=>void syncContent(value)}/>}
+        {activeProject?.cloud&&<ContentSyncControls busy={workspaceTask==='content'} disabled={workspaceLocked||saving||opening||conflict} onPreview={()=>void previewContent()}/>}
       </div><div className="document-status">{activeProject?.cloud&&!documentActive?<span className="sync-source-name" title={draft.handle.name}>正文同步：{draft.handle.name}</span>:cloud&&<span className="cloud-binding-path"><span className="cloud-binding" aria-label="当前飞书绑定" title={cloud.url}>{cloud.url.replace(/^https?:\/\//,'')}</span><button type="button" className={'path-copy-button'+(cloudPathCopied?' copied':'')} aria-label="复制飞书链接" title={cloudPathCopied?'已复制飞书链接':'复制飞书链接'} onClick={()=>void copyPath(cloud.url,'cloud')}>{cloudPathCopied?<Check size={14} aria-hidden="true"/>:<Copy size={14} aria-hidden="true"/>}</button></span>}<span className={'save-state '+(saved&&!sourceDirty&&!xmlDraft?'saved':'')}><span/>{conflict?'保存有冲突':xmlDraft?'源码未保存':saving?'正在保存':sourceDirty?'有未应用的修改':saved?'已保存到本地':'等待保存'}</span></div></div>
       <span className="copy-announcement" role="status">{filePathCopied?'已复制文件路径':cloudPathCopied?'已复制飞书链接':''}</span>
     </header>
@@ -665,7 +701,9 @@ export function App() {
     {xmlDraft&&<div className="notice" role="status"><span>源码尚未通过校验，输入已保留但未保存。修正或还原后可继续编辑正文；只读预览显示最近有效内容。</span><button onClick={()=>{setXMLDraft(null);setNotice('已还原到最近有效源码。');}}>还原源码</button></div>}
     {notice&&<div className="notice">{notice}<button aria-label="关闭提示" onClick={()=>setNotice('')}><X size={14}/></button></div>}
     {projectError&&!creatingProject&&!bindingProject&&<div className="error-banner project-error" role="alert">{projectError}</div>}
-    {bindingProject&&<BindCloud project={bindingProject} cloudAvailable={!!projects?.cloudAvailable} busy={workspaceTask!==null} error={projectError} onClose={()=>{setBindingProject(null);setProjectError('');}} onBind={bindProject}/>}{activeProject?.cloud&&<ContentSync project={activeProject} direction={direction} busy={workspaceTask==='content'} disabled={workspaceLocked||saving||opening||conflict} preview={contentPreview?.value||null} stale={previewStale} error={contentError} message={contentMessage} onDirection={value=>{setDirection(value);setContentError('');void previewContent(value);}} onPreview={()=>void previewContent()} onExecute={()=>void executeContent()} onClose={()=>{setContentPreview(null);setContentError('');}}/>}
+    {activeProject&&<HistoryRestore project={activeProject} open={restoreOpen} busy={workspaceTask==='restore'} disabled={workspaceLocked||saving||opening||conflict} preview={restorePreview?.value||null} stale={restoreStale} error={restoreError} onPreview={()=>void previewRestore()} onExecute={()=>void executeRestore()} onClose={()=>{setRestoreOpen(false);setRestorePreview(null);setRestoreError('');}}/>}
+    {!activeProject?.cloud&&contentMessage&&<p className="content-sync-status" role="status">{contentMessage}</p>}
+    {bindingProject&&<BindCloud project={bindingProject} cloudAvailable={!!projects?.cloudAvailable} busy={workspaceTask!==null} error={projectError} onClose={()=>{setBindingProject(null);setProjectError('');}} onBind={bindProject}/>}{activeProject?.cloud&&<ContentSync project={activeProject} direction={direction} open={contentPreviewOpen} busy={workspaceTask==='content'} disabled={workspaceLocked||saving||opening||conflict} preview={contentPreview?.value||null} stale={previewStale} error={contentError} message={contentMessage} onDirection={value=>void previewContent(value)} onPreview={()=>void previewContent()} onExecute={()=>void executeContent()} onClose={()=>{setContentPreviewOpen(false);setContentPreview(null);setContentError('');}}/>}
     {activeProject&&creationNotices.has(activeProject.id)&&<ProjectCreationNotice message={creationNotices.get(activeProject.id)!} onClose={()=>setCreationNotices(previous=>{const next=new Map(previous);next.delete(activeProject.id);return next;})}/>}
     <main className={'workspace project-workspace '+(treeOpen?'tree-open':'tree-closed')}>
       <aside id="document-navigation" className="document-navigation" hidden={!treeOpen} aria-label="目录与文件">

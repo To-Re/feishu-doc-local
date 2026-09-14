@@ -7,6 +7,9 @@ import type { Server } from 'node:http';
 import { createLocalServer } from '../src/server/server';
 import { openProjectSettings } from '../src/server/project-settings';
 import type { ContentDocument, ContentTransport } from '../src/server/content-cli';
+import { openLocalFile } from '../src/server/files';
+import { saveContentEvidence } from '../src/server/content-sync';
+import { createReview } from '../src/core/types';
 
 const folders: string[] = [], servers: Server[] = [];
 async function close(server: Server) {
@@ -32,6 +35,7 @@ async function fixture(preferLocal=true) {
   let remote: ContentDocument = {documentId: 'DocA', url: 'https://www.feishu.cn/docx/DocA', revision: 1, xml: '<title id="DocA">云端测试</title><p id="p1">云端正文</p>'};
   let gate: {entered: ReturnType<typeof deferred>; release: ReturnType<typeof deferred>} | undefined;
   let commentGate: typeof gate;
+  let historyReadGate: typeof gate;
   const transport: ContentTransport = {
     async fetch() { const wait = gate; if (wait) { wait.entered.resolve(); await wait.release.promise; } return structuredClone(remote); },
     async create() { throw new Error('unexpected cloud create'); },
@@ -41,7 +45,11 @@ async function fixture(preferLocal=true) {
   async function boot() {
     const settings = await openProjectSettings(paths);
     const server = await createLocalServer(site, initialPath, {
-      projectSettings: {...settings, defaultSharedPath: paths.sharedPath},
+      projectSettings: {...settings, defaultSharedPath: paths.sharedPath, async read() {
+        const state=await settings.read(),wait=historyReadGate;
+        if(wait){wait.entered.resolve();await wait.release.promise;}
+        return state;
+      }},
       projects: {store: settings.store, transport, historyRoot: join(root, 'history'), comments: project => project.cloud ? {
         ...project.cloud, localPath: project.localPath,
         transport: {
@@ -59,10 +67,69 @@ async function fixture(preferLocal=true) {
   }
   return {root, paths, custom, initialPath, boot, setRemote(value: ContentDocument) { remote = value; }, remote: () => structuredClone(remote),
     pauseFetch() { gate = {entered: deferred(), release: deferred()}; return gate; }, unpauseFetch() { gate = undefined; },
-    pauseComments() { commentGate = {entered: deferred(), release: deferred()}; return commentGate; }, unpauseComments() { commentGate = undefined; }};
+    pauseComments() { commentGate = {entered: deferred(), release: deferred()}; return commentGate; }, unpauseComments() { commentGate = undefined; },
+    pauseHistoryRead() { historyReadGate = {entered: deferred(), release: deferred()}; return historyReadGate; }, unpauseHistoryRead() { historyReadGate = undefined; }};
 }
 
 describe('shared project registry over actual HTTP', () => {
+  it.each(['default', 'custom'] as const)('stores and restores snapshots beside the effective %s catalog', async location => {
+    const f = await fixture(false), client = await f.boot();
+    const catalog = location === 'custom' ? f.custom : f.paths.sharedPath;
+    if (location === 'custom') expect((await client.post('/api/project-settings', {shared: true, path: catalog})).status).toBe(200);
+    const imported = await client.post('/api/projects', {name: '历史位置测试', local: {kind: 'new', path: join(f.root, 'cloud.xml')}, cloud: {kind: 'existing', url: 'https://www.feishu.cn/docx/DocA'}, defaultDirection: 'pull'});
+    expect(imported.status).toBe(200);
+    const base = '/api/projects/' + imported.data.session.project.id, previous = imported.data.snapshot;
+    const remote = f.remote(); remote.xml += '<p id="added">新增云端正文</p>'; remote.revision++; f.setRemote(remote);
+    const preview = await client.post(base + '/preview', {revision: previous.revision, direction: 'pull'});
+    expect(preview.status).toBe(200);
+    const pulled = await client.post(base + '/sync', {previewId: preview.data.id}); expect(pulled.status).toBe(200);
+    const restore = await client.post(base + '/restore-preview', {revision: pulled.data.snapshot.revision});
+    expect(restore.status).toBe(200);
+    expect(dirname(restore.data.snapshotPath)).toBe(join(dirname(catalog), 'sync-history'));
+    expect(restore.data.snapshotXML).toBe(previous.xml);
+    expect(await readFile(join(restore.data.snapshotPath, 'local.xml'), 'utf8')).toBe(previous.xml);
+    expect((await client.post(base + '/restore', {previewId: restore.data.id})).data.snapshot.xml).toBe(previous.xml);
+    await expect(access(join(f.root, 'history'))).rejects.toMatchObject({code: 'ENOENT'});
+  });
+
+  it('still restores an explicit legacy instance snapshot after selecting a shared catalog', async () => {
+    const f = await fixture(false), client = await f.boot(), file = await openLocalFile(f.initialPath), original = await file.read();
+    const evidence = await saveContentEvidence(join(f.root, 'history'), original, undefined, file.path);
+    const xml = '<title>新本地正文</title>', review = createReview(file.name, xml);
+    review.operations.push({id: 'legacy-instance', type: 'content.pull', author: 'test', at: new Date().toISOString(), summary: '历史同步；双方备份：' + evidence});
+    const current = await file.save(xml, review, original.revision), base = '/api/projects/' + client.session.project.id;
+    const preview = await client.post(base + '/restore-preview', {revision: current.revision}); expect(preview.status).toBe(200);
+    expect(preview.data.snapshotPath).toBe(evidence);
+    const restored = await client.post(base + '/restore', {previewId: preview.data.id}); expect(restored.status).toBe(200);
+    expect(restored.data.snapshot.xml).toBe(original.xml);
+    const undo = await client.post(base + '/restore-preview', {revision: restored.data.snapshot.revision}); expect(undo.status).toBe(200);
+    expect(dirname(undo.data.snapshotPath)).toBe(join(dirname(f.paths.sharedPath), 'sync-history'));
+    expect(undo.data.snapshotXML).toBe(xml);
+  });
+
+  it('locks catalog switching before reading the restore history root so the undo snapshot stays discoverable', async () => {
+    const f=await fixture(false),client=await f.boot(),file=await openLocalFile(f.initialPath),original=await file.read();
+    const history=join(dirname(f.paths.sharedPath),'sync-history');
+    const evidence=await saveContentEvidence(history,original,undefined,file.path);
+    const xml='<title>恢复前的当前正文</title>',review=createReview(file.name,xml);
+    review.operations.push({id:'previous-sync',type:'content.pull',author:'test',at:new Date().toISOString(),summary:'同步快照；双方备份：'+evidence});
+    const current=await file.save(xml,review,original.revision),base='/api/projects/'+client.session.project.id;
+    const preview=await client.post(base+'/restore-preview',{revision:current.revision});expect(preview.status).toBe(200);
+    const settingsBefore=await readFile(f.paths.settingsPath,'utf8'),wait=f.pauseHistoryRead();
+    const restoring=client.post(base+'/restore',{previewId:preview.data.id});
+    try{
+      await wait.entered.promise;
+      const switching=await client.post('/api/project-settings',{shared:true,path:f.custom});
+      expect(switching.status).toBe(409);expect(switching.data.code).toBe('PROJECT_BUSY');
+      expect(await readFile(f.paths.settingsPath,'utf8')).toBe(settingsBefore);
+      await expect(access(f.custom)).rejects.toMatchObject({code:'ENOENT'});
+    }finally{wait.release.resolve();f.unpauseHistoryRead();}
+    const restored=await restoring;expect(restored.status).toBe(200);expect(restored.data.snapshot.xml).toBe(original.xml);
+    const undo=await client.post(base+'/restore-preview',{revision:restored.data.snapshot.revision});expect(undo.status).toBe(200);
+    expect(dirname(undo.data.snapshotPath)).toBe(history);expect(undo.data.snapshotXML).toBe(xml);
+    expect((await client.post('/api/project-settings',{shared:true,path:f.custom})).status).toBe(200);
+  });
+
   it('starts new installations in the user catalog and saves a new location without moving article files', async () => {
     const f=await fixture(false),client=await f.boot(),before=await readFile(f.initialPath,'utf8');
     const initial=(await client.request('/api/project-settings')).data;

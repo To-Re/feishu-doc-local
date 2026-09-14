@@ -44,6 +44,48 @@ function baseline(review:Review,xml=review.document.xml){
 }
 
 describe('content synchronization uses real files and checked cloud receipts',()=>{
+  it('archives the original before pulling and can restore its comments and retained local resources',async()=>{
+    const xml='<p id="P">旧文</p><img path="@./original.png"/><whiteboard id="B" token="oldBoard"/>',review=reviewed(xml);
+    review.resources={version:1,items:[{tag:'whiteboard',attribute:'token',value:'oldBoard',path:'old-board.png',representation:'preview'}]};
+    const t=await setup(xml,review),c=cloud('<p id="P">新文</p><img token="newImage"/><whiteboard id="B" token="oldBoard"/>');
+    const oldBoard=Buffer.concat([png,Buffer.from('original board preview')]);
+    await writeFile(join(t.folder,'original.png'),png);await writeFile(join(t.folder,'old-board.png'),oldBoard);
+    const before=await t.file.read(),prepared=await prepareContent(t.file,t.project,before.revision,'pull',c.transport);
+    const result=await applyContent(t.file,t.project,prepared,c.transport,t.history,{directoryPrefix:'feishu-assets-'});
+    expect(prepared.view.warnings.join(' ')).toContain('请确认首次同步');
+    expect(result.warnings.join(' ')).not.toContain('请确认首次同步');
+    expect(result.snapshot.xml).toBe(c.current.xml);expect(c.transport.update).not.toHaveBeenCalled();
+    expect(result.snapshot.review?.comments[0]).toMatchObject({id:'comment',body:'意见',anchor:{state:'unverified'}});
+    const evidence=join(t.history,(await readdir(t.history))[0]);
+    const archivedXML=await readFile(join(evidence,'local.xml'),'utf8');
+    const archivedReview=JSON.parse(await readFile(join(evidence,'local.review.json'),'utf8')) as Review;
+    expect(archivedXML).toBe(before.xml);expect(archivedReview).toEqual(before.review);
+    expect(await readFile(join(t.folder,'original.png'))).toEqual(png);
+    expect(await readFile(join(t.folder,'old-board.png'))).toEqual(oldBoard);
+    const nextResources=result.snapshot.review!.resources!.items;
+    expect(nextResources.every(item=>item.path.startsWith('feishu-assets-'))).toBe(true);
+    expect(await readFile(join(t.folder,nextResources.find(item=>item.tag==='whiteboard')!.path))).toEqual(png);
+    expect(result.snapshot.review?.operations.at(-1)?.summary).toContain(evidence);
+    // Verify the archived files independently through the validated local writer.
+    const restored=await t.file.save(archivedXML,archivedReview,result.snapshot.revision);
+    const reopened=await openLocalFile(t.path),restoredDisk=await reopened.read();
+    expect(restoredDisk).toEqual(restored);expect(restoredDisk.xml).toBe(before.xml);expect(restoredDisk.review).toEqual(before.review);
+    expect((await reopened.asset('original.png')).data).toEqual(png);
+    expect((await reopened.asset(restoredDisk.review!.resources!.items[0].path)).data).toEqual(oldBoard);
+  });
+
+  it.each(['pull','push'] as const)('refuses %s before changing either side when the original snapshot cannot be created',async direction=>{
+    const xml='<p id="P">旧文</p>',t=await setup(xml,reviewed(xml)),c=cloud('<p id="P">云端修改</p><img token="newImage"/>');
+    const before=await t.file.read(),rawReview=await readFile(t.file.reviewPath,'utf8');
+    const prepared=await prepareContent(t.file,t.project,before.revision,direction,c.transport);
+    await writeFile(t.history,'this path is a file, so snapshot creation must fail');
+    await expect(applyContent(t.file,t.project,prepared,c.transport,t.history,{adoptPublished:true})).rejects.toMatchObject({code:'EEXIST'});
+    expect(await t.file.read()).toEqual(before);expect(await readFile(t.file.reviewPath,'utf8')).toBe(rawReview);
+    expect(c.transport.update).not.toHaveBeenCalled();expect(c.transport.download).not.toHaveBeenCalled();
+    expect((await t.file.read()).review?.contentSync?.pending).toBeUndefined();
+    expect((await readdir(t.folder)).some(name=>name.endsWith('.sync.lock'))).toBe(false);
+  });
+
   it('explicitly adopts a successful publication with resources and complete recoverable old versions',async()=>{
     const xml='<p>旧文</p><p>本地完整段落</p>',review=reviewed(xml),t=await setup(xml,review),c=cloud('<p id="Old">云端旧稿</p>');
     const before=await t.file.read(),cloudBefore=structuredClone(c.current),normalized='<p id="New">旧文</p><img token="image"/>';

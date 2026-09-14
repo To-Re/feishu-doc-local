@@ -35,6 +35,7 @@ interface Props {
   onCreate(input: CreateProjectInput): Promise<boolean>;
   onPick(): Promise<string | null>;
   onOpen(): void;
+  onRestore(): void;
   onCreatingChange(creating:boolean): void;
 }
 export function ProjectActionButton({ kind, busy, onClick }: { kind:'create'|'open'; busy:boolean; onClick():void }) {
@@ -105,7 +106,7 @@ export function containDialogFocus(event:KeyboardEvent<HTMLElement>) {
   if(event.shiftKey&&(current===first||!event.currentTarget.contains(current)||current===event.currentTarget)){event.preventDefault();last?.focus();}
   else if(!event.shiftKey&&(current===last||!event.currentTarget.contains(current)||current===event.currentTarget)){event.preventDefault();first.focus();}
 }
-export function Projects({ active, list, busy, error, nativePicker, homeDirectory, requiresProjectSelection, settings, onSharedChange, onBegin, onSwitch, onCreate, onPick, onOpen, onCreatingChange }: Props) {
+export function Projects({ active, list, busy, error, nativePicker, homeDirectory, requiresProjectSelection, settings, onSharedChange, onBegin, onSwitch, onCreate, onPick, onOpen, onRestore, onCreatingChange }: Props) {
   const [creating, setCreating] = useState(false);
   useEffect(()=>onCreatingChange(creating),[creating,onCreatingChange]);
   const [name, setName] = useState('');
@@ -168,7 +169,10 @@ export function Projects({ active, list, busy, error, nativePicker, homeDirector
         <div className="configuration-path-actions">{editingDirectory?<><button type="button" disabled={directoryLocked} onClick={cancelDirectory}>取消</button>
           <button type="submit" className="primary" disabled={directoryLocked||!settings||!!chosenDirectory.error}>{savingDirectory?'正在保存…':'保存'}</button></>
           :<button ref={modifyDirectory} type="button" disabled={busy||!settings} onClick={()=>{setConfigurationPath(activeDirectory);setConfigurationError('');setEditingDirectory(true);}}>修改</button>}</div>
-      </form></ProjectManagement>
+      </form>{active&&<div className="project-history-actions"><span>当前文档</span><button type="button" disabled={busy||editingDirectory||requiresProjectSelection} onClick={event=>{
+        const management=event.currentTarget.closest('details');if(management){management.open=false;management.querySelector('summary')?.focus();}
+        onRestore();
+      }}>恢复上一快照</button></div>}</ProjectManagement>
     </div>
     {creating && createPortal(<div className="modal-overlay project-modal" onKeyDown={event => { if (event.key === 'Escape' && !busy) { event.stopPropagation(); setCreating(false); } }}>
       <form ref={dialog} className="project-dialog" role="dialog" aria-modal="true" aria-labelledby="new-project-title" onKeyDown={containDialogFocus} onSubmit={async event => {

@@ -35,7 +35,7 @@
 
 `--cli-config <JSON>` 接受可信本机的 `command,args`，目标由项目登记选择。旧 `--cloud-config` 同时指定 `command,args,documentId,url` 并要求 `--file`；二者互斥。服务器不从浏览器、XML 或反馈 JSON 接受可执行程序、参数或新的目标身份。页面新建项目时允许明确选择已有飞书 URL 或新建标题；真正的绑定由 CLI 回读与服务端索引建立。
 
-正文准备接收本地双文件 `revision` 与 `pull/push`，回读云端完整 XML、版本和可选 `reference_map`，返回两端源码、警告、状态与五分钟有效的预览 ID。客户端提供直接「拉取」「推送」：用户点击后先保存本地、准备并校验；`ready` 可继续执行，`equal` 无正文写入，`conflict` 必须展示差异并等待明确确认。也可单独打开只读差异预览；关闭预览不执行同步。
+正文准备接收本地双文件 `revision` 与 `pull/push`，回读云端完整 XML、版本和可选 `reference_map`，返回两端源码、警告、状态与五分钟有效的预览 ID。客户端只提供先预览再确认的正文同步流程：用户点击「预览同步」后保存本地、准备并校验；`ready` 和 `conflict` 都展示差异并等待明确确认，`equal` 无执行动作。切换方向立即失效旧预览，关闭预览不执行同步。
 
 执行 API 接受 `previewId` 与可选布尔值 `adoptPublished`，绑定原项目、本地版本、云回读与素材摘要；预览过期、两端变化或素材变化要求重新准备。当前网页与 Obsidian 同步入口启用 `adoptPublished:true`，同步服务调用对应的 `ContentApplyOptions`；旧调用方省略参数时保留分开采用回读的兼容行为。
 
@@ -43,11 +43,19 @@
 
 可选 `review.contentSync` 为版本 1，字段为 `documentId,localXML,cloudXML,cloudRevision,syncedAt`，可带 `localAssets`（相对路径到 SHA-256）及 `pending`。它记录最近已确认的双方基线；不替代评审开始时的 `baselineXML`。`pending` 含 `id,direction,startedAt,sourceXML,cloudRevision?`，direction 为 `create/pull/push`；当前云创建和发布在调用前写入该标记，完整确认后才清除。
 
-当前界面的推送及新建飞书文档成功后，会采用经确认的云端正文、真实块 ID 和资源更新本地。更新前将 `local.xml`、`local.review.json`、`cloud.xml` 和完整回执存档，操作记录写明备份目录；不删除旧稿。云端结果不确定、资源读取失败、最终云版本不一致或本地出现新修改时，停止覆盖并保留恢复记录，不自动重发。无法确认的评论引用标为待确认，文本与回复保留。
+当前界面的推送及新建飞书文档成功后，会采用经确认的云端正文、真实块 ID 和资源更新本地。更新前将 `local.xml`、`local.review.json`、包含云正文的 `cloud.json` 和完整回执存档，操作记录写明备份目录；不删除旧稿。云端结果不确定、资源读取失败、最终云版本不一致或本地出现新修改时，停止覆盖并保留恢复记录，不自动重发。无法确认的评论引用标为待确认，文本与回复保留。
 
-兼容旧调用方时，成功发布可保留本地原稿与两端基线；两端及素材尚未再修改时，准备结果返回 `action:refresh-local`，显式采用只更新本地，不重新发布。当前直接推送入口遇到此状态也只完成本地更新。快照位于实例的 `sync-history`；Obsidian 使用稿件旁的 `.review-sync-history`，均不写进项目索引。
+兼容旧调用方时，成功发布可保留本地原稿与两端基线；两端及素材尚未再修改时，准备结果返回 `action:refresh-local`，显式采用只更新本地，不重新发布。当前推送预览遇到此状态明确显示「推送已完成 · 更新本地副本」，确认只完成本地更新。快照位于实例的 `sync-history`；Obsidian 使用稿件旁的 `.review-sync-history`，均不写进项目索引。
 
 本地版本比较、云端写前重读和 CLI 的 `--revision-id` 共同减少误覆盖，但不能构成跨本地文件、CLI 与飞书的原子比较更新（CAS）。其他客户端可能在检查后修改云稿，分步发布也可能只完成部分。服务用 `.review.json.sync.lock` 防止遵守本协议的进程同时同步同稿；任意外部进程不受此锁约束。存在正文或评论 `pending` 时，正文预览与执行会停止，不自动重试云写。先核对回执、云端完整状态与本地快照，再恢复映射或基线，不能仅删除 pending 再发布。
+
+## 本地快照恢复
+
+新同步快照的 `manifest.json` 记录 `documentPath`、`createdAt`、XML/JSON 哈希和显式本地资源哈希。资源文件保留在原位置；缺失资源记录为 `null`，不能用该快照直接恢复。历史快照仅从当前旁置操作记录中的明确备份路径定位，拒绝跨历史根目录、其他文件身份、软链接及损坏内容。 网页同时认可稿件旁的 `.review-sync-history`；Obsidian 同时认可当前项目配置目录下的 `sync-history`。两端共用项目配置时，可识别对方的上一快照；不在这些可信目录中的历史记录需要先切回对应配置。
+
+网页 `POST /api/projects/:id/restore-preview` 接受当前 `revision`，返回本地前后 XML、快照位置/时间、必要提示及五分钟有效的预览 ID；`POST /api/projects/:id/restore` 只接受该 ID。Obsidian 的 `prepareRestore/applyRestore` 复用相同核心，无需官方 CLI。确认时重查本地版本、快照和资源，先存档当前版本，再通过双文件版本校验写入。预览 ID 一次使用，项目与本地路径必须匹配。
+
+恢复正文和评论内容，同时保留当前云端同步基线、绑定与已发送评论映射，已发送状态不回退，恢复的附着引用标为待确认。未确认的云操作会阻止恢复；不会清除 pending 后重发。恢复操作引用它新保存的当前版本快照，因此可再次预览并撤回。备份失败、资源失效、版本变化或预览过期时不覆盖当前稿。
 
 ## 显式飞书评论同步
 

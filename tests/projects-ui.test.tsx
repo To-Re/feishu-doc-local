@@ -337,7 +337,7 @@ describe('projects and explicit content synchronization with the real App/Reader
     await screen.findByText('创建后的正文');
     expect(requestsTo('/api/projects').find(request => request.method === 'POST')!.value).toMatchObject({ name: '测试项目', local: { kind: 'existing', path: '/project/new.xml' }, defaultDirection: 'push',
       cloud: kind === 'new' ? { kind: 'new', title: '新飞书文档', parentToken: 'folder-token' } : { kind: 'existing', url: 'https://example.feishu.cn/docx/existing' } });
-    expect(screen.getByRole('button', { name: '预览差异' })).toBeDefined();
+    expect(screen.getByRole('button', { name: '预览同步' })).toBeDefined();
     expect(screen.getByRole('link', { name: '打开飞书文档' }).getAttribute('href')).toContain(kind === 'new' ? 'created-cloud' : 'existing');
     expect(requests.some(request => request.url.endsWith('/sync'))).toBe(false);
   });
@@ -425,12 +425,12 @@ describe('projects and explicit content synchronization with the real App/Reader
     restoreFails = false;
     await chooseProject(a.id);
     await waitFor(() => expect(currentProjectName()).toBe(projectName(a.id)));
-    expect(screen.getByRole('button', { name: '预览差异' })).toBeDefined();
+    expect(screen.getByRole('button', { name: '预览同步' })).toBeDefined();
   });
 
   it('previews the default direction and two sources, then syncs only after a concrete direction confirmation', async () => {
     const { editor } = await open();
-    fireEvent.click(screen.getByRole('button', { name: '预览差异' }));
+    fireEvent.click(screen.getByRole('button', { name: '预览同步' }));
     await screen.findByRole('dialog', { name: '正文同步预览' });
     const dialog = screen.getByRole('dialog', { name: '正文同步预览' });
     await waitFor(() => expect(screen.getByRole('button', { name: '确认拉取' }).matches(':disabled')).toBe(false));
@@ -455,56 +455,66 @@ describe('projects and explicit content synchronization with the real App/Reader
     expect(screen.queryByRole('dialog', { name: '正文同步预览' })).toBeNull();
   });
 
-  it.each(['拉取', '推送'] as const)('executes %s directly with automatic local adoption and no mandatory preview', async label => {
+  it.each(['pull', 'push'] as const)('requires viewing and confirming the %s preview before writing', async direction => {
+    currentSession.project={...a,defaultDirection:direction};
     const { editor } = await open();
-    fireEvent.click(screen.getByRole('button', { name: label }));
+    expect(screen.queryByRole('button', { name: '拉取' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '推送' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: '预览同步' }));
+    const confirm=await screen.findByRole('button',{name:direction==='pull'?'确认拉取':'确认推送'});
+    await waitFor(()=>expect(confirm.matches(':disabled')).toBe(false));
+    expect(requestsTo('/api/projects/project-a/sync')).toHaveLength(0);
+    expect(requestsTo('/api/projects/project-a/preview')[0].value.direction).toBe(direction);
+    fireEvent.click(confirm);
     await waitFor(() => expect(requestsTo('/api/projects/project-a/sync')).toHaveLength(1));
-    expect(requestsTo('/api/projects/project-a/preview')[0].value.direction).toBe(label === '拉取' ? 'pull' : 'push');
     expect(requestsTo('/api/projects/project-a/sync')[0].value).toEqual({ previewId: 'preview-one', adoptPublished: true });
     await waitFor(() => expect(editor.getText()).toContain('飞书中的修订'));
     expect(screen.queryByRole('dialog', { name: '正文同步预览' })).toBeNull();
   });
 
-  it('does not write when a direct sync finds both ends unchanged', async () => {
+  it('does not offer confirmation when both ends are unchanged', async () => {
     previewStatus = 'equal'; await open();
-    fireEvent.click(screen.getByRole('button', { name: '推送' }));
-    await screen.findByText('两端没有待同步的内容。');
+    fireEvent.click(screen.getByRole('button', { name: '预览同步' }));
+    await screen.findByText('两端正文一致');
+    expect(screen.queryByRole('button', { name: '确认拉取' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '确认推送' })).toBeNull();
     expect(requestsTo('/api/projects/project-a/sync')).toHaveLength(0);
   });
 
-  it('blocks duplicate direct pushes while preparing and stops after late input', async () => {
+  it('blocks duplicate previews while preparing and discards the result after late input', async () => {
     const gate = deferred<Response>(); route = url => url.endsWith('/preview') ? gate.promise : undefined;
     const { editor } = await open();
-    fireEvent.click(screen.getByRole('button', { name: '推送' }));
+    fireEvent.click(screen.getByRole('button', { name: '预览同步' }));
     await waitFor(() => expect(requestsTo('/api/projects/project-a/preview')).toHaveLength(1));
-    expect(screen.getByRole('button', { name: '推送' }).matches(':disabled')).toBe(true);
-    fireEvent.click(screen.getByRole('button', { name: '推送' }));
+    expect(screen.getByRole('button', { name: '预览同步' }).matches(':disabled')).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: '预览同步' }));
     act(() => { editor.view.dispatch(editor.state.tr.insertText('保留后输入', 1)); });
-    await act(async () => { gate.resolve(await response({ id: 'late', projectId: a.id, direction: 'push', status: 'ready', localXML: original, cloudXML: remote, warnings: [], summary: '就绪', expiresAt: '2099-01-01T00:00:00Z' })); });
-    await screen.findByText(/同步准备期间又有新输入/);
+    await act(async () => { gate.resolve(await response({ id: 'late', projectId: a.id, direction: 'pull', status: 'ready', localXML: original, cloudXML: remote, warnings: [], summary: '就绪', expiresAt: '2099-01-01T00:00:00Z' })); });
+    await screen.findByText(/预览期间又有新输入/);
     expect(requestsTo('/api/projects/project-a/preview')).toHaveLength(1);
     expect(requestsTo('/api/projects/project-a/sync')).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: '确认拉取' })).toBeNull();
     expect(editor.getText()).toContain('保留后输入');
   });
 
   it('shows conflict warnings before a push, while an equal preview has no execution action', async () => {
-    previewStatus = 'conflict'; previewWarnings = ['本地与飞书都有独立改动']; await open();
-    fireEvent.click(screen.getByRole('button', { name: '推送' }));
+    previewStatus = 'conflict'; previewWarnings = ['本地与飞书都有独立改动']; currentSession.project={...a,defaultDirection:'push'};await open();
+    fireEvent.click(screen.getByRole('button', { name: '预览同步' }));
     await screen.findByText('本地与飞书都有独立改动');
     expect(requestsTo('/api/projects/project-a/preview')[0].value.direction).toBe('push');
     expect(screen.getByText('推送前 · 飞书正文')).toBeDefined();
     expect(screen.getByText('推送后 · 采用本地正文')).toBeDefined();
     expect(screen.getByRole('button', { name: '确认推送' })).toBeDefined();
-    fireEvent.click(screen.getByRole('button', { name: '关闭' }));
+    fireEvent.click(screen.getByRole('button', { name: '关闭正文同步预览' }));
     previewStatus = 'equal'; previewWarnings = [];
-    fireEvent.click(screen.getByRole('button', { name: '预览差异' }));
+    fireEvent.click(screen.getByRole('button', { name: '预览同步' }));
     await screen.findByText('两端正文一致');
     expect(screen.queryByRole('button', { name: '确认推送' })).toBeNull();
     expect(requestsTo('/api/projects/project-a/sync')).toHaveLength(0);
   });
 
   it('invalidates a preview after a new document edit rather than executing an outdated comparison', async () => {
-    const { editor } = await open(); fireEvent.click(screen.getByRole('button', { name: '预览差异' }));
+    const { editor } = await open(); fireEvent.click(screen.getByRole('button', { name: '预览同步' }));
     await screen.findByRole('dialog', { name: '正文同步预览' });
     act(() => { editor.view.dispatch(editor.state.tr.insertText('新输入', 1)); });
     expect(screen.queryByRole('button', { name: '确认拉取' })).toBeNull();
@@ -513,9 +523,119 @@ describe('projects and explicit content synchronization with the real App/Reader
     expect(requestsTo('/api/projects/project-a/sync')).toHaveLength(0);
   });
 
+  it('previews and cancels local restoration without writes or cloud calls, then explicitly restores', async () => {
+    currentSession.project={...a,cloud:undefined};
+    const oldXML='<p>上一快照的正文</p>';
+    route=url=>{
+      if(url.endsWith('/restore-preview'))return response({id:'restore-one',localPath:ha.path,snapshotPath:'/project/.history/previous',createdAt:'2026-09-14T00:00:00Z',localXML:original,snapshotXML:oldXML,warnings:[],expiresAt:'2099-01-01T00:00:00Z'});
+      if(url.endsWith('/restore')){files.set('a',snapshot(oldXML,'restored'));return response({snapshot:files.get('a'),summary:'已恢复上一快照',warnings:[]});}
+    };
+    const {editor}=await open();openManagement();
+    fireEvent.click(screen.getByRole('button',{name:'恢复上一快照'}));
+    const dialog=within(await screen.findByRole('dialog',{name:'恢复上一快照'}));
+    await dialog.findByRole('button',{name:'确认恢复'});
+    expect(dialog.getByText('仅恢复本地文档，不修改飞书。')).toBeDefined();
+    expect(dialog.getByText(/恢复前会先存档当前正文和评论/)).toBeDefined();
+    expect(dialog.getByText('恢复前 · 当前本地正文')).toBeDefined();
+    expect(dialog.getByText('恢复后 · 上一快照正文')).toBeDefined();
+    expect(requestsTo('/api/projects/project-a/restore-preview')[0].value).toEqual({revision:'r0'});
+    fireEvent.click(dialog.getByRole('button',{name:'关闭恢复上一快照'}));
+    expect(requestsTo('/api/projects/project-a/restore')).toHaveLength(0);
+    expect(editor.getText()).toContain('第一篇正文');
+    openManagement();fireEvent.click(screen.getByRole('button',{name:'恢复上一快照'}));
+    fireEvent.click(await screen.findByRole('button',{name:'确认恢复'}));
+    await screen.findByText('已恢复上一快照');
+    expect(editor.getText()).toContain('上一快照的正文');
+    expect(requestsTo('/api/projects/project-a/restore')[0].value).toEqual({previewId:'restore-one'});
+    expect(requestsTo('/api/projects/project-a/restore')[0].headers).toMatchObject({'X-CSRF-Token':'project-csrf'});
+    expect(requests.some(request=>request.url.endsWith('/sync')||request.url.endsWith('/preview'))).toBe(false);
+    expect(screen.queryByRole('dialog',{name:'恢复上一快照'})).toBeNull();
+  });
+
+  it('blocks stale or mismatched restore previews and reports a missing snapshot without an action', async () => {
+    let mode:'ready'|'missing'|'mismatch'='ready';
+    route=url=>url.endsWith('/restore-preview')?mode==='missing'?response({error:'没有可恢复的本地快照'},404):response({id:'restore-one',localPath:mode==='mismatch'?hb.path:ha.path,snapshotPath:'/project/.history/previous',createdAt:'2026-09-14T00:00:00Z',localXML:original,snapshotXML:'<p>原稿</p>',warnings:[],expiresAt:'2099-01-01T00:00:00Z'}):undefined;
+    const {editor}=await open();openManagement();fireEvent.click(screen.getByRole('button',{name:'恢复上一快照'}));
+    await screen.findByRole('button',{name:'确认恢复'});
+    act(()=>editor.view.dispatch(editor.state.tr.insertText('保留新输入',1)));
+    expect(screen.queryByRole('button',{name:'确认恢复'})).toBeNull();
+    mode='mismatch';fireEvent.click(screen.getByRole('button',{name:'重新预览'}));
+    await screen.findByText('快照与当前文档不一致，请重新选择项目。');
+    expect(screen.queryByRole('button',{name:'确认恢复'})).toBeNull();
+    mode='missing';fireEvent.click(screen.getByRole('button',{name:'重新预览'}));
+    await screen.findByText('没有可恢复的本地快照');
+    expect(screen.queryByRole('button',{name:'确认恢复'})).toBeNull();
+    expect(editor.getText()).toContain('保留新输入');
+    expect(requestsTo('/api/projects/project-a/restore')).toHaveLength(0);
+  });
+
+  it('preserves late input during restore and requires another preview after an uncertain result', async () => {
+    const gate=deferred<Response>();
+    route=url=>url.endsWith('/restore-preview')?response({id:'restore-one',localPath:ha.path,snapshotPath:'/project/.history/previous',createdAt:'2026-09-14T00:00:00Z',localXML:original,snapshotXML:'<p>原稿</p>',warnings:[],expiresAt:'2099-01-01T00:00:00Z'}):url.endsWith('/restore')?gate.promise:undefined;
+    const {editor}=await open();openManagement();fireEvent.click(screen.getByRole('button',{name:'恢复上一快照'}));
+    fireEvent.click(await screen.findByRole('button',{name:'确认恢复'}));
+    await waitFor(()=>expect(requestsTo('/api/projects/project-a/restore')).toHaveLength(1));
+    expect(editor.isEditable).toBe(false);
+    act(()=>editor.view.dispatch(editor.state.tr.insertText('迟到输入',1)));
+    await act(async()=>gate.resolve(await response({snapshot:snapshot('<p>原稿</p>','restored'),summary:'已恢复',warnings:[]})));
+    expect(editor.getText()).toContain('迟到输入');
+    expect(screen.getByText(/恢复期间又有新输入/)).toBeDefined();
+    expect(screen.queryByRole('button',{name:'确认恢复'})).toBeNull();
+    expect(screen.getByRole('button',{name:'重新载入磁盘版本'})).toBeDefined();
+  });
+
+  it.each(['sync','restore'] as const)('does not start %s if the view closes while the save barrier is pending',async operation=>{
+    if(operation==='restore')route=url=>url.endsWith('/restore-preview')?response({id:'restore-one',localPath:ha.path,snapshotPath:'/project/.history/previous',createdAt:'2026-09-14T00:00:00Z',localXML:original,snapshotXML:'<p>原稿</p>',warnings:[],expiresAt:'2099-01-01T00:00:00Z'}):undefined;
+    const {mounted}=await open();
+    if(operation==='restore'){openManagement();fireEvent.click(screen.getByRole('button',{name:'恢复上一快照'}));}
+    else fireEvent.click(screen.getByRole('button',{name:'预览同步'}));
+    const confirm=await screen.findByRole('button',{name:operation==='restore'?'确认恢复':'确认拉取'});
+    await waitFor(()=>expect(confirm.matches(':disabled')).toBe(false));
+    act(()=>{fireEvent.click(confirm);mounted.unmount();});
+    await act(async()=>{await Promise.resolve();});
+    expect(requestsTo('/api/projects/project-a/'+operation)).toHaveLength(0);
+  });
+
+  it('clears the old confirmation while changing direction and after a failed replacement preview', async () => {
+    await open();fireEvent.click(screen.getByRole('button',{name:'预览同步'}));
+    await screen.findByRole('button',{name:'确认拉取'});
+    const gate=deferred<Response>();route=url=>url.endsWith('/preview')?gate.promise:undefined;
+    fireEvent.click(screen.getByRole('button',{name:'本地 → 飞书'}));
+    expect(screen.queryByRole('button',{name:'确认拉取'})).toBeNull();
+    expect(screen.queryByText('拉取前 · 本地正文')).toBeNull();
+    expect(screen.getByRole('button',{name:'本地 → 飞书'}).getAttribute('aria-pressed')).toBe('true');
+    await act(async()=>gate.resolve(await response({error:'读取飞书失败'},503)));
+    await screen.findByText('读取飞书失败');
+    expect(screen.queryByRole('button',{name:'确认推送'})).toBeNull();
+    expect(screen.getByRole('button',{name:'重新预览'}).matches(':disabled')).toBe(false);
+    route=()=>undefined;
+    fireEvent.click(screen.getByRole('button',{name:'重新预览'}));
+    await screen.findByRole('button',{name:'确认推送'});
+    expect(screen.getByText('推送前 · 飞书正文')).toBeDefined();
+    expect(requestsTo('/api/projects/project-a/preview').map(request=>request.value.direction)).toEqual(['pull','push','push']);
+    fireEvent.click(screen.getByRole('button',{name:'关闭正文同步预览'}));
+    expect(screen.queryByRole('dialog',{name:'正文同步预览'})).toBeNull();
+    expect(requestsTo('/api/projects/project-a/sync')).toHaveLength(0);
+  });
+
+  it('rejects a preview for a different direction and requires fresh preview after a failed apply', async () => {
+    route=url=>url.endsWith('/preview')?response({id:'wrong',projectId:a.id,direction:'push',status:'ready',localXML:original,cloudXML:remote,warnings:[],summary:'错误方向',expiresAt:'2099-01-01T00:00:00Z'}):undefined;
+    await open();fireEvent.click(screen.getByRole('button',{name:'预览同步'}));
+    await screen.findByText('预览与当前项目或同步方向不一致，请重新预览。');
+    expect(screen.queryByRole('button',{name:'确认推送'})).toBeNull();
+    route=url=>url.endsWith('/sync')?response({error:'同步结果尚未确认'},500):undefined;
+    fireEvent.click(screen.getByRole('button',{name:'重新预览'}));
+    const confirm=await screen.findByRole('button',{name:'确认拉取'});
+    fireEvent.click(confirm);
+    await screen.findByText('同步结果尚未确认');
+    expect(screen.queryByRole('button',{name:'确认拉取'})).toBeNull();
+    expect(screen.getByRole('button',{name:'重新预览'})).toBeDefined();
+    expect(requestsTo('/api/projects/project-a/sync')).toHaveLength(1);
+  });
+
   it('retains late input during a content sync receipt and blocks overwriting the changed page', async () => {
     const gate = deferred<Response>(); route = url => url.endsWith('/sync') ? gate.promise : undefined;
-    const { editor } = await open(); fireEvent.click(screen.getByRole('button', { name: '预览差异' }));
+    const { editor } = await open(); fireEvent.click(screen.getByRole('button', { name: '预览同步' }));
     await screen.findByRole('dialog', { name: '正文同步预览' });
     fireEvent.click(screen.getByRole('button', { name: '确认拉取' }));
     await waitFor(() => expect(requestsTo('/api/projects/project-a/sync')).toHaveLength(1));
@@ -544,7 +664,7 @@ describe('projects and explicit content synchronization with the real App/Reader
     const panel=within(screen.getByRole('group',{name:'项目管理设置'}));
     const input=panel.getByLabelText('项目配置路径') as HTMLInputElement;
     expect(input.value).toBe('/Users/test/.lark-review');expect(input.readOnly).toBe(true);
-    expect(panel.getAllByRole('button').map(button=>button.textContent)).toEqual(['修改']);
+    expect(within(input.closest('form')!).getAllByRole('button').map(button=>button.textContent)).toEqual(['修改']);
     expect(panel.queryByRole('checkbox')).toBeNull();expect(panel.queryByLabelText('项目管理文件路径')).toBeNull();
     expect(requestsTo('/api/project-settings').filter(request=>request.method==='POST')).toHaveLength(0);
   });
@@ -709,9 +829,9 @@ describe('projects and explicit content synchronization with the real App/Reader
     const context = within(screen.getByRole('banner', { name: '文档工作区' }));
     expect(context.getByRole('link', { name: '打开飞书文档' }).getAttribute('href')).toBe(a.cloud!.url);
     expect(context.getByLabelText('当前飞书绑定').getAttribute('title')).toBe(a.cloud!.url);
-    expect(context.getByRole('button', { name: '预览差异' })).toBeDefined();
-    expect(context.getByRole('button', { name: '拉取' })).toBeDefined();
-    expect(context.getByRole('button', { name: '推送' })).toBeDefined();
+    expect(context.getByRole('button', { name: '预览同步' })).toBeDefined();
+    expect(context.queryByRole('button', { name: '拉取' })).toBeNull();
+    expect(context.queryByRole('button', { name: '推送' })).toBeNull();
     expect((context.getByLabelText('当前文件路径') as HTMLInputElement).value).toBe(ha.path);
     expect(context.getByRole('button', { name: '新建项目' })).toBeDefined();
     expect(context.getByRole('button', { name: '切换文档' })).toBeDefined();
@@ -839,7 +959,7 @@ describe('projects and explicit content synchronization with the real App/Reader
     expect(within(screen.getByRole('navigation', { name: '当前文件' })).getByText('资源')).toBeDefined();
     expect((screen.getByLabelText('当前文件路径') as HTMLInputElement).value).toBe(ha.reviewPath);
     expect(screen.getByText('正文同步：a.xml')).toBeDefined();
-    fireEvent.click(screen.getByRole('button', { name: '预览差异' }));
+    fireEvent.click(screen.getByRole('button', { name: '预览同步' }));
     const dialog = within(await screen.findByRole('dialog', { name: '正文同步预览' }));
     expect(dialog.getByLabelText('正文同步本地路径').textContent).toBe(ha.path);
     expect(dialog.getByRole('link', { name: '正文同步飞书链接' }).getAttribute('href')).toBe(a.cloud!.url);

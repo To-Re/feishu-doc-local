@@ -113,7 +113,7 @@ describe('attach Feishu to an existing local project through HTTP',()=>{
     expect(result.value.snapshot.review.contentSync).toMatchObject({localXML:f.remote.get('Created1')!.xml,cloudXML:f.remote.get('Created1')!.xml});
     expect(f.calls).not.toContain('download');
     expect(result.value.snapshot.xml).toContain('本地正文');expect(f.calls.filter(c=>c==='create')).toHaveLength(1);
-    const dirs=await readdir(join(f.root,'history'));expect(dirs).toHaveLength(1);expect(await readFile(join(f.root,'history',dirs[0],'local.xml'),'utf8')).toBe(f.xml);
+    const dirs=await readdir(join(f.root,'sync-history'));expect(dirs).toHaveLength(1);expect(await readFile(join(f.root,'sync-history',dirs[0],'local.xml'),'utf8')).toBe(f.xml);
   });
   it('adopts a normalized create readback immediately through HTTP and archives the complete original draft',async()=>{
     const f=await fixture(),create=f.transport.create,xml=f.xml+'<p>这段本地说明不能丢</p><img path="@./asset.png"/>';
@@ -134,7 +134,7 @@ describe('attach Feishu to an existing local project through HTTP',()=>{
     expect(result.value.snapshot.review.comments[0]).toEqual({...review.comments[0],anchor:{...review.comments[0].anchor,state:'unverified'}});
     expect(result.value.snapshot.review.resources.items).toHaveLength(2);
     for(const item of result.value.snapshot.review.resources.items)expect(await readFile(join(f.root,item.path))).toEqual(png);
-    const evidence=join(f.root,'history',(await readdir(join(f.root,'history')))[0]);
+    const evidence=join(f.root,'sync-history',(await readdir(join(f.root,'sync-history')))[0]);
     expect(await readFile(join(evidence,'local.xml'),'utf8')).toBe(xml);
     expect(JSON.parse(await readFile(join(evidence,'local.review.json'),'utf8'))).toEqual(before.review);
     expect(await readFile(join(evidence,'cloud.xml'),'utf8')).toBe(remote);
@@ -159,7 +159,7 @@ describe('attach Feishu to an existing local project through HTTP',()=>{
     expect(result.value.snapshot.review.resources).toEqual({version:1,items:[]});
     expect(result.value.snapshot.review.contentSync).toMatchObject({localXML:f.xml,cloudXML:f.xml,localAssets:{}});
     expect(result.value.snapshot.review.contentSync.pending).toBeUndefined();expect(f.calls).not.toContain('download');
-    const evidence=join(f.root,'history',(await readdir(join(f.root,'history')))[0]);
+    const evidence=join(f.root,'sync-history',(await readdir(join(f.root,'sync-history')))[0]);
     expect(await readFile(join(evidence,'local.xml'),'utf8')).toBe(f.xml);expect(await readFile(join(evidence,'cloud.xml'),'utf8')).toBe(f.xml);
     expect(result.value.snapshot.review.operations.at(-1).summary).toContain(evidence);
   });
@@ -182,7 +182,7 @@ describe('attach Feishu to an existing local project through HTTP',()=>{
     const sidecar=JSON.parse(await readFile(f.session.document.reviewPath,'utf8'));
     expect(sidecar.contentSync).toMatchObject({documentId:'Created1',pending:{direction:'create',sourceXML:xml}});
     expect(sidecar.comments).toEqual(review.comments);expect((await f.store.get(f.id))!.cloud?.documentId).toBe('Created1');
-    const evidence=join(f.root,'history',(await readdir(join(f.root,'history')))[0]);
+    const evidence=join(f.root,'sync-history',(await readdir(join(f.root,'sync-history')))[0]);
     expect(await readFile(join(evidence,'cloud.xml'),'utf8')).toBe(f.remote.get('Created1')!.xml);
     expect(JSON.parse(await readFile(join(evidence,'cloud-after.json'),'utf8')).xml).toBe(f.remote.get('Created1')!.xml);
     expect(await readFile(join(evidence,'local.xml'),'utf8')).toBe(xml);
@@ -196,7 +196,7 @@ describe('attach Feishu to an existing local project through HTTP',()=>{
     expect(result.status).toBe(200);expect(result.value.warning).toContain('勿重复');
     expect(result.value.snapshot.xml).toBe(f.xml);expect(result.value.session.project.cloud.documentId).toBe('Created1');
     expect(result.value.snapshot.review.contentSync.pending).toMatchObject({direction:'create',sourceXML:f.xml});
-    const evidence=join(f.root,'history',(await readdir(join(f.root,'history')))[0]);
+    const evidence=join(f.root,'sync-history',(await readdir(join(f.root,'sync-history')))[0]);
     expect(await readFile(join(evidence,'local.xml'),'utf8')).toBe(f.xml);
     expect(await readFile(join(evidence,'cloud.xml'),'utf8')).toBe('<img token="image"/>');
     expect(f.calls.filter(c=>c==='download')).toHaveLength(1);

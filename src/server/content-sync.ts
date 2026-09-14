@@ -1,4 +1,4 @@
-import {randomUUID} from 'node:crypto';
+import {createHash,randomUUID} from 'node:crypto';
 import {mkdir,open,unlink,lstat,writeFile,realpath} from 'node:fs/promises';
 import {dirname,resolve} from 'node:path';
 import {createReview,type Snapshot,type ReviewComment} from '../core/types';
@@ -6,7 +6,7 @@ import type {ContentPreview,ReviewProject,SyncDirection,ContentSyncResult} from 
 import {comparableXML,contentNodes,exchangeXML,planContentWrites} from '../core/content-xml';
 import {indexCloudBlocks} from '../core/cloud-blocks';
 import {validateUnchangedLocalComments} from '../core/content-identity';
-import {localAssetHashes,cacheContentResources,hasCloudWhiteboards,type ContentResourceOptions} from './content-resources';
+import {localAssetHashes,cacheContentResources,hasCloudWhiteboards,snapshotResourceHashes,type ContentResourceOptions} from './content-resources';
 import {ContentCLIError,type ContentDocument,type ContentTransport} from './content-cli';
 import {FileError,type openLocalFile} from './files';
 
@@ -28,12 +28,17 @@ export async function withReviewLock<T>(file:LocalFile,run:()=>Promise<T>):Promi
   const info=await lock.stat();
   try{return await run();}finally{await lock.close();try{const current=await lstat(path);if(current.ino===info.ino&&current.dev===info.dev)await unlink(path);}catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error;}}
 }
-export async function saveContentEvidence(root:string,snapshot:Snapshot,remote?:ContentDocument):Promise<string>{
+export async function saveContentEvidence(root:string,snapshot:Snapshot,remote:ContentDocument|undefined,documentPath:string):Promise<string>{
+  const resourceHashes=await snapshotResourceHashes(documentPath,snapshot);
   await mkdir(root,{recursive:true,mode:0o700});
   const folder=resolve(await realpath(root),randomUUID());await mkdir(folder,{mode:0o700});
-  await writeFile(resolve(folder,'local.xml'),snapshot.xml,{flag:'wx',mode:0o600});
-  await writeFile(resolve(folder,'local.review.json'),JSON.stringify(snapshot.review,null,2),{flag:'wx',mode:0o600});
-  if(remote)await writeFile(resolve(folder,'cloud.json'),JSON.stringify(remote,null,2),{flag:'wx',mode:0o600});
+  const persist=async(name:string,text:string)=>{const handle=await open(resolve(folder,name),'wx',0o600);try{await handle.writeFile(text);await handle.sync();}finally{await handle.close();}};
+  const review=JSON.stringify(snapshot.review,null,2),hash=(text:string)=>createHash('sha256').update(text).digest('hex');
+  await persist('local.xml',snapshot.xml);
+  await persist('local.review.json',review);
+  if(remote)await persist('cloud.json',JSON.stringify(remote,null,2));
+  await persist('manifest.json',JSON.stringify({version:1,documentPath:await realpath(documentPath),createdAt:now(),revision:snapshot.revision,xmlHash:hash(snapshot.xml),reviewHash:hash(review),resourceHashes},null,2));
+  for(const path of [folder,await realpath(root)]){const directory=await open(path,'r');try{await directory.sync();}finally{await directory.close();}}
   return folder;
 }
 function checkLocal(snapshot:Snapshot,revision:string,project:ReviewProject){
@@ -101,7 +106,7 @@ export async function applyContent(file:LocalFile,project:ReviewProject,prepared
       throw new FileError('飞书内容在预览后已变化，请重新预览，当前未覆盖。','CONFLICT');
     if(view.direction==='push'&&!sameAssets(await localAssetHashes(local.xml,file.path),prepared.assets))throw new FileError('本地素材在预览后已变化，请重新预览。','CONFLICT');
     if(view.status==='equal')return {snapshot:local,project,summary:'两端没有待同步的内容。',warnings:[]};
-    const evidence=await saveContentEvidence(historyRoot,local,remote),warnings=[...view.warnings];
+    const evidence=await saveContentEvidence(historyRoot,local,remote,file.path),warnings:string[]=[];
     const originalXML=local.xml;
     const publishing=view.direction==='push'&&view.action!=='refresh-local';
     const adoptingPublished=publishing&&options.adoptPublished===true;

@@ -79,7 +79,7 @@ export async function initializeProjectCloud({cloud,project,local,writable,store
   transport:ContentTransport;historyRoot:string;remote?:ContentDocument;defaultDirection?:SyncDirection;operation?:'project.create'|'project.bind';options?:ContentApplyOptions;
 }):Promise<{project:ReviewProject;warning?:string}>{
   const path=writable.path;
-  const evidence=await saveContentEvidence(historyRoot,local,remote);
+  const evidence=await saveContentEvidence(historyRoot,local,remote,path);
   const warnings:string[]=[];
   let sentAssets:Record<string,string>|undefined;
   try{

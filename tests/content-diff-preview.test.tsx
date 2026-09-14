@@ -12,7 +12,7 @@ const cloudXML = '<p id="a">飞书版本</p>\r\n<p>保留 &amp; 实体</p>';
 function setup(overrides: Partial<ContentPreview> = {}, extra: Partial<React.ComponentProps<typeof ContentSync>> = {}) {
   const preview: ContentPreview = { id: 'preview', projectId: project.id, direction: 'pull', status: 'ready', localXML, cloudXML, summary: '同步预览', warnings: [], expiresAt: '2099-01-01T00:00:00Z', ...overrides };
   const onExecute = vi.fn(), onPreview = vi.fn(), onClose = vi.fn();
-  const rendered = render(<ContentSync project={project} direction="pull" busy={false} disabled={false} preview={preview} stale={false} error="" message="" onDirection={vi.fn()} onPreview={onPreview} onExecute={onExecute} onClose={onClose} {...extra}/>);
+  const rendered = render(<ContentSync project={project} direction={preview.direction} open={true} busy={false} disabled={false} preview={preview} stale={false} error="" message="" onDirection={vi.fn()} onPreview={onPreview} onExecute={onExecute} onClose={onClose} {...extra}/>);
   return { ...rendered, onExecute, onPreview, onClose };
 }
 
@@ -31,7 +31,7 @@ it.each(['pull', 'push'] as const)('uses the preview direction for replacement p
   expect(screen.getByLabelText('本地正文源码').textContent).toBe(localXML);
   expect(screen.getByLabelText('飞书正文源码').textContent).toBe(cloudXML);
   expect(onExecute).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole('button', { name: '关闭' }));
+  fireEvent.click(screen.getByRole('button', { name: '关闭正文同步预览' }));
   expect(onClose).toHaveBeenCalledOnce();
   expect(onExecute).not.toHaveBeenCalled();
 });

@@ -8,6 +8,8 @@ import {createLocalServer} from '../src/server/server';
 import {openProjectStore} from '../src/server/projects';
 import type {ContentTransport,ContentDocument} from '../src/server/content-cli';
 import {createReview,type Snapshot} from '../src/core/types';
+import {openLocalFile} from '../src/server/files';
+import {saveContentEvidence} from '../src/server/content-sync';
 
 const folders:string[]=[],servers:Server[]=[];
 afterEach(async()=>{for(const server of servers.splice(0))await new Promise<void>((done,reject)=>server.close(e=>e?reject(e):done()));for(const folder of folders.splice(0))await rm(folder,{recursive:true,force:true});});
@@ -44,6 +46,34 @@ async function fixture(cloudAvailable=true){
 }
 
 describe('multi-project actual HTTP and filesystem journeys',()=>{
+  it('previews and restores local snapshots without cloud access, prevents cross-project replay, and can undo the restore',async()=>{
+    const f=await fixture(false),file=await openLocalFile(f.file),original=await file.read();
+    const evidence=await saveContentEvidence(join(f.root,'history'),original,undefined,file.path);
+    const xml='<title>当前修改</title><p>需要保留在新快照中</p>',review=createReview(file.name,xml);
+    review.operations.push({id:'test-snapshot',type:'content.pull',author:'test',at:new Date().toISOString(),summary:'测试操作；双方备份：'+evidence});
+    const saved=await file.save(xml,review,original.revision),base='/api/projects/'+f.session.project.id;
+    const preview=await f.send(base+'/restore-preview',{revision:saved.revision});expect(preview.status).toBe(200);
+    expect(preview.value.localXML).toBe(xml);expect(preview.value.snapshotXML).toBe(original.xml);expect(await readFile(f.file,'utf8')).toBe(xml);
+    const other=await f.create('其他本地稿','');
+    expect((await f.send('/api/projects/'+other.value.session.project.id+'/restore',{previewId:preview.value.id})).status).toBe(409);
+    const restored=await f.send(base+'/restore',{previewId:preview.value.id});expect(restored.status).toBe(200);
+    expect(restored.value.snapshot.xml).toBe(original.xml);expect(await readFile(f.file,'utf8')).toBe(original.xml);
+    expect((await f.send(base+'/restore',{previewId:preview.value.id})).status).toBe(409);
+    const undoPreview=await f.send(base+'/restore-preview',{revision:restored.value.snapshot.revision});expect(undoPreview.status).toBe(200);
+    expect(undoPreview.value.snapshotXML).toBe(xml);
+    const undone=await f.send(base+'/restore',{previewId:undoPreview.value.id});expect(undone.status).toBe(200);
+    expect(undone.value.snapshot.xml).toBe(xml);expect(f.calls).toEqual([]);
+  });
+  it('rejects restoration after the local document changes since preview',async()=>{
+    const f=await fixture(false),file=await openLocalFile(f.file),original=await file.read();
+    const evidence=await saveContentEvidence(join(f.root,'history'),original,undefined,file.path),review=createReview(file.name,original.xml);
+    review.operations.push({id:'test-snapshot',type:'content.pull',author:'test',at:new Date().toISOString(),summary:'测试操作；双方备份：'+evidence});
+    const saved=await file.save(original.xml,review,original.revision),base='/api/projects/'+f.session.project.id;
+    const preview=await f.send(base+'/restore-preview',{revision:saved.revision});expect(preview.status).toBe(200);
+    const newer='<title>预览后的新修改</title>';await writeFile(f.file,newer);
+    const result=await f.send(base+'/restore',{previewId:preview.value.id});expect(result.status).toBe(409);
+    expect(await readFile(f.file,'utf8')).toBe(newer);expect(f.calls).toEqual([]);
+  });
   it('bootstraps one project, creates pure local files and persists registration across store instances',async()=>{
     const f=await fixture(false);expect(f.session.project.localPath).toBe(f.file);expect(f.session.cloud).toBeUndefined();
     const a=await f.create('纯本地','');expect(a.status).toBe(200);expect(a.value.snapshot.xml).toContain('<title>纯本地</title>');

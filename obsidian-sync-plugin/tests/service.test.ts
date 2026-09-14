@@ -5,11 +5,27 @@ import {join} from 'node:path';
 import {SyncService} from '../src/service';
 import {createReview} from '../../src/core/types';
 import {openLocalFile} from '../../src/server/files';
+import {saveContentEvidence} from '../../src/server/content-sync';
 import {openProjectStore} from '../../src/server/projects';
 import type {ContentCLIRunner} from '../../src/server/content-cli';
 const folders:string[]=[];const url='https://example.feishu.cn/docx/Doc';
 const ok=(data:unknown)=>JSON.stringify({ok:true,data});
 const get=(args:readonly string[],name:string)=>args[args.indexOf(name)+1];
+it('restores a local snapshot without CLI configuration and consumes each preview once',async()=>{
+  const t=await fixture(),file=await openLocalFile(t.path),original=await file.read();
+  const evidence=await saveContentEvidence(join(t.root,'.review-sync-history'),original,undefined,file.path);
+  const changed='<title>需要可撤回的当前稿</title>',review=createReview(file.name,changed);
+  review.operations.push({id:'local-history',type:'content.pull',author:'test',at:new Date().toISOString(),summary:'测试操作；双方备份：'+evidence});
+  await file.save(changed,review,original.revision);
+  const runner=vi.fn(async()=>{throw new Error('Restoration must not invoke a CLI');});
+  const local=new SyncService({vaultRoot:t.root,catalogPath:join(t.root,'unused/projects.json'),profile:{command:'',args:[]},runner});
+  const prepared=await local.prepareRestore(t.path);expect(prepared.view.snapshotXML).toBe(t.xml);expect(await readFile(t.path,'utf8')).toBe(changed);
+  await expect(local.applyRestore(t.path,structuredClone(prepared))).rejects.toThrow('预览无效');
+  const restored=await local.applyRestore(t.path,prepared);expect(restored.snapshot.xml).toBe(t.xml);
+  await expect(local.applyRestore(t.path,prepared)).rejects.toThrow('已使用');
+  const undo=await local.prepareRestore(t.path);expect(undo.view.snapshotXML).toBe(changed);
+  local.dispose();await expect(local.applyRestore(t.path,undo)).rejects.toThrow('卸载');expect(runner).not.toHaveBeenCalled();
+});
 afterEach(async()=>{await Promise.all(folders.splice(0).map(folder=>rm(folder,{recursive:true,force:true})));});
 async function fixture(xml='<title>本地稿</title><p>正文</p>'){
   const root=await realpath(await mkdtemp(join(tmpdir(),'obsidian-sync-')));folders.push(root);const path=join(root,'draft.xml');await writeFile(path,xml);

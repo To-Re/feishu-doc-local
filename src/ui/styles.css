@@ -222,8 +222,5 @@
   .document-navigation>.project-sidebar,.document-navigation .document-outline-body{max-height:200px}
 }
 
-.content-sync-secondary,.content-sync-preview{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:8px 10px;border:1px solid var(--border);border-radius:5px;white-space:nowrap;background:#fff;color:#373c43}
-.content-sync-preview{border-color:transparent;color:#646a73;padding-inline:6px}
-.content-sync-control>[role=status]{font-size:12px;color:#646a73}
 .content-sync-decision{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid #eff0f1;padding-bottom:12px;background:#fff}
 .content-sync-decision>.project-dialog-actions{margin:0}

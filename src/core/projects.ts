@@ -26,6 +26,11 @@ export interface ContentPreview {
   localXML:string; cloudXML:string; warnings:string[]; summary:string; expiresAt:string;
 }
 export interface ContentSyncResult { snapshot:Snapshot; project:ReviewProject; summary:string; warnings:string[]; }
+export interface ContentRestorePreview {
+  id:string; localPath:string; snapshotPath:string; createdAt:string;
+  localXML:string; snapshotXML:string; warnings:string[]; expiresAt:string;
+}
+export interface ContentRestoreResult { snapshot:Snapshot; summary:string; warnings:string[]; }
 export interface ContentSyncState {
   version:1; documentId:string; localXML:string; cloudXML:string; cloudRevision:number; syncedAt:string;
   localAssets?:Record<string,string>;

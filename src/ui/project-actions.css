@@ -13,6 +13,8 @@
 .project-management .configuration-path-actions>button{width:auto;min-width:56px;padding:6px 11px;font-size:12px;border:1px solid #dee0e3;border-radius:5px}
 .project-management .configuration-path-actions>.primary{background:#3370ff;color:#fff;border-color:#3370ff}
 .project-management .configuration-settings .project-error{color:#b42318}
+.project-management .project-history-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #eff0f1;margin-top:16px;padding-top:12px;font-size:12px;color:#646a73}
+.project-management .project-history-actions>button{width:auto;padding:6px 10px;border:1px solid #dee0e3;border-radius:5px;font-size:12px;color:#373c43;background:#fff}
 .project-action-tooltip{position:fixed;z-index:90;box-sizing:border-box;padding:10px 12px;border-radius:6px;background:#292d34;color:#fff;font-size:12px;font-weight:400;line-height:1.65;white-space:normal;overflow-wrap:anywhere;box-shadow:0 4px 14px #1f232926;pointer-events:none}
 @media(max-width:760px){
   .document-context .document-identity{align-items:flex-start}

@@ -199,7 +199,7 @@ describe('whole-document source mode through the real editor', () => {
     session = { ...session, project }; await open(); enterSource(); typeSource(invalid);
     fireEvent.click(screen.getByRole('combobox', { name: '当前项目' }));
     fireEvent.click(await screen.findByRole('option', { name: other.name }));
-    fireEvent.click(screen.getByRole('button', { name: '预览差异' }));
+    fireEvent.click(screen.getByRole('button', { name: '预览同步' }));
     expect(requests.filter(request => request.method !== 'GET')).toHaveLength(0);
     expect(screen.getByRole('combobox', { name: '当前项目' }).textContent).toContain(project.name);
     expect(source().value).toBe(invalid); expect(screen.getAllByText(/源码尚未通过校验/).length).toBeGreaterThan(0);

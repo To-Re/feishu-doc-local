@@ -31,3 +31,12 @@
 .feishu-doc-local-sync-modal .feishu-sync-import-preview pre{max-height:42vh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;background:var(--background-secondary);font-size:var(--font-smallest)}
 
 .feishu-doc-local-sync-modal .feishu-sync-sticky-actions{position:sticky;top:0;z-index:3;padding:10px 0;background:var(--background-primary);border-bottom:1px solid var(--background-modifier-border)}
+
+/* Preview uses the same restrained action hierarchy as the web editor. */
+.feishu-doc-local-sync-modal .feishu-sync-preview-actions{align-items:center;justify-content:space-between;gap:12px;margin:12px 0}
+.feishu-doc-local-sync-modal .feishu-sync-preview-actions .feishu-sync-segments{flex-wrap:nowrap;gap:2px;padding:3px;border:1px solid var(--background-modifier-border);border-radius:7px;background:var(--background-secondary)}
+.feishu-doc-local-sync-modal .feishu-sync-preview-actions button{min-height:32px;padding:6px 12px;border:1px solid var(--background-modifier-border);border-radius:5px;box-shadow:none;white-space:nowrap}
+.feishu-doc-local-sync-modal .feishu-sync-preview-actions .feishu-sync-segments button{border:0;background:transparent;color:var(--text-muted)}
+.feishu-doc-local-sync-modal .feishu-sync-preview-actions .feishu-sync-segments button[aria-pressed=true]{background:var(--background-primary);color:var(--interactive-accent);box-shadow:0 1px 3px #00000012}
+.feishu-doc-local-sync-modal .feishu-sync-preview-actions>button.mod-cta{border-color:var(--interactive-accent);background:var(--interactive-accent);color:var(--text-on-accent)}
+.feishu-doc-local-sync-modal .feishu-sync-preview-actions button:focus-visible{outline:2px solid var(--interactive-accent);outline-offset:2px}

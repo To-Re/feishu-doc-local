@@ -9,6 +9,7 @@ import {openProjectStore,validateProjectRegistrations,type ProjectStore} from '.
 import {createReviewProject} from '../../src/server/project-create';
 import {bindReviewProject} from '../../src/server/project-bind';
 import {prepareContent,applyContent,withReviewLock,type PreparedContent} from '../../src/server/content-sync';
+import {prepareContentRestore,applyContentRestore,type PreparedContentRestore} from '../../src/server/content-history';
 import {syncCloudComments} from '../../src/server/cloud-sync';
 import type {CreateProjectInput,ProjectCloud,ReviewProject,SyncDirection} from '../../src/core/projects';
 import {prepareCloudImport,importCloudDocument,type ImportPlan,type PreparedImport} from './import';
@@ -20,6 +21,7 @@ export interface SyncServiceOptions {vaultRoot:string;catalogPath:string;profile
 export class SyncService {
   private store?:ProjectStore;private stopped=false;private running=false;
   private imports=new WeakMap<PreparedImport,ImportPlan>();
+  private restores=new WeakSet<PreparedContentRestore>();
   constructor(private readonly options:SyncServiceOptions){}
   dispose(){this.stopped=true;}
   private assertActive(){if(this.stopped)throw new Error('飞书同步扩展已卸载。');}
@@ -93,6 +95,18 @@ export class SyncService {
   });}
   async preview(path:string,direction:SyncDirection){return this.guarded(async()=>{const file=await this.document(path),project=await this.project(file.path);if(!project?.cloud)throw new Error('请先关联飞书文档。');const snapshot=await file.read();return prepareContent(file,project,snapshot.revision,direction,this.content());});}
   async apply(path:string,prepared:PreparedContent){return this.guarded(async()=>{const file=await this.document(path),project=await this.project(file.path);if(!project?.cloud||project.id!==prepared.view.projectId)throw new FileError('关联已变化，请重新预览。','CLOUD_BINDING');return applyContent(file,project,prepared,this.content(),resolve(dirname(file.path),'.review-sync-history'),{directoryPrefix:'feishu-assets-',adoptPublished:true});});}
+  async prepareRestore(path:string){return this.guarded(async()=>{
+    const file=await this.document(path),snapshot=await file.read();
+    const prepared=await prepareContentRestore(file,snapshot.revision,resolve(dirname(file.path),'.review-sync-history'),[resolve(dirname(this.options.catalogPath),'sync-history')]);
+    this.assertActive();this.restores.add(prepared);return prepared;
+  });}
+  async applyRestore(path:string,prepared:PreparedContentRestore){return this.guarded(async()=>{
+    if(!this.restores.has(prepared))throw new FileError('恢复预览无效或已使用，请重新预览。','CONFLICT');
+    const file=await this.document(path);
+    if(file.path!==prepared.view.localPath)throw new FileError('恢复预览属于其他文档，请重新预览。','CONFLICT');
+    this.assertActive();this.restores.delete(prepared);
+    return applyContentRestore(file,prepared,resolve(dirname(file.path),'.review-sync-history'),[resolve(dirname(this.options.catalogPath),'sync-history')]);
+  });}
   async comments(path:string){return this.guarded(async()=>{const file=await this.document(path),project=await this.project(file.path);if(!project?.cloud)throw new Error('请先关联飞书文档，并预览确认本地已采用对应的块 ID。');const snapshot=await file.read(),profile=validateProfile(this.options.profile);
     const transport=createCloudCLI({...profile,...project.cloud},async(command,args)=>{const result=await this.options.runner(command,args);if(typeof result==='string')return result;if(result.exitCode!==0)throw new Error('评论 CLI 未确认成功。');return result.stdout;});
     return syncCloudComments(file,snapshot.revision,{localPath:file.path,...project.cloud,transport});
