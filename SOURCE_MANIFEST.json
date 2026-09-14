@@ -53,8 +53,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 6187,
-      "sha256": "d4e284570ac6b417787e9a0826d5be451d977e834e5d492592c675ddf3adf42c"
+      "bytes": 6285,
+      "sha256": "6e444811968f4d9e8defdbdfdb2e71327fbfb762eaf9e526f5097ce22b8a088e"
     },
     {
       "path": "SECURITY.md",
@@ -1348,8 +1348,8 @@
     },
     {
       "path": "obsidian-plugin/README.md",
-      "bytes": 3951,
-      "sha256": "272ab35d991dfc989e62e5473a5c849af42cbb209a68a8aabee7b143dc2e113e"
+      "bytes": 4077,
+      "sha256": "fe15b1a55d576a36a997311c7b29dcdac2bfc661b45f29cf224f0b4ab7be3e35"
     },
     {
       "path": "obsidian-plugin/build.mjs",
@@ -1378,8 +1378,8 @@
     },
     {
       "path": "obsidian-plugin/src/docxml-file.ts",
-      "bytes": 2600,
-      "sha256": "d20c33ea799d11f629deae187550acd94aa9ad7f86b76ffbf4dc8a14678ac528"
+      "bytes": 2824,
+      "sha256": "1f8f1ebff394b16a66b04121707e23a4fc01e3ed3e6e62d3199cfb9360df7a04"
     },
     {
       "path": "obsidian-plugin/src/drafts.ts",
@@ -1393,8 +1393,8 @@
     },
     {
       "path": "obsidian-plugin/src/plugin.tsx",
-      "bytes": 25019,
-      "sha256": "d0923faa32e7fbdd47c99e3740f3f6468ba6b37d909b693a742b2c125b90d4da"
+      "bytes": 26611,
+      "sha256": "9b9c99ff6cabc4fa454bbf3f109dcd1e128517963427ae02cae36cf404e73b21"
     },
     {
       "path": "obsidian-plugin/src/render.ts",
@@ -1408,13 +1408,13 @@
     },
     {
       "path": "obsidian-plugin/src/styles.css",
-      "bytes": 7850,
-      "sha256": "c8ab501a9d0feecb78c8232a83ed411b2ea1af1d2836b38a1a63a01c0dc504b0"
+      "bytes": 8415,
+      "sha256": "4f50cc58e352c301b15680df7ddd83256a96727cf1b65ab5ccdd476784de7eff"
     },
     {
       "path": "obsidian-plugin/tests/distribution.test.ts",
-      "bytes": 1260,
-      "sha256": "ee6991b77675c69cbbac48c03750e35069cd7957ef68ca80fa6f7689e9252fba"
+      "bytes": 1825,
+      "sha256": "5df2a205717230d4547d1f6af47d11621e7b3b781cf2080c04faef1c545c61ad"
     },
     {
       "path": "obsidian-plugin/tests/docxml-file.test.ts",
@@ -1428,8 +1428,8 @@
     },
     {
       "path": "obsidian-plugin/tests/host.test.ts",
-      "bytes": 23384,
-      "sha256": "53861c76eb4ad249cb7809427f7621f722857824715b1aa1d0f96b3342fa2d80"
+      "bytes": 29058,
+      "sha256": "638039b9bcf153389a5da9fa91661514c7f9629121138644e6132a98b8d6ccf0"
     },
     {
       "path": "obsidian-plugin/tests/render.test.ts",

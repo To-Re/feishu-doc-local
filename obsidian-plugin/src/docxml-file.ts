@@ -11,7 +11,7 @@ const documentBlocks=new Set([
 const documentShells=new Set(['html','head','body','document','svg']);
 
 /** Recognize the local DocxXML subset, not the origin of these bytes. A plain
- * <p> fragment is intentionally accepted only through the explicit open flow.
+ * <p> fragment remains compatible with existing local articles.
  * The shared parser is also deliberately permissive about unknown blocks, so
  * successful parsing alone must never identify an arbitrary XML document. */
 export function assertDocxXML(xml:string):void{
@@ -26,7 +26,7 @@ export function assertDocxXML(xml:string):void{
 
 /** Only inspect the selected vault file. No vault-wide content scan or sidecar
  * creation takes place while deciding whether this editor can open it. */
-export async function assertDocxXMLFile(vault:Vault,file:TFile):Promise<void>{
+export async function readVaultXML(vault:Vault,file:TFile):Promise<string>{
   const path=file.path,config=vault.configDir;
   if(!safeDraftPath(path)||file.extension.toLowerCase()!=='xml'||(config&&(path===config||path.startsWith(config+'/'))))throw new Error('请选择库内的飞书 XML 文档，不读取 Obsidian 配置文件。');
   if(vault.getFileByPath(path)!==file)throw new Error('文档位置已改变，请重新选择。');
@@ -34,5 +34,10 @@ export async function assertDocxXMLFile(vault:Vault,file:TFile):Promise<void>{
   if(size>maximumXMLBytes)throw new Error('XML 超过 5 MB，未打开或修改。');
   const xml=await vault.read(file);
   if(file.path!==path||vault.getFileByPath(path)!==file||file.stat.size!==size||file.stat.mtime!==mtime)throw new Error('读取时文档已变化，请重新选择。');
-  assertDocxXML(xml);
+  if(new TextEncoder().encode(xml).length>maximumXMLBytes)throw new Error('XML 超过 5 MB，未打开或修改。');
+  return xml;
+}
+
+export async function assertDocxXMLFile(vault:Vault,file:TFile):Promise<void>{
+  assertDocxXML(await readVaultXML(vault,file));
 }

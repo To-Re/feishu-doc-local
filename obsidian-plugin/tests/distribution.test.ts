@@ -17,3 +17,11 @@ it('ships a desktop CommonJS plugin with isolated styles, bundled fonts and lice
   expect(await readFile(directory+'LICENSE','utf8')).toContain('MIT License');
   expect(await readFile(directory+'THIRD_PARTY_NOTICES.md','utf8')).toMatch(/mermaid/i);
 });
+
+it('lets the ordinary XML preview scroll inside the host with overflow hidden',async()=>{
+  const styles=postcss.parse(await readFile(new URL('../dist/styles.css',import.meta.url),'utf8'));
+  const declarations:Record<string,string>={};
+  styles.walkRules(rule=>{if(rule.selectors.includes('.feishu-doc-local-view .fdl-plain-xml'))rule.walkDecls(declaration=>{declarations[declaration.prop]=declaration.value;});});
+  expect(declarations).toMatchObject({flex:'1','min-height':'0','min-width':'0',overflow:'auto'});
+  expect(declarations.padding).toBeTruthy();
+});

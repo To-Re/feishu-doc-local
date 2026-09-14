@@ -48,7 +48,7 @@
 
 ### Obsidian
 
-从 [Releases](https://github.com/To-Re/feishu-doc-local/releases) 下载基础插件，将解压后的 `feishu-doc-local/` 放入库的 `.obsidian/plugins/`，在第三方插件设置中启用。打开命令面板，执行“本地飞书文档：打开飞书 XML 文档”。插件只在明确打开并通过 DocxXML 校验后使用阅读器，不接管所有 `.xml` 文件。
+从 [Releases](https://github.com/To-Re/feishu-doc-local/releases) 下载基础插件，将解压后的 `feishu-doc-local/` 放入库的 `.obsidian/plugins/`，在第三方插件设置中启用。在文件列表中点击 XML，插件会自动判断内容：DocxXML 进入文档编辑器，普通 XML 显示为只读原文。普通 XML 不创建评论文件，也不启用飞书同步。命令面板中的“本地飞书文档：打开飞书 XML 文档”也可选择文档。
 
 只做本地编辑，到这里即可。需要同步飞书时，再安装可选扩展并配置官方 CLI 独立可执行文件的路径，Node 字段留空。详见[基础插件安装](obsidian-plugin/README.md)和[同步扩展配置](obsidian-sync-plugin/README.md)。
 

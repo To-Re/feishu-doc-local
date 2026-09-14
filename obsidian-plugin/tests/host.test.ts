@@ -59,9 +59,14 @@ beforeEach(async()=>{
 afterEach(()=>{document.body.replaceChildren();vi.restoreAllMocks();vi.unstubAllGlobals();});
 
 describe('Obsidian host lifecycle',()=>{
-  it('does not associate all XML files or accept them into an existing reader based on extension',()=>{
-    expect(plugin.registerExtensions).not.toHaveBeenCalled();expect(plugin.addCommand).toHaveBeenCalledWith(expect.objectContaining({id:'open-xml',name:'打开飞书 XML 文档'}));
-    const target=view();expect(target.canAcceptExtension('xml')).toBe(false);expect(target.canAcceptExtension('XML')).toBe(false);
+  it('registers a content router for XML and retains the explicit DocxXML command',()=>{
+    expect(plugin.registerExtensions).toHaveBeenCalledExactlyOnceWith(['xml'],'feishu-doc-local-xml');expect(plugin.addCommand).toHaveBeenCalledWith(expect.objectContaining({id:'open-xml',name:'打开飞书 XML 文档'}));
+    const target=view();expect(target.canAcceptExtension('xml')).toBe(true);expect(target.canAcceptExtension('XML')).toBe(true);expect(target.canAcceptExtension('md')).toBe(false);
+  });
+  it('does not claim XML leaf reuse after another plugin has registered the extension',async()=>{
+    vi.mocked(plugin.registerExtensions).mockImplementationOnce(()=>{throw new Error('already registered');});await plugin.onload();
+    expect(plugin.routesXML()).toBe(false);expect(view().canAcceptExtension('xml')).toBe(false);expect(state.notices).toContain('XML 已由其他插件关联，未改变该关联；可用“打开飞书 XML 文档”命令打开。');
+    await plugin.open(vault.add('notes/a.xml'));expect(state.roots).toHaveLength(1);
   });
   it('rejects an ordinary XML before creating a view, capability or review file, but explicitly opens a DocxXML fragment',async()=>{
     const ordinary=vault.add('notes/config.xml','<project><p>配置内容</p></project>');
@@ -71,17 +76,18 @@ describe('Obsidian host lifecycle',()=>{
     const article=vault.add('notes/article.xml','<p>无标题的已有正文</p>');await plugin.open(article);
     expect(state.roots).toHaveLength(1);expect(state.roots[0].host.initial.snapshot.xml).toBe('<p>无标题的已有正文</p>');
   });
-  it('blocks restored ordinary-XML leaves and refuses to replace an active draft with a configuration file',async()=>{
+  it('routes restored ordinary XML to raw text and saves the previous article before switching to it',async()=>{
     const ordinary=vault.add('notes/config.xml','<root/>');const restored=await load(ordinary);
-    expect(restored.contentEl.textContent).toContain('不是可识别');expect(state.roots).toHaveLength(0);expect(stores).toHaveLength(0);
+    expect(restored.contentEl.querySelector('pre')?.textContent).toBe('<root/>');expect(state.roots).toHaveLength(0);expect(stores).toHaveLength(0);
     const article=vault.add('notes/a.xml'),target=await load(article),controller=ready(undefined,sampleRecovery());target.file=ordinary;
     await target.onLoadFile(ordinary);
-    expect(target.file).toBe(article);expect(target.documentPath()).toBe(article.path);expect(controller.prepareClose).not.toHaveBeenCalled();
-    expect(state.roots).toHaveLength(1);expect(state.roots[0].unmount).not.toHaveBeenCalled();expect(vault.create).not.toHaveBeenCalled();
+    expect(target.file).toBe(ordinary);expect(target.documentPath()).toBe('');expect(controller.prepareClose).toHaveBeenCalledOnce();
+    expect(state.roots).toHaveLength(1);expect(state.roots[0].unmount).toHaveBeenCalledOnce();expect(vault.create).not.toHaveBeenCalled();
+    expect(target.contentEl.querySelector('pre')?.textContent).toBe('<root/>');expect(plugin.drafts.list()).toHaveLength(1);expect(plugin.drafts.list()[0].path).toBe(article.path);
   });
   it('rechecks the loaded snapshot if a selected DocxXML is replaced with ordinary XML during opening',async()=>{
     const article=vault.add('notes/a.xml');state.factory=async directory=>{vault.texts.set(article.path,'<project/>');return createStore(directory);};
-    const target=await load(article);expect(target.contentEl.textContent).toContain('不是可识别');expect(state.roots).toHaveLength(0);
+    const target=await load(article);expect(target.contentEl.querySelector('pre')?.textContent).toBe('<project/>');expect(state.roots).toHaveLength(0);
     expect(plugin.drafts.list()).toEqual([]);expect(stores[0].dispose).toHaveBeenCalled();expect(vault.create).not.toHaveBeenCalled();
   });
   it('retains a late controller from the live article while an invalid file selection is being checked',async()=>{
@@ -95,6 +101,51 @@ describe('Obsidian host lifecycle',()=>{
   });
   it('refuses a sync lease for ordinary XML and releases its path lock after rejection',async()=>{
     const ordinary=vault.add('notes/config.xml','<root/>');await expect(plugin.acquire(ordinary.path)).rejects.toThrow('不是可识别');expect(plugin.isLocked(ordinary.path)).toBe(false);
+  });
+  it('keeps the editor and its recovery if saving fails while routing to plain XML',async()=>{
+    const article=vault.add('notes/a.xml'),target=await load(article),controller=ready(undefined,sampleRecovery()),ordinary=vault.add('notes/config.xml','<root/>');
+    vi.mocked(controller.prepareClose).mockRejectedValueOnce(new Error('保存失败'));target.file=ordinary;
+    await expect(target.onLoadFile(ordinary)).rejects.toThrow('保存失败');
+    expect(target.file).toBe(article);expect(target.documentPath()).toBe(article.path);expect(target.contentEl.querySelector('pre')).toBeNull();
+    expect(state.roots[0].unmount).not.toHaveBeenCalled();expect(plugin.drafts.list()).toHaveLength(1);expect(vault.texts.get(ordinary.path)).toBe('<root/>');
+  });
+  it.each([
+    '<root><script>throw new Error("never execute")</script><img src="https://example.invalid/pixel" onerror="alert(1)"/></root>',
+    '<html><body><p>网页</p><iframe src="https://example.invalid/"/></body></html>',
+    '<p>未闭合的片段',
+    '<!DOCTYPE root [<!ENTITY text SYSTEM "file:///not-read">]><root>&text;</root>',
+  ])('shows ordinary or malformed XML as literal readonly text without allocating editor capabilities',async xml=>{
+    const file=vault.add('notes/plain.xml',xml),target=await load(file);
+    expect(target.contentEl.querySelector('pre')?.textContent).toBe(xml);
+    expect(target.contentEl.querySelector('.fdl-plain-xml')).not.toBeNull();expect(target.contentEl.textContent).not.toContain('已保存到本地');
+    expect(target.contentEl.querySelector('script,img,iframe,textarea,[contenteditable=true]')).toBeNull();
+    expect(state.roots).toHaveLength(0);expect(stores).toHaveLength(0);expect(vault.create).not.toHaveBeenCalled();expect(plugin.drafts.list()).toEqual([]);
+    expect(target.uses(file.path)).toBe(false);expect(target.documentPath()).toBe('');await expect(target.acquireSync()).rejects.toThrow('不支持飞书同步');
+    await target.onClose();expect(plugin.saveData).not.toHaveBeenCalled();expect(vault.texts.get(file.path)).toBe(xml);
+  });
+  it('can leave the readonly XML route for DocxXML and does not migrate comments when plain XML is renamed',async()=>{
+    const plain=vault.add('notes/config.xml','<root/>'),target=await load(plain),rename=vi.spyOn(plugin,'renameDocument');
+    vault.move(plain,'notes/settings.xml');await target.onRename(plain);expect(rename).not.toHaveBeenCalled();expect(vault.create).not.toHaveBeenCalled();
+    const article=vault.add('notes/a.xml');await target.onLoadFile(article);
+    expect(target.file).toBe(article);expect(target.documentPath()).toBe(article.path);expect(target.contentEl.querySelector('pre')).toBeNull();expect(state.roots).toHaveLength(1);
+  });
+  it('limits large XML without reading its full content or creating a draft',async()=>{
+    const large=vault.add('notes/large.xml','unused');large.stat.size=5_000_001;const read=vi.spyOn(vault,'read');
+    const target=await load(large);expect(read).not.toHaveBeenCalled();expect(target.contentEl.textContent).toContain('5 MB');
+    expect(stores).toHaveLength(0);expect(plugin.drafts.list()).toEqual([]);expect(vault.create).not.toHaveBeenCalled();
+  });
+  it('discards an older plain XML read when a newer file is selected before it completes',async()=>{
+    const plain=vault.add('notes/config.xml','<root/>'),article=vault.add('notes/a.xml'),read=deferred<string>(),started=deferred<void>(),original=vault.read;
+    vault.read=async file=>{if(file===plain){started.resolve();return read.promise;}return original(file);};
+    const target=view(),first=target.onLoadFile(plain);await started.promise;const second=target.onLoadFile(article);read.resolve('<root/>');await Promise.all([first,second]);
+    expect(target.file).toBe(article);expect(target.contentEl.querySelector('pre')).toBeNull();expect(state.roots).toHaveLength(1);expect(state.roots[0].host.initial.document.handle.path).toBe(article.path);
+  });
+  it('rejects a replaced plain XML handle after waiting for the prior editor to finish saving',async()=>{
+    const article=vault.add('notes/a.xml'),target=await load(article),controller=ready(undefined,sampleRecovery()),plain=vault.add('notes/config.xml','<root>原文件</root>');
+    const closing=deferred<void>(),started=deferred<void>();vi.mocked(controller.prepareClose).mockImplementationOnce(async()=>{started.resolve();await closing.promise;});
+    const loading=target.onLoadFile(plain);await started.promise;vault.add(plain.path,'<root>替换后的文件</root>');closing.resolve();await loading;
+    expect(target.contentEl.querySelector('pre')).toBeNull();expect(target.contentEl.textContent).toContain('位置已改变');expect(target.documentPath()).toBe('');
+    expect(vault.texts.get(plain.path)).toBe('<root>替换后的文件</root>');expect(vault.create).not.toHaveBeenCalled();
   });
   it('serializes concurrent loads and disposes the stale capability without rendering it',async()=>{
     const a=vault.add('notes/a.xml'),b=vault.add('notes/b.xml'),pending=deferred<BrowserDocumentStore>(),started=deferred<void>(),aStore=createStore('notes');
