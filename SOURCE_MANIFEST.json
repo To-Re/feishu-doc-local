@@ -1568,13 +1568,13 @@
     },
     {
       "path": "src/browser/BrowserApp.tsx",
-      "bytes": 45576,
-      "sha256": "96813d798436b61c3054e97c4d0c37e59c0f171af8a7d073fa75c6e44e3a2633"
+      "bytes": 45867,
+      "sha256": "3dfa79aa6c13e60111d66a2a34e0a9a3029dc5e39db62c3cad1f3bd714569f25"
     },
     {
       "path": "src/browser/browser.css",
-      "bytes": 9252,
-      "sha256": "4d7d1c5f3bf3dab2d4df608936ab5efdae1111b3873845048ea479f2d70c861a"
+      "bytes": 9676,
+      "sha256": "92eb9141684507346c6ff725f748472035864fd7cc716b25a6f70c3dda63486a"
     },
     {
       "path": "src/browser/files.ts",
@@ -1738,8 +1738,8 @@
     },
     {
       "path": "src/ui/App.tsx",
-      "bytes": 63838,
-      "sha256": "b9a8420389906b0a69420b608958f973c263fce29a44a0846a617e61d49ceab2"
+      "bytes": 63736,
+      "sha256": "1e7b1dbe0e831f45cc25bc543c03b5f68845a70f9da37153612399737eb8f65b"
     },
     {
       "path": "src/ui/BindCloud.tsx",
@@ -1830,6 +1830,11 @@
       "path": "src/ui/code-highlighting.ts",
       "bytes": 2685,
       "sha256": "7089d2a8f4a881b787dfc8810cc1f3c2b707c0f4663397c956e9f48afa8ee1af"
+    },
+    {
+      "path": "src/ui/comment-author.ts",
+      "bytes": 239,
+      "sha256": "f7dc29858099c3a3b292b756ba019e7cfbdd6267092c7c9f21d271add349a4f8"
     },
     {
       "path": "src/ui/content-sync-presentation.ts",
@@ -1923,8 +1928,8 @@
     },
     {
       "path": "tests/browser-app.test.tsx",
-      "bytes": 20989,
-      "sha256": "3102fdb008b8920b1be411c67cd143ae955037a2577b6aad93e1dfd603cd65e2"
+      "bytes": 22872,
+      "sha256": "264a0a79760c842744506407affcf6aa2911e7957a6086391d97262404ceaea0"
     },
     {
       "path": "tests/browser-files.test.ts",

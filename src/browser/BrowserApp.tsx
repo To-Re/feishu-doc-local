@@ -10,6 +10,7 @@ import { WhiteboardEditor } from '../ui/WhiteboardEditor';
 import { DocumentOutline, scrollToHeading } from '../ui/DocumentOutline';
 import type { SourceDraftSnapshot } from '../ui/source-drafts';
 import { containDialogFocus } from '../ui/Projects';
+import { displayAuthor } from '../ui/comment-author';
 import { invalidateAnchors } from '../core/anchors';
 import { parseDocxXML } from '../core/docxml';
 import { RESOURCE_REFRESH } from '../core/resources';
@@ -412,10 +413,11 @@ export function BrowserApp({host}:{host?:EditorHost}={}) {
           <textarea autoFocus aria-label="评论内容" value={commentText} disabled={controlsLocked} onChange={event=>setCommentText(event.target.value)}/>
           <div className="browser-comment-actions"><button type="button" disabled={controlsLocked} onClick={()=>{setPending(null);setCommentText('');}}>取消评论</button><button className="small-primary" disabled={controlsLocked||!commentText.trim()}>添加评论</button></div></form>}
         {!draft.review.comments.length&&!pending&&<p className="browser-muted">{draft.document?'在编辑或只读模式下选中正文，留下修改意见。':'选择本地目录后可以留下评论。'}</p>}
-        {shownComments.map(comment=><article className="comment-card" key={comment.id}><strong>{comment.author}</strong>{comment.status==='resolved'&&<small> · 已解决</small>}
+        {shownComments.map(comment=><article className="comment-card" key={comment.id}>
+          <div className="browser-comment-heading"><strong title={comment.author}>{displayAuthor(comment.author,comment.id.startsWith('cloud:'))}</strong>{comment.status==='resolved'&&<span className="browser-comment-status">已解决</span>}</div>
           <button className="comment-quote" disabled={comment.anchor.state!=='attached'||!!invalidSource} onClick={()=>locate(comment.anchor)}>{comment.anchor.quote}</button>
           {comment.anchor.state!=='attached'&&<p className="browser-muted">引用位置待确认</p>}<p className="comment-body">{comment.body}</p>
-          {comment.replies.map(reply=><p key={reply.id} className="reply"><strong>{reply.author}：</strong>{reply.body}</p>)}
+          {comment.replies.map(reply=><div key={reply.id} className="reply"><strong title={reply.author}>{displayAuthor(reply.author,reply.id.startsWith('cloud-reply:'))}</strong><p>{reply.body}</p></div>)}
           <button className="browser-resolve" disabled={!draft.document||controlsLocked} onClick={()=>updateComment(comment.id,value=>({...value,status:value.status==='open'?'resolved':'open'}),'更新评论状态')}><Check size={13}/>{comment.status==='open'?'解决':'重新打开'}</button>
           <button className="browser-reply-toggle" disabled={!draft.document||controlsLocked} aria-expanded={!!replyOpen[comment.id]||!!replyDrafts[comment.id]?.trim()} onClick={()=>setReplyOpen({...replyOpen,[comment.id]:!replyOpen[comment.id]})}>回复</button>
           {(replyOpen[comment.id]||!!replyDrafts[comment.id]?.trim())&&<form onSubmit={event=>{event.preventDefault();const body=replyDrafts[comment.id]?.trim();if(!body||controlsLocked)return;updateComment(comment.id,value=>({...value,replies:[...value.replies,{id:uid(),author:'我',body,createdAt:new Date().toISOString()}]}),'回复评论');setReplies({...replyDraftsRef.current,[comment.id]:''});setReplyOpen({...replyOpen,[comment.id]:false});}}>

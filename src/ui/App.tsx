@@ -24,13 +24,10 @@ import { ProjectCreationNotice } from './ProjectCreationNotice';
 import type { BindProjectInput, ContentPreview, ContentRestorePreview, ContentRestoreResult, ContentSyncResult, CreateProjectInput, ProjectList, ProjectOpenResult, ReviewProject, SyncDirection } from '../core/projects';
 import './document-paths.css';
 import type { SourceDraftSnapshot } from './source-drafts';
+import { displayAuthor } from './comment-author';
 
 interface Draft {handle:DocumentHandle; xml:string; review:Review; revision:string; version:number; savedVersion:number;}
 class APIError extends Error {constructor(message:string,readonly status:number) {super(message);}}
-function displayAuthor(author:string,fromCloud:boolean) {
-  return fromCloud&&/^(?:ou_|on_|cli_)[A-Za-z0-9_-]+$/.test(author)?'飞书用户':author;
-}
-
 function CommentCard({comment,reply,setReply,onResolve,onReply,onLocate}:{comment:ReviewComment;reply:string;setReply:(value:string)=>void;onResolve:()=>void;onReply:(body:string)=>void;onLocate:()=>void}) {
   const [replying,setReplying] = useState(!!reply);
   const author=displayAuthor(comment.author,comment.id.startsWith('cloud:'));

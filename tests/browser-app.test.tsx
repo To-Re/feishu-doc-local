@@ -69,6 +69,29 @@ async function addComment(body='请补充例子'){
 }
 
 describe('standalone browser document workflow',()=>{
+  it('renders cloud author ids as labels with a separate resolved status while preserving quotes and stored identities',async()=>{
+    const review=disk.get('a.xml')!.review!;
+    const base={author:'ou_sample_account',body:'导入的意见',createdAt:'2026-09-14T00:00:00Z',status:'open' as const,
+      anchor:{from:1,to:7,quote:'第一篇正文',state:'attached' as const},replies:[]};
+    review.comments.push({...base,id:'cloud:doc:open',replies:[
+      {id:'cloud-reply:opaque',author:'on_sample_account',body:'导入的回复',createdAt:base.createdAt},
+      {id:'local-reply',author:'cli_本地署名',body:'本地回复',createdAt:base.createdAt},
+    ]},{...base,id:'cloud:doc:resolved',status:'resolved',body:'已处理的意见'},
+    {...base,id:'cloud:doc:named',author:'文档协作者',body:'具名意见'},
+    {...base,id:'local-comment',author:'ou_local_author',body:'本地意见'});
+    const before=JSON.stringify(review);await open();
+    fireEvent.click(screen.getByRole('button',{name:'查看已解决评论'}));
+    expect(screen.getAllByText('飞书用户')).toHaveLength(3);
+    expect(screen.getByTitle('on_sample_account').textContent).toBe('飞书用户');
+    expect(screen.getByText('文档协作者')).toBeTruthy();expect(screen.getByText('ou_local_author')).toBeTruthy();
+    expect(screen.getByText('cli_本地署名')).toBeTruthy();
+    const resolved=screen.getByText('已处理的意见').closest('article')!;
+    expect(within(resolved).getByText('已解决').className).toBe('browser-comment-status');
+    expect(within(resolved).getByRole('button',{name:'第一篇正文'}).textContent).toBe(base.anchor.quote);
+    expect(within(resolved).getByRole('button',{name:'重新打开'})).toBeTruthy();
+    expect(JSON.stringify(disk.get('a.xml')!.review)).toBe(before);expect(writes).toHaveLength(0);expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('keeps directory files available while offering a collapsible article outline',async()=>{
     disk.set('a.xml',snapshot('<h1>测试章节</h1><p>第一篇正文</p>'));await open();
     expect(screen.getByRole('button',{name:'b.xml'})).toBeTruthy();
