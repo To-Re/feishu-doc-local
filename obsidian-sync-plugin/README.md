@@ -1,19 +1,19 @@
 # 本地飞书文档 · Obsidian 飞书同步扩展
 
-为[基础插件](../obsidian-plugin/README.md)增加飞书导入、关联、正文和评论同步。通过 Obsidian 桌面版自带的运行时调用用户配置的官方 `lark-cli`，不需要启动网页服务。
+为[基础插件](../obsidian-plugin/README.md)增加飞书导入、关联、正文和评论同步。扩展在 Obsidian 桌面版内运行，直接调用用户配置的官方 `lark-cli` 独立可执行文件，**无需额外安装 Node，也无需启动网页服务**。
 
 ## 安装与设置
 
-需要桌面 Obsidian **1.8.0+**、已启用的基础插件和自行安装的[官方 lark CLI](https://github.com/larksuite/cli)。
+需要桌面 Obsidian **1.8.0+**、已启用的基础插件和自行安装的[官方 lark CLI](https://github.com/larksuite/cli)。无需 Node 的安装方式：从[官方 Releases](https://github.com/larksuite/cli/releases)下载适合当前系统的独立可执行文件；macOS 的 Apple 芯片选 `darwin-arm64`，Intel 选 `darwin-amd64`，按发布页校验文件后解压。
 
 1. 从[发布页](https://github.com/To-Re/feishu-doc-local/releases)下载同版本的同步扩展，将 `feishu-doc-local-sync/` 放入库的 `.obsidian/plugins/` 并启用。
 2. 按官方说明配置 CLI 应用、身份和权限。使用用户身份时，在终端运行 `lark-cli auth login` 并完成授权；机器人身份使用应用配置。
-3. 在命令面板选择“配置官方 CLI 与项目路径”，填写 CLI **绝对路径**及固定参数，例如 `["--as", "bot"]`。
+3. 在命令面板选择“配置官方 CLI 与项目路径”，填写解压得到的 `lark-cli` **绝对路径**及固定参数，例如 `["--as", "bot"]`；**Node 可执行文件留空**。
 4. 如需与本地服务共用项目列表，选择同一 `projects.json`；默认位置为 `~/.lark-review/projects.json`。
 
-macOS 从 Dock 启动时可能找不到终端的 `PATH`。npm 版 CLI 可同时填写 Node 的绝对路径；用 `command -v lark-cli` 和 `command -v node` 查询。此时 CLI 路径应指向 JavaScript 启动文件或其链接，不能填 shell 脚本。原生 CLI 的 Node 字段留空。
+如果已经使用 npm 安装 CLI，也可以沿用。npm 的 `lark-cli` 命令是 JavaScript 启动入口，该入口需要系统 Node，再调用 CLI 的原生程序。macOS 从 Dock 启动时可能找不到终端的 `PATH`，可用 `command -v lark-cli` 和 `command -v node` 查询并同时填写两个绝对路径。填写 Node 时，CLI 路径应指向 JavaScript 启动文件或其链接，不能填 shell 脚本或原生程序。直接配置原生程序时，Node 字段留空。
 
-扩展不自带 CLI，不自动登录，也不保存访问令牌。配置保存不会执行命令；npm 版 CLI 自身仍需要系统 Node。文档访问权和 API 权限应按实际操作配置，不能仅凭页面可编辑就认为接口可写。
+扩展不自带 CLI，不自动登录，也不保存访问令牌。配置保存不会执行命令。文档访问权和 API 权限应按实际操作配置，不能仅凭页面可编辑就认为接口可写。
 
 ## 使用
 

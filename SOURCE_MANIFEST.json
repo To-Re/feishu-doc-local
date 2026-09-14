@@ -53,8 +53,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 5570,
-      "sha256": "913f45dd32609069c224da42e14016b70b7f06f621bd4eaf5f73794782c55fcf"
+      "bytes": 5845,
+      "sha256": "135a820643774366f480bb8c7a24b25543d394e5b87b0d354d3c4b3270974aed"
     },
     {
       "path": "SECURITY.md",
@@ -198,8 +198,8 @@
     },
     {
       "path": "docs/projects-and-sync.md",
-      "bytes": 7132,
-      "sha256": "494040a5c867246fb279b43dbc6948167816391afab78d2420cf706a6ba002a0"
+      "bytes": 7246,
+      "sha256": "dcd9a5b479761b07dd7999c936f1c3d36cddea8946e5934a7336cca8cf3c3533"
     },
     {
       "path": "docs/protocol.md",
@@ -1448,8 +1448,8 @@
     },
     {
       "path": "obsidian-sync-plugin/README.md",
-      "bytes": 3792,
-      "sha256": "7d6458442aa4ca156286ab3a26d6b6934c918d2cca96944652c0908b0739ee3e"
+      "bytes": 4307,
+      "sha256": "58872ad902efa04ac543e34c065ce43b113b8855dae508ea69129d0c701e3fa5"
     },
     {
       "path": "obsidian-sync-plugin/build.mjs",

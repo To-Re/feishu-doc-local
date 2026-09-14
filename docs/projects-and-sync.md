@@ -42,7 +42,7 @@ npm start -- --file ~/articles/article.xml --cli-config ~/articles/cli.json
 | `--projects-file` | 指定项目索引；省略时新安装默认使用 `~/.lark-review/projects.json`，已有实例保留原位置。 |
 | `--cloud-config` | 兼容旧版固定目标配置，必须配合 `--file`，不能与 `--cli-config` 同用。 |
 
-Obsidian 在同步扩展设置中填写 CLI 绝对路径；npm 版 CLI 可同时指定 Node 路径，详见[扩展设置](../obsidian-sync-plugin/README.md#安装与设置)。文档内容和项目索引不能指定要执行的程序。
+Obsidian 在同步扩展设置中填写官方 CLI 独立可执行文件的绝对路径，Node 字段留空，无需额外安装 Node。若使用 npm 的 JavaScript 启动入口，可同时指定系统 Node 路径，详见[扩展设置](../obsidian-sync-plugin/README.md#安装与设置)。文档内容和项目索引不能指定要执行的程序。
 
 ## 拉取、推送和评论
 
