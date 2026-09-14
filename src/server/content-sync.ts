@@ -64,7 +64,7 @@ export async function prepareContent(file:LocalFile,project:ReviewProject,revisi
   const warnings=direction==='push'&&!refreshLocal?syncPlan(local.xml,remote.xml,assetsChanged).warnings:[];
   if(!baseline&&!sourceSame)warnings.unshift('两端尚无共同同步基线；请确认首次同步采用哪一端的内容。');
   else if(conflict)warnings.unshift('目标端也有改动。确认后将采用所选来源，覆盖目标当前正文；两端快照会保留。');
-  if(refreshBoards)warnings.push('白板内容可在 token 不变时更新；本次拉取会刷新预览，原组件评论位置需重新确认。');
+  if(refreshBoards)warnings.push('更新本地时会刷新白板预览，原组件评论位置需重新确认。');
   if((await file.read()).revision!==revision)throw new FileError('读取预览期间本地已变化，请重新预览。','CONFLICT');
   return {revision,remote,assets,view:{id:randomUUID(),projectId:project.id,direction,...(refreshLocal?{action:'refresh-local' as const}:{}),status:equal?'equal':conflict?'conflict':'ready',localXML:local.xml,cloudXML:remote.xml,warnings,
     summary:equal?'两端没有待同步的内容。':refreshLocal?'飞书已包含此前发布的内容；仅将飞书回读正文和资源更新到本地，不改动飞书。':direction==='push'?'将本地正文发布到关联的飞书文档。':'将飞书正文及资源读取到本地文件。',expiresAt:new Date(Date.now()+300_000).toISOString()}};

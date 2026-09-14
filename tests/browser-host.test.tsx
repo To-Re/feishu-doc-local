@@ -63,11 +63,34 @@ describe('Obsidian host shared editor',()=>{
   });
   it('shows the shared outline, updates headings after source edits and keeps its toggle in place',async()=>{
     await open();expect(await screen.findByRole('button',{name:'1 级标题：章节一'})).toBeTruthy();
-    const toggle=screen.getByRole('button',{name:'收起文档目录'});fireEvent.click(toggle);
-    expect(screen.getByRole('button',{name:'展开文档目录'})).toBe(toggle);fireEvent.click(toggle);
+    const toggle=screen.getByRole('button',{name:'收起文档导航'});fireEvent.click(toggle);
+    expect(screen.getByRole('button',{name:'展开文档导航'})).toBe(toggle);fireEvent.click(toggle);
     fireEvent.click(screen.getByRole('button',{name:'源码'}));fireEvent.change(screen.getByLabelText('文档源码'),{target:{value:'<title>标题</title><h1>新章节</h1><p>正文</p>'}});
     fireEvent.click(screen.getByRole('button',{name:'编辑'}));expect(await screen.findByRole('button',{name:'1 级标题：新章节'})).toBeTruthy();
     expect(screen.queryByRole('button',{name:'1 级标题：章节一'})).toBeNull();
+  });
+  it('collapses the file tab from the shared header and restores tree state without losing comment drafts',async()=>{
+    await open(original+'<source path="@assets/notes.txt"/>');await compose('保留评论草稿');
+    const editor=mocks.editor;
+    fireEvent.click(screen.getByRole('button',{name:'文件'}));
+    const tree=screen.getByRole('complementary',{name:'项目资源'});
+    const folder=within(tree).getByRole('button',{name:'assets'});fireEvent.click(folder);
+    expect(folder.getAttribute('aria-expanded')).toBe('false');
+    const toggle=screen.getByRole('button',{name:'收起文档导航'}),header=toggle.parentElement;
+    expect(header?.contains(screen.getByRole('group',{name:'导航内容'}))).toBe(true);
+    fireEvent.click(toggle);
+    expect(screen.getByRole('button',{name:'展开文档导航'})).toBe(toggle);
+    expect(toggle.parentElement).toBe(header);expect(document.activeElement).toBe(toggle);
+    expect(screen.queryByRole('complementary',{name:'项目资源'})).toBeNull();
+    expect(screen.queryByRole('group',{name:'导航内容'})).toBeNull();
+    fireEvent.click(toggle);
+    expect(screen.getByRole('complementary',{name:'项目资源'})).toBe(tree);
+    expect(within(tree).getByRole('button',{name:'assets'}).getAttribute('aria-expanded')).toBe('false');
+    expect(screen.getByRole('button',{name:'文件'}).getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(screen.getByRole('button',{name:'目录'}));fireEvent.click(screen.getByRole('button',{name:'文件'}));
+    expect(within(tree).getByRole('button',{name:'assets'}).getAttribute('aria-expanded')).toBe('false');
+    expect(mocks.editor).toBe(editor);expect((screen.getByLabelText('评论内容') as HTMLTextAreaElement).value).toBe('保留评论草稿');
+    expect(screen.queryByRole('button',{name:'收起文档目录'})).toBeNull();expect(writes).toHaveLength(0);
   });
   it('captures and persists unsent selection comments and replies, clearing recovery after they are saved',async()=>{
     await open();await compose('尚未提交的评论');

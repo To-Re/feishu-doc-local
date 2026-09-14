@@ -440,8 +440,8 @@ describe('projects and explicit content synchronization with the real App/Reader
     fireEvent.keyDown(document.activeElement!, { key: 'Tab' });
     expect(document.activeElement).toBe(screen.getByRole('button', { name: '关闭正文同步预览' }));
     expect(requestsTo('/api/projects/project-a/preview')[0].value).toEqual({ revision: 'r0', direction: 'pull' });
-    expect(screen.getByText('同步前 · 本地正文')).toBeDefined();
-    expect(screen.getByText('同步后 · 来自飞书')).toBeDefined();
+    expect(screen.getByText('拉取前 · 本地正文')).toBeDefined();
+    expect(screen.getByText('拉取后 · 采用飞书正文')).toBeDefined();
     fireEvent.click(screen.getByRole('button', { name: '合并' }));
     fireEvent.click(screen.getByText('查看完整原文', { selector: 'summary' }));
     expect(screen.getByLabelText('本地正文源码').textContent).toBe(original);
@@ -492,8 +492,8 @@ describe('projects and explicit content synchronization with the real App/Reader
     fireEvent.click(screen.getByRole('button', { name: '推送' }));
     await screen.findByText('本地与飞书都有独立改动');
     expect(requestsTo('/api/projects/project-a/preview')[0].value.direction).toBe('push');
-    expect(screen.getByText('同步前 · 飞书正文')).toBeDefined();
-    expect(screen.getByText('同步后 · 来自本地')).toBeDefined();
+    expect(screen.getByText('推送前 · 飞书正文')).toBeDefined();
+    expect(screen.getByText('推送后 · 采用本地正文')).toBeDefined();
     expect(screen.getByRole('button', { name: '确认推送' })).toBeDefined();
     fireEvent.click(screen.getByRole('button', { name: '关闭' }));
     previewStatus = 'equal'; previewWarnings = [];

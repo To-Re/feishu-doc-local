@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/core';
-import { FolderOpen, Plus, PencilLine, BookOpen, Code, MessageSquarePlus, MessageSquare, Bold, Italic, List, Quote, Copy, Check, X } from 'lucide-react';
+import { FolderOpen, Plus, PencilLine, BookOpen, Code, MessageSquarePlus, MessageSquare, Bold, Italic, List, Quote, Copy, Check, X, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { Reader, FormulaEditor } from '../ui/Reader';
 import { ProjectExplorer, ResourcePreview, type ResourceScrollPosition } from '../ui/ProjectExplorer';
 import { projectFiles, type ProjectFile } from '../core/project-files';
@@ -55,7 +55,8 @@ export function BrowserApp({host}:{host?:EditorHost}={}) {
   const sourceDrafts=useRef({formula:!!sourceSnapshots.current.formula.length,whiteboard:!!sourceSnapshots.current.whiteboard.length});
   const [sourceRevision,setSourceRevision]=useState(0);
   const [sourceDirty,setSourceDirty]=useState(false);
-  const [sidebarTab,setSidebarTab]=useState<'files'|'outline'>(host?'outline':'files'),[outlineCollapsed,setOutlineCollapsed]=useState(false);
+  const [sidebarTab,setSidebarTab]=useState<'files'|'outline'>(host?'outline':'files'),[navigationCollapsed,setNavigationCollapsed]=useState(false);
+  const navigationId=useId();
   const [selectedResource,setSelectedResource]=useState<string|null>(null),resourcePositions=useRef(new Map<string,ResourceScrollPosition>());
   const [showResolved,setShowResolved]=useState(false),[replyOpen,setReplyOpen]=useState<Record<string,boolean>>({});
   const [commentsOpen,setCommentsOpen]=useState(true),commentsPanel=useRef<HTMLElement>(null),commentsId=useId();
@@ -370,16 +371,23 @@ export function BrowserApp({host}:{host?:EditorHost}={}) {
     {!host&&!store&&supported&&<p className="browser-banner">授权一个本地目录后即可编辑。正文和评论直接写入其中的 XML 与 JSON；刷新页面后需要重新选择目录。</p>}
     {notice&&<p className="browser-banner">{notice}<button aria-label="关闭提示" onClick={()=>setNotice('')}><X size={14}/></button></p>}
     {error&&<div className="browser-banner browser-error" role="alert"><span>{error}</span>{draft.document&&(permissionDenied?<button disabled={controlsLocked||saving} onClick={()=>void reauthorize()}>重新授权并重试</button>:conflict?<button disabled={controlsLocked||saving} onClick={()=>void reload()}>重新读取本地文件</button>:<button disabled={controlsLocked||saving} onClick={()=>{autoPaused.current=false;setError('');void (current.current.version===current.current.savedVersion?externalRef.current():saveRef.current());}}>重试</button>)}</div>}
-    <div className={'browser-workspace'+(sidebarTab==='outline'&&outlineCollapsed?' browser-outline-collapsed':'')+(commentsOpen?'':' browser-comments-hidden')}>
+    <div className={'browser-workspace'+(navigationCollapsed?' browser-navigation-collapsed':'')+(commentsOpen?'':' browser-comments-hidden')}>
       <aside className="browser-navigation" aria-label="文档导航">
-      <div className="browser-navigation-tabs mode-switch" role="group" aria-label="导航内容">
+      <div className="browser-navigation-heading">
+        <button type="button" className="browser-navigation-toggle" aria-label={navigationCollapsed?'展开文档导航':'收起文档导航'} title={navigationCollapsed?'展开目录与文件':'收起目录与文件'} aria-expanded={!navigationCollapsed} aria-controls={navigationId} onClick={event=>{event.currentTarget.focus({preventScroll:true});setNavigationCollapsed(value=>!value);}}>
+          {navigationCollapsed?<PanelLeftOpen size={18} aria-hidden="true"/>:<PanelLeftClose size={18} aria-hidden="true"/>}
+        </button>
+      <div className="browser-navigation-tabs mode-switch" role="group" aria-label="导航内容" hidden={navigationCollapsed}>
         <button className={sidebarTab==='files'?'selected':''} aria-pressed={sidebarTab==='files'} onClick={()=>setSidebarTab('files')}>文件</button>
         <button className={sidebarTab==='outline'?'selected':''} aria-pressed={sidebarTab==='outline'} onClick={()=>setSidebarTab('outline')}>目录</button>
       </div>
-      {sidebarTab==='outline'?<DocumentOutline editor={editor} revision={draft.xml} collapsed={outlineCollapsed} onToggle={()=>setOutlineCollapsed(value=>!value)} onNavigate={navigateHeading}/>:<><div className="browser-documents" aria-label="目录文档" hidden={!!host}><h2>{store?.directoryName||'本地目录'}</h2>{documents.map(name=><button key={name} className={name===draft.document?.handle.name?'selected':''} aria-current={name===draft.document?.handle.name?'page':undefined} disabled={controlsLocked||saving} onClick={()=>void openDocument(name)}>{name}</button>)}
+      </div>
+      <div id={navigationId} className="browser-navigation-content" hidden={navigationCollapsed}>
+      <div className="browser-navigation-outline" hidden={sidebarTab!=='outline'}><DocumentOutline editor={editor} revision={draft.xml} collapsed={false} showToggle={false} onToggle={()=>setNavigationCollapsed(value=>!value)} onNavigate={navigateHeading}/></div>
+      <div className="browser-navigation-files" hidden={sidebarTab!=='files'}>{!host&&<div className="browser-documents" aria-label="目录文档"><h2>{store?.directoryName||'本地目录'}</h2>{documents.map(name=><button key={name} className={name===draft.document?.handle.name?'selected':''} aria-current={name===draft.document?.handle.name?'page':undefined} disabled={controlsLocked||saving} onClick={()=>void openDocument(name)}>{name}</button>)}
         {store&&!documents.length&&<p>目录中还没有 XML，可以新建文档。</p>}
         {store&&<button className="browser-refresh-list" disabled={busy} onClick={()=>void refreshList()}>刷新文档列表</button>}
-      </div>{draft.document&&<ProjectExplorer handle={draft.document.handle} xml={draft.xml} review={draft.review} selected={selectedResource||draft.document.handle.name} onSelect={navigateResource} dirty={!saved||!!invalidSource}/>}</>}
+      </div>}{draft.document&&<ProjectExplorer handle={draft.document.handle} xml={draft.xml} review={draft.review} selected={selectedResource||draft.document.handle.name} onSelect={navigateResource} dirty={!saved||!!invalidSource}/>}</div></div>
       </aside>
       <section className="browser-article" aria-label="文档编辑区"><div className="browser-toolbar"><div className="mode-switch" role="group" aria-label="文档模式">
         <button className={mode==='edit'?'selected':''} aria-pressed={mode==='edit'} disabled={!draft.document||controlsLocked||!!invalidSource} onClick={()=>{changeMode('edit');setSelectedResource(null);}}><PencilLine size={15}/>编辑</button>

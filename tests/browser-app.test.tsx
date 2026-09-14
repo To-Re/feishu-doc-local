@@ -74,9 +74,16 @@ describe('standalone browser document workflow',()=>{
     expect(screen.getByRole('button',{name:'b.xml'})).toBeTruthy();
     fireEvent.click(screen.getByRole('button',{name:'目录'}));
     expect(await screen.findByRole('button',{name:'1 级标题：测试章节'})).toBeTruthy();
-    const toggle=screen.getByRole('button',{name:'收起文档目录'});fireEvent.click(toggle);
-    expect(screen.getByRole('button',{name:'展开文档目录'})).toBe(toggle);
+    const toggle=screen.getByRole('button',{name:'收起文档导航'});fireEvent.click(toggle);
+    expect(screen.getByRole('button',{name:'展开文档导航'})).toBe(toggle);
+    expect(screen.queryByRole('button',{name:'文件'})).toBeNull();
+    expect(screen.queryByRole('navigation',{name:'文档目录'})).toBeNull();
+    fireEvent.click(toggle);
     fireEvent.click(screen.getByRole('button',{name:'文件'}));expect(screen.getByRole('button',{name:'b.xml'})).toBeTruthy();
+    fireEvent.click(toggle);expect(screen.queryByRole('button',{name:'b.xml'})).toBeNull();
+    fireEvent.click(toggle);expect(screen.getByRole('button',{name:'b.xml'})).toBeTruthy();
+    expect(screen.getByRole('button',{name:'文件'}).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.queryByRole('button',{name:'收起文档目录'})).toBeNull();
     expect(writes).toHaveLength(0);
   });
   it('shows an honest read-only example when the directory API is unavailable',async()=>{

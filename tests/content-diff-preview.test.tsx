@@ -18,6 +18,8 @@ function setup(overrides: Partial<ContentPreview> = {}, extra: Partial<React.Com
 
 it.each(['pull', 'push'] as const)('uses the preview direction for replacement polarity and preserves exact raw sources: %s', direction => {
   const { container, onExecute, onClose } = setup({ direction });
+  expect(screen.getByRole('heading', {name: direction === 'pull' ? '拉取 · 飞书 → 本地' : '推送 · 本地 → 飞书'})).toBeDefined();
+  expect(screen.getByRole('button', {name: direction === 'pull' ? '确认拉取' : '确认推送'})).toBeDefined();
   const removed = container.querySelector('.xml-diff-removed code')!.textContent;
   const added = container.querySelector('.xml-diff-added code')!.textContent;
   expect(removed).toContain(direction === 'pull' ? '本地版本' : '飞书版本');
@@ -47,9 +49,12 @@ it('shows cloud-to-local polarity for readback repair even when the selected dir
   expect(container.querySelector('.xml-diff-removed code')!.textContent).toContain('本地版本');
   expect(container.querySelector('.xml-diff-added code')!.textContent).toContain('飞书版本');
   expect(screen.getByText(/本次不写入飞书/)).toBeDefined();
+  expect(screen.getByRole('heading', { name: '推送已完成 · 更新本地副本' })).toBeDefined();
+  expect(screen.getByText('更新前 · 本地正文')).toBeDefined();
+  expect(screen.getByText('更新后 · 采用飞书正文')).toBeDefined();
   expect(screen.queryByRole('button', { name: '确认推送' })).toBeNull();
   expect(onExecute).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole('button', { name: '更新本地' }));
+  fireEvent.click(screen.getByRole('button', { name: '更新本地副本' }));
   expect(onExecute).toHaveBeenCalledOnce();
 });
 

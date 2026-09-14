@@ -1353,8 +1353,8 @@
     },
     {
       "path": "obsidian-plugin/src/styles.css",
-      "bytes": 7495,
-      "sha256": "3f99b7461fda3ba8e2ab27c4d74ed2078dc387618fe5715accb016040648035a"
+      "bytes": 7850,
+      "sha256": "c8ab501a9d0feecb78c8232a83ed411b2ea1af1d2836b38a1a63a01c0dc504b0"
     },
     {
       "path": "obsidian-plugin/tests/distribution.test.ts",
@@ -1433,8 +1433,8 @@
     },
     {
       "path": "obsidian-sync-plugin/src/main.tsx",
-      "bytes": 38341,
-      "sha256": "b6cd1a8ab30b2f86f29154939b26e481a827adcb743f2f7ea0969e90a00e43fc"
+      "bytes": 39110,
+      "sha256": "938944c31a07c011fdfd613fee3edb1c355b6b04852eb94293bb821ae450e89e"
     },
     {
       "path": "obsidian-sync-plugin/src/preferences.ts",
@@ -1488,8 +1488,8 @@
     },
     {
       "path": "obsidian-sync-plugin/tests/ui.test.ts",
-      "bytes": 33237,
-      "sha256": "e7726e697c260ac49970aff4293541b244d8af7cfc73461828b00faa4f3999f3"
+      "bytes": 36991,
+      "sha256": "bd5ec012e0cd9e903c8cadfa28148f56a5fe1a92091bdda643eea4bc14c3ce6f"
     },
     {
       "path": "obsidian-sync-plugin/tsconfig.json",
@@ -1558,13 +1558,13 @@
     },
     {
       "path": "src/browser/BrowserApp.tsx",
-      "bytes": 44655,
-      "sha256": "fc13dc0d6ed859aa97d6f7bce385d54d9526637e99a7ecc7c3f06f276a48bca0"
+      "bytes": 45576,
+      "sha256": "96813d798436b61c3054e97c4d0c37e59c0f171af8a7d073fa75c6e44e3a2633"
     },
     {
       "path": "src/browser/browser.css",
-      "bytes": 8562,
-      "sha256": "ada3e6392d73ffe854365e288b3b693d4638ee1cb6f27635e39c119ffef2cd19"
+      "bytes": 9252,
+      "sha256": "4d7d1c5f3bf3dab2d4df608936ab5efdae1111b3873845048ea479f2d70c861a"
     },
     {
       "path": "src/browser/files.ts",
@@ -1683,8 +1683,8 @@
     },
     {
       "path": "src/server/content-sync.ts",
-      "bytes": 17878,
-      "sha256": "1fd7874f09fa59468a3df1de84537f9cda1f7d7c9411e4dc7efb5ce495d1af2b"
+      "bytes": 17844,
+      "sha256": "4360147a4908ddc43e0516e9658a836b43d7d889c0fb855b05312b8351cc8c86"
     },
     {
       "path": "src/server/files.ts",
@@ -1738,8 +1738,8 @@
     },
     {
       "path": "src/ui/ContentSync.tsx",
-      "bytes": 5783,
-      "sha256": "a2c338e99b62d303c4622cbbd391b7d6633abdffcd75f5493c848b7ed8166084"
+      "bytes": 5494,
+      "sha256": "e4cf643bc2690d8cb3cd6250e1927182c689ca9b5199303a08e2ffe8b3c956fd"
     },
     {
       "path": "src/ui/DocumentOutline.tsx",
@@ -1810,6 +1810,11 @@
       "path": "src/ui/code-highlighting.ts",
       "bytes": 2685,
       "sha256": "7089d2a8f4a881b787dfc8810cc1f3c2b707c0f4663397c956e9f48afa8ee1af"
+    },
+    {
+      "path": "src/ui/content-sync-presentation.ts",
+      "bytes": 1303,
+      "sha256": "57508e64cae7eb1597d6fac7cf6dc3a299b91847a94eb021aefbd5dc1ec3af01"
     },
     {
       "path": "src/ui/document-outline.css",
@@ -1898,8 +1903,8 @@
     },
     {
       "path": "tests/browser-app.test.tsx",
-      "bytes": 20449,
-      "sha256": "77a70420665662d506b605de897ff759fe0bfc542f06e9a926ea8c8c0cd5c40b"
+      "bytes": 20989,
+      "sha256": "3102fdb008b8920b1be411c67cd143ae955037a2577b6aad93e1dfd603cd65e2"
     },
     {
       "path": "tests/browser-files.test.ts",
@@ -1908,8 +1913,8 @@
     },
     {
       "path": "tests/browser-host.test.tsx",
-      "bytes": 25974,
-      "sha256": "4d9c9c21ae7e73ef45b9ae5f9d8e1aa545ce64c0016acbd18ae3f3e17fa6d2fc"
+      "bytes": 27867,
+      "sha256": "465a1617aa647ae17243143838830d7e775f3cf6cdceb46171c1d70871efa9ae"
     },
     {
       "path": "tests/cloud-blocks-audit.test.ts",
@@ -1963,8 +1968,8 @@
     },
     {
       "path": "tests/content-diff-preview.test.tsx",
-      "bytes": 4974,
-      "sha256": "66b43eb857e850fd007a71da217cbf63c54e5742cd56860b71bb3b8b9c9acbb7"
+      "bytes": 5495,
+      "sha256": "5a24b7ca0a6f64bc0ffe90fab250d26db8ec7f91f49e97a91bb2bff508f18470"
     },
     {
       "path": "tests/content-identity.test.ts",
@@ -2068,8 +2073,8 @@
     },
     {
       "path": "tests/projects-ui.test.tsx",
-      "bytes": 68651,
-      "sha256": "bda9396ae20792542627273c4dc8dbb3080c139bfb060403238f086cd9678a4b"
+      "bytes": 68663,
+      "sha256": "383c2c491fdde3811319e7a5e78f794ee050c26dd0c49dba35ad8fd948f705e9"
     },
     {
       "path": "tests/projects.test.ts",

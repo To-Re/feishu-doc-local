@@ -84,17 +84,49 @@ it('uses the saved pull direction for optional preview after navigating project 
   fireEvent.click(screen.getByRole('button',{name:'关联与同步'}));await screen.findByRole('heading',{name:'关联设置'});
   fireEvent.click(screen.getByRole('button',{name:'预览差异'}));await screen.findByText('从飞书拉取');
   expect(t.service.preview).toHaveBeenCalledWith('/vault/article.xml','pull');expect(t.service.apply).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole('button',{name:'确认更新本地'}));await waitFor(()=>expect(t.service.apply).toHaveBeenCalledOnce());expect(t.release).toHaveBeenCalledTimes(2);
+  fireEvent.click(screen.getByRole('button',{name:'确认拉取'}));await waitFor(()=>expect(t.service.apply).toHaveBeenCalledOnce());expect(t.release).toHaveBeenCalledTimes(2);
 });
 it('changes optional preview direction without applying either body',async()=>{
   const t=await setup();t.plugin.openPreview(t.file as any,'push');await screen.findByText('准备发布');
+  expect(screen.getByRole('heading',{name:'推送 · 本地 → 飞书'})).toBeTruthy();
+  expect(await screen.findByText('推送前 · 飞书正文')).toBeTruthy();
   t.service.preview.mockResolvedValue({...preview,view:{...preview.view,direction:'pull',summary:'拉取差异'}});
-  fireEvent.click(screen.getByRole('button',{name:'拉取差异'}));await screen.findByText('拉取差异',{selector:'p'});
+  fireEvent.click(screen.getByRole('button',{name:'飞书 → 本地'}));await screen.findByText('拉取差异',{selector:'p'});
   expect(screen.queryByRole('button',{name:'确认推送'})).toBeNull();expect(t.service.preview).toHaveBeenLastCalledWith('/vault/article.xml','pull');expect(t.service.apply).not.toHaveBeenCalled();
+  expect(screen.getByRole('heading',{name:'拉取 · 飞书 → 本地'})).toBeTruthy();
+  expect(screen.getByRole('button',{name:'确认拉取'})).toBeTruthy();
+  expect(await screen.findByText('拉取前 · 本地正文')).toBeTruthy();
+  expect(document.querySelector('.xml-diff-removed code')!.textContent).toContain('本地新稿');
+  expect(document.querySelector('.xml-diff-added code')!.textContent).toContain('云端旧稿');
+  t.service.preview.mockResolvedValue(preview);
+  fireEvent.click(screen.getByRole('button',{name:'本地 → 飞书'}));await screen.findByText('准备发布');
+  expect(screen.getByRole('button',{name:'确认推送'})).toBeTruthy();
+  expect(screen.queryByRole('button',{name:'确认拉取'})).toBeNull();
+  expect(t.service.preview).toHaveBeenLastCalledWith('/vault/article.xml','push');
+  expect(await screen.findByText('推送前 · 飞书正文')).toBeTruthy();
+  expect(document.querySelector('.xml-diff-removed code')!.textContent).toContain('云端旧稿');
+  expect(t.service.apply).not.toHaveBeenCalled();
+});
+it('offers both preview directions from association settings and hides the old action while changing direction',async()=>{
+  const t=await setup();t.open();fireEvent.click(await screen.findByRole('button',{name:'预览差异'}));await screen.findByRole('button',{name:'确认推送'});
+  let finish:any;t.service.preview.mockImplementation(()=>new Promise(resolve=>finish=resolve));
+  fireEvent.click(screen.getByRole('button',{name:'飞书 → 本地'}));await waitFor(()=>expect(finish).toBeTypeOf('function'));
+  expect(screen.queryByRole('button',{name:'确认推送'})).toBeNull();expect(screen.queryByRole('region',{name:'可滚动的正文差异'})).toBeNull();
+  finish({...preview,view:{...preview.view,direction:'pull'}});
+  await screen.findByRole('button',{name:'确认拉取'});expect(t.service.apply).not.toHaveBeenCalled();
+});
+it('rejects a preview for the wrong direction instead of displaying an inconsistent action',async()=>{
+  const t=await setup();t.plugin.openPreview(t.file as any,'pull');
+  await screen.findByText('预览与当前项目或同步方向不一致，请重新预览。');
+  expect(screen.queryByRole('button',{name:'确认推送'})).toBeNull();expect(screen.queryByRole('button',{name:'确认拉取'})).toBeNull();expect(t.service.apply).not.toHaveBeenCalled();
 });
 it('offers readback adoption separately from push and never confirms it implicitly',async()=>{
   const t=await setup();t.service.preview.mockResolvedValue({...preview,view:{...preview.view,action:'refresh-local',summary:'发布已完成，选择是否采用回读'}} as any);
   t.open();fireEvent.click(await screen.findByRole('button',{name:'预览差异'}));await screen.findByText('发布已完成，选择是否采用回读');
+  expect(screen.getByRole('heading',{name:'推送已完成 · 更新本地副本'})).toBeTruthy();
+  expect(screen.getByRole('button',{name:'更新本地副本'})).toBeTruthy();
+  expect(screen.queryByRole('button',{name:'确认拉取'})).toBeNull();
+  expect(await screen.findByText('更新后 · 采用飞书正文')).toBeTruthy();
   expect(screen.queryByRole('button',{name:'确认推送'})).toBeNull();expect(t.service.apply).not.toHaveBeenCalled();
   modals[0].close();expect(t.service.apply).not.toHaveBeenCalled();
 });
@@ -159,6 +191,16 @@ describe('inline editor sync toolbar',()=>{
     const action=screen.getByRole('button',{name:'确认推送'}),diff=screen.getByRole('region',{name:'可滚动的正文差异'});
     expect(action.compareDocumentPosition(diff)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();expect(action.closest('.feishu-sync-sticky-actions')).toBeTruthy();
     t.plugin.onunload();
+  });
+  it.each(['pull','push'] as const)('keeps the last %s action for the toolbar preview instead of resetting to the project default',async direction=>{
+    const t=await setup({...bound,defaultDirection:direction==='push'?'pull':'push'});const mounted=t.mount();
+    t.service.preview.mockResolvedValue({...preview,view:{...preview.view,direction}});
+    fireEvent.click(await within(mounted.container).findByRole('button',{name:direction==='push'?'推送':'拉取'}));
+    await within(mounted.container).findByText('发布完成，原稿保留');
+    fireEvent.click(within(mounted.container).getByRole('button',{name:'预览差异'}));
+    await screen.findByRole('button',{name:direction==='push'?'确认推送':'确认拉取'});
+    expect(t.service.preview).toHaveBeenLastCalledWith('/vault/article.xml',direction);
+    expect(t.service.apply).toHaveBeenCalledOnce();t.plugin.onunload();
   });
   it('opens conflict review without applying or retrying a write',async()=>{
     const t=await setup();let released=false;t.release.mockImplementation(async()=>{released=true;});

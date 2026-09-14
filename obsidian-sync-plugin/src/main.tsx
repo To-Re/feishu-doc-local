@@ -2,6 +2,7 @@ import {FileSystemAdapter,FuzzySuggestModal,Modal,Plugin,PluginSettingTab,Settin
 import {resolve} from 'node:path';
 import {createRoot,type Root} from 'react-dom/client';
 import {XMLDiff} from '../../src/ui/XMLDiff';
+import {contentSyncPresentation} from '../../src/ui/content-sync-presentation';
 import type {CreateProjectInput,ReviewProject,SyncDirection} from '../../src/core/projects';
 import type {PreparedContent} from '../../src/server/content-sync';
 import {ManagedCLIRunner} from './runner';
@@ -69,16 +70,17 @@ export default class FeishuSyncPlugin extends Plugin {
 
 class SyncToolbar {
   private alive=true;private generation=0;private project?:ReviewProject;private loading=true;private error='';private notice='';private busy=false;private confirmation?:Modal;
+  private direction?:SyncDirection;
   private readonly filePath:string;
   constructor(private readonly container:HTMLElement,private readonly plugin:FeishuSyncPlugin,private readonly file:TFile){this.filePath=file.path;}
   get isBusy(){return this.busy;}
   start(){this.container.addClass('feishu-doc-local-sync-toolbar');this.render();void this.refresh();}
   dispose(){this.alive=false;this.generation++;this.confirmation?.close();this.container.empty();this.container.classList.remove('feishu-doc-local-sync-toolbar');}
-  async refresh(){const generation=++this.generation;try{if(this.file.path!==this.filePath)throw new Error('文档路径已变化，请重新打开文档。');const project=await this.plugin.backend().project(this.plugin.absolute(this.file));if(!this.alive||generation!==this.generation)return;this.project=project;this.error='';}catch(error){if(!this.alive||generation!==this.generation)return;this.error=readable(error);}this.loading=false;if(this.alive)this.render();}
+  async refresh(){const generation=++this.generation;try{if(this.file.path!==this.filePath)throw new Error('文档路径已变化，请重新打开文档。');const project=await this.plugin.backend().project(this.plugin.absolute(this.file));if(!this.alive||generation!==this.generation)return;if(!this.direction||project?.id!==this.project?.id)this.direction=project?.defaultDirection;this.project=project;this.error='';}catch(error){if(!this.alive||generation!==this.generation)return;this.error=readable(error);}this.loading=false;if(this.alive)this.render();}
   private async comments(){if(this.busy||!this.alive)return;const path=this.filePath;this.busy=true;this.notice='正在同步评论…';this.render();try{if(this.file.path!==path)throw new Error('文档路径已变化，请重新打开文档。');const absolute=this.plugin.absolute(this.file);
     await withSyncLease(this.plugin.app.workspace,path,async()=>{if(!this.alive)throw new Error('文档已关闭，未启动评论同步。');if(this.file.path!==path)throw new Error('文档路径已变化，请重新打开文档。');const result=await this.plugin.backend().comments(absolute);this.notice=`评论同步完成：导入 ${result.report.imported}，新建 ${result.report.created}，回复 ${result.report.replies}，状态 ${result.report.resolved}。`+result.report.issues.join(' ');});
   }catch(error){this.notice=readable(error);}finally{this.busy=false;if(this.alive)this.render();this.plugin.refreshToolbars();}}
-  private async sync(direction:SyncDirection){if(this.busy||!this.alive)return;const path=this.filePath;let conflict=false;this.busy=true;this.notice=direction==='push'?'正在推送…':'正在拉取…';this.render();try{
+  private async sync(direction:SyncDirection){if(this.busy||!this.alive)return;this.direction=direction;const path=this.filePath;let conflict=false;this.busy=true;this.notice=direction==='push'?'正在推送…':'正在拉取…';this.render();try{
     if(this.file.path!==path)throw new Error('文档路径已变化，请重新打开文档。');const absolute=this.plugin.absolute(this.file);
     await withSyncLease(this.plugin.app.workspace,path,async()=>{
       const assertCurrent=()=>{if(!this.alive)throw new Error('文档已关闭，未启动新的同步操作。');if(this.file.path!==path)throw new Error('文档路径已变化，请重新打开文档。');};
@@ -94,7 +96,7 @@ class SyncToolbar {
       button(el,'拉取',()=>void this.sync('pull')).disabled=this.busy;
       button(el,'推送',()=>void this.sync('push'),true).disabled=this.busy;
       button(el,'关联设置',()=>this.plugin.open(this.file)).disabled=this.busy;
-      button(el,'预览差异',()=>this.plugin.openPreview(this.file,this.project?.defaultDirection??'push')).disabled=this.busy;
+      button(el,'预览差异',()=>this.plugin.openPreview(this.file,this.direction??this.project?.defaultDirection??'push')).disabled=this.busy;
       button(el,'同步评论',()=>{this.confirmation=this.plugin.confirm('同步评论','将读取飞书评论，并把本地新增评论、回复和处理状态同步到这篇关联文档。找不到可靠块位置的意见会保留在本地。',()=>void this.comments());}).disabled=this.busy;
       el.createEl('a',{text:'打开飞书',href:this.project.cloud.url,attr:{target:'_blank',rel:'noopener noreferrer'}});
     }else if(this.loading)el.createEl('span',{text:'正在读取飞书关联…',attr:{role:'status'}});
@@ -218,7 +220,7 @@ class SyncModal extends Modal {
   onOpen(){this.modalEl.addClass('feishu-doc-local-sync-modal');this.render();void this.refresh();}
   onClose(){this.alive=false;this.confirmation?.close();this.root?.unmount();this.root=undefined;this.contentEl.empty();this.closed();}
   private async refresh(){this.inspectionFailed=false;try{const backend=this.plugin.backend(),path=this.plugin.absolute(this.file);this.project=await backend.project(path);this.direction=this.initial?.direction??this.project?.defaultDirection??'push';this.existingBinding=this.project?.cloud?undefined:await backend.existingBinding(path);if(!this.recoveryURL&&this.existingBinding?.url)this.recoveryURL=this.existingBinding.url;}catch(error){this.notice=readable(error);this.inspectionFailed=true;}this.loading=false;if(this.alive){this.render();if(this.initial&&this.project?.cloud&&!this.inspectionFailed)await this.preview();}}
-  private preview(){return this.run(async()=>{this.prepared=await this.plugin.backend().preview(this.plugin.absolute(this.file),this.direction);this.notice=this.prepared.view.summary;});}
+  private preview(){const direction=this.direction;this.prepared=undefined;return this.run(async()=>{const prepared=await this.plugin.backend().preview(this.plugin.absolute(this.file),direction);if(prepared.view.direction!==direction||prepared.view.projectId!==this.project?.id)throw new Error('预览与当前项目或同步方向不一致，请重新预览。');this.prepared=prepared;this.notice=prepared.view.summary;});}
   private sync(direction:SyncDirection){this.direction=direction;this.prepared=undefined;return this.run(async()=>{
     const path=this.plugin.absolute(this.file),prepared=await this.plugin.backend().preview(path,direction);
     if(!this.alive)throw new Error('同步窗口已关闭，未启动新的飞书操作。');if(this.file.path!==this.filePath)throw new Error('文档路径已变化，请重新打开同步窗口。');
@@ -227,7 +229,7 @@ class SyncModal extends Modal {
   });}
   private async run(action:()=>Promise<void>){if(this.busy||!this.alive)return;const path=this.filePath;this.busy=true;this.notice='正在处理…';this.render();try{if(this.file.path!==path)throw new Error('文档路径已变化，请重新打开同步窗口。');await withSyncLease(this.app.workspace,path,async()=>{if(!this.alive)throw new Error('同步窗口已关闭，未启动新的飞书操作。');if(this.file.path!==path)throw new Error('文档路径已变化，请重新打开同步窗口。');await action();});}catch(error){this.notice=readable(error);this.prepared=undefined;}finally{this.busy=false;if(this.alive)this.render();this.plugin.refreshToolbars();}}
   private render(){this.root?.unmount();this.root=undefined;const el=this.contentEl;el.empty();el.createEl('h2',{text:this.initial?'正文差异预览':'关联设置'});el.createEl('p',{text:this.file.path,cls:'feishu-sync-path'});
-    el.createEl('p',{text:'拉取更新本地；推送后自动更新本地，旧稿会存档。',cls:'feishu-sync-help'});
+    if(!this.initial&&!this.prepared)el.createEl('p',{text:'拉取更新本地；推送后自动更新本地，旧稿会存档。',cls:'feishu-sync-help'});
     if(this.notice)el.createEl('p',{text:this.notice,cls:'feishu-sync-status',attr:{role:'status'}});
     const navigation=el.createDiv({cls:'feishu-sync-actions'});
     button(navigation,'CLI 设置',()=>{this.close();this.plugin.openSettings();}).disabled=this.busy;
@@ -235,8 +237,7 @@ class SyncModal extends Modal {
     if(this.inspectionFailed){button(el,'重新读取项目关联',()=>void this.refresh()).disabled=this.busy;return;}
     const area=el.createDiv({cls:'feishu-sync-controls'});
     if(this.initial&&this.project?.cloud){
-      const directions=area.createDiv({cls:'feishu-sync-segments',attr:{role:'group','aria-label':'差异方向'}});
-      for(const [value,label] of [['pull','拉取差异'],['push','推送差异']] as const){const choice=button(directions,label,()=>{this.direction=value;this.prepared=undefined;void this.preview();});choice.setAttribute('aria-pressed',String(value===this.direction));choice.disabled=this.busy;}
+      this.renderPreviewDirections(area);
       if(this.prepared)this.renderPreview(el,this.prepared);
       else if(!this.busy)button(area,'重新预览差异',()=>void this.preview()).disabled=this.busy;
       return;
@@ -248,7 +249,7 @@ class SyncModal extends Modal {
       button(actions,'推送',()=>void this.sync('push'),true).disabled=this.busy;
       button(actions,'预览差异',()=>void this.preview()).disabled=this.busy;
       button(actions,'同步评论、回复与处理状态',()=>this.confirmation=this.plugin.confirm('同步评论','将读取飞书评论，并把本地新增评论、回复和处理状态同步到这篇关联文档。找不到可靠块位置的意见会保留在本地。',()=>void this.run(async()=>{const result=await this.plugin.backend().comments(this.plugin.absolute(this.file));this.notice=`评论同步完成：导入 ${result.report.imported}，新建 ${result.report.created}，回复 ${result.report.replies}，状态 ${result.report.resolved}。`+result.report.issues.join(' ');this.prepared=undefined;}))).disabled=this.busy;
-      if(this.prepared)this.renderPreview(el,this.prepared);
+      if(this.prepared){this.renderPreviewDirections(area);this.renderPreview(el,this.prepared);}
     }
     if(this.busy)for(const control of Array.from(area.querySelectorAll<HTMLButtonElement|HTMLInputElement>('button,input')))control.disabled=true;
   }
@@ -283,12 +284,18 @@ class SyncModal extends Modal {
       if(cloud.kind==='new')this.confirmation=this.plugin.confirm('创建并发布到飞书',`将当前本地正文及引用资源创建为「${cloud.title}」。成功后更新本地，旧稿会存档。`,execute);else execute();
     },true);
   }
-  private renderPreview(el:HTMLElement,prepared:PreparedContent){const view=prepared.view,adopting=view.direction==='pull'||view.action==='refresh-local';
+  private renderPreviewDirections(area:HTMLElement){
+    const directions=area.createDiv({cls:'feishu-sync-segments',attr:{role:'group','aria-label':'预览方向'}});
+    for(const [value,label] of [['pull','飞书 → 本地'],['push','本地 → 飞书']] as const){const choice=button(directions,label,()=>{if(this.busy||value===this.direction)return;this.direction=value;void this.preview();});choice.setAttribute('aria-pressed',String(value===this.direction));choice.disabled=this.busy;}
+  }
+  private renderPreview(el:HTMLElement,prepared:PreparedContent){const view=prepared.view,presentation=contentSyncPresentation(view);
+    el.createEl('h3',{text:presentation.operation});
+    if(view.status!=='equal')el.createEl('p',{text:presentation.description+'评论单独同步。',cls:'feishu-sync-help'});
     const actions=el.createDiv({cls:'feishu-sync-actions feishu-sync-sticky-actions',attr:{'aria-label':'差异操作'}});
-    const action=button(actions,adopting?'确认更新本地':'确认推送',()=>void this.run(async()=>{const result=await this.plugin.backend().apply(this.plugin.absolute(this.file),prepared);this.project=result.project;this.notice=[result.summary,...result.warnings].join(' ');this.prepared=undefined;}),true);action.disabled=this.busy||view.status==='equal';
+    const action=button(actions,presentation.confirm,()=>void this.run(async()=>{const result=await this.plugin.backend().apply(this.plugin.absolute(this.file),prepared);this.project=result.project;this.notice=[result.summary,...result.warnings].join(' ');this.prepared=undefined;}),true);action.disabled=this.busy||view.status==='equal';
     button(actions,'关闭',()=>this.close()).disabled=this.busy;
     for(const warning of view.warnings)el.createEl('p',{text:warning,cls:'feishu-sync-warning'});
-    const diff=el.createDiv();this.root=createRoot(diff);this.root.render(<XMLDiff before={adopting?view.localXML:view.cloudXML} after={adopting?view.cloudXML:view.localXML} beforeLabel={adopting?'同步前 · 本地正文':'同步前 · 飞书正文'} afterLabel={adopting?'同步后 · 来自飞书':'同步后 · 来自本地'}/>);
+    const diff=el.createDiv();this.root=createRoot(diff);this.root.render(<XMLDiff before={presentation.updatesLocal?view.localXML:view.cloudXML} after={presentation.updatesLocal?view.cloudXML:view.localXML} beforeLabel={presentation.beforeLabel} afterLabel={presentation.afterLabel}/>);
   }
 }
 class ConfirmModal extends Modal {
