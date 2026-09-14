@@ -228,9 +228,9 @@ class SyncModal extends Modal {
       return;
     }
     if(this.notice)el.createEl('p',{text:this.notice,cls:'feishu-sync-status',attr:{role:'status'}});
-    if(!this.initial){const navigation=el.createDiv({cls:'feishu-sync-actions'});button(navigation,'CLI 设置',()=>{this.close();this.plugin.openSettings();}).disabled=this.busy;button(navigation,'恢复上一快照',()=>{this.close();this.plugin.openRestore(this.file);}).disabled=this.busy;}
+    if(!this.initial||this.inspectionFailed){const navigation=el.createDiv({cls:'feishu-sync-actions'});button(navigation,'CLI 设置',()=>{this.close();this.plugin.openSettings();}).disabled=this.busy;if(!this.initial)button(navigation,'恢复上一快照',()=>{this.close();this.plugin.openRestore(this.file);}).disabled=this.busy;}
     if(this.loading){el.createEl('p',{text:'正在读取项目关联…',attr:{role:'status'}});return;}
-    if(this.inspectionFailed){button(el,'重新读取项目关联',()=>void this.refresh()).disabled=this.busy;return;}
+    if(this.inspectionFailed){el.createEl('p',{text:'当前项目配置：'+this.plugin.settings.catalogPath,cls:'feishu-sync-path'});el.createEl('p',{text:'可通过 CLI 设置核对并保存项目配置路径，再重新打开此窗口。',cls:'feishu-sync-help'});button(el,'重新读取项目关联',()=>void this.refresh()).disabled=this.busy;return;}
     const area=el.createDiv({cls:'feishu-sync-controls'});
     if(!this.project?.cloud){if(this.existingBinding)this.renderRecovery(area,this.existingBinding);else this.renderBinding(area);}else{
       area.createEl('a',{text:'打开关联的飞书文档',href:this.project.cloud.url,attr:{target:'_blank',rel:'noopener noreferrer'}});

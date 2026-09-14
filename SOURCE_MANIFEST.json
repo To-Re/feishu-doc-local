@@ -53,8 +53,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 5915,
-      "sha256": "277726417e366bd014fb5fdd192b6d05abb31cd2925a4e1a8a56df6e264a6e86"
+      "bytes": 5577,
+      "sha256": "c0da5d2f1329eb45c4aa0b404512841bc4e0ab66197528ae9282b01797513ba1"
     },
     {
       "path": "SECURITY.md",
@@ -163,13 +163,18 @@
     },
     {
       "path": "docs/assets-and-attribution.md",
-      "bytes": 10355,
-      "sha256": "c1b2370250a435417152340b2b1629cb1380e68dc07f4198eb770c34eb3d5032"
+      "bytes": 11261,
+      "sha256": "dc3a4354287799e873a208b934a16f0f9b18bbaf449233af0cce23ced94f1c40"
     },
     {
       "path": "docs/browser-version.md",
       "bytes": 4221,
       "sha256": "00a0f635be41e82651f6cc6bc41a96d1851ae17233f6e6db6800dbd5aa6910a6"
+    },
+    {
+      "path": "docs/images/browser-table.jpg",
+      "bytes": 66681,
+      "sha256": "f77b7d7188f3b87fc2080bfd7212968e062e547ce50afd3394542cc10f88b0b1"
     },
     {
       "path": "docs/images/document-outline.jpg",
@@ -183,8 +188,8 @@
     },
     {
       "path": "docs/images/sync-preview.jpg",
-      "bytes": 48112,
-      "sha256": "addc39e99ce80212bdaf7598d687abd934f16522f6105d0dce0645e209b77883"
+      "bytes": 99168,
+      "sha256": "a2e15bb2f8f03e3727d618f927c127ae7850041d5f27ddb7316f1600d629fae5"
     },
     {
       "path": "docs/projects-and-sync.md",
@@ -1438,8 +1443,8 @@
     },
     {
       "path": "obsidian-sync-plugin/README.md",
-      "bytes": 3638,
-      "sha256": "072227bbef3f5a3a5a171a83729e6d520a9865f7bd2c36ccbc716069b3bfc098"
+      "bytes": 3792,
+      "sha256": "7d6458442aa4ca156286ab3a26d6b6934c918d2cca96944652c0908b0739ee3e"
     },
     {
       "path": "obsidian-sync-plugin/build.mjs",
@@ -1478,8 +1483,8 @@
     },
     {
       "path": "obsidian-sync-plugin/src/main.tsx",
-      "bytes": 38029,
-      "sha256": "7421a0a967d0d29c3cf7ec40348b565e57fbcf0132519011cfd1cf9aebbf91f2"
+      "bytes": 38306,
+      "sha256": "a945c8e5117938560fd2df68c3aa7feb6ccf967ca25f9fe9db66f2d514790cc7"
     },
     {
       "path": "obsidian-sync-plugin/src/preferences.ts",
@@ -1533,8 +1538,8 @@
     },
     {
       "path": "obsidian-sync-plugin/tests/ui.test.ts",
-      "bytes": 46710,
-      "sha256": "8332423e343fab6399e28de7866e9bc754a393217e67a78ed1f65751735a1015"
+      "bytes": 48318,
+      "sha256": "5c0659c658846ce1fcb58ffde5e1ec56e4b9ab1bcf7cd35ae45da38084a87c73"
     },
     {
       "path": "obsidian-sync-plugin/tsconfig.json",

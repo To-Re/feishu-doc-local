@@ -1,6 +1,6 @@
 # 本地飞书文档：资源来源与分发边界
 
-核对日期：2026-09-13。适用项目：**本地飞书文档 / feishu-doc-local**。
+核对日期：2026-09-14。适用项目：**本地飞书文档 / feishu-doc-local**。
 
 本清单区分项目随附素材、依赖提供的图标与字体，以及用户打开文档后产生的私有资源。项目的 MIT 许可不重新授权用户文档、飞书下载内容或第三方字体。第三方许可总入口为 [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)，完整文本在 `licenses/` 和对应依赖中保留。
 
@@ -17,9 +17,13 @@
 | `examples/assets/resource-check.csv`、`resource-a/note.txt`、`resource-b/note.txt` | 项目编写的资源树与文本预览测试材料，不含外部插图。 | 适用项目 MIT 许可。 |
 | `examples/compatibility.xml`、`local-resources.xml`、`compatibility-paste.html` | 项目编写的排版兼容性用例；图片复用 `colors.png`，公开链接是可点击文本而非下载的站点素材。 | 适用项目 MIT 许可。 |
 | `examples/showcase.xml` | 本轮编写的公开产品演示文章，内容为本地文章、人类评审与 AI 修订，使用自有 Mermaid 图源；无用户文章、账号、文档 token 或私人路径。 | 示例图源与文字适用项目 MIT 许可。 |
-| `docs/images/editor-review.jpg`、`document-outline.jpg`、`sync-preview.jpg` | 使用公开演示内容在本地产品界面生成；评论为演示数据，差异截图由实际 `XMLDiff` 组件渲染示例 XML。截图不含电脑桌面、浏览器账号、真实云端页面或私人文件位置。 | 产品说明素材；保留界面中第三方图标和字体原有许可。差异截图不是云端回执，本地截图不作为真实 Obsidian GUI 或云端往返的验收证据。 |
+| `docs/images/editor-review.jpg`、`document-outline.jpg` | 之前使用公开演示内容在本地产品界面生成，评论为演示数据；不含电脑桌面、浏览器账号、真实云端页面或私人文件位置。 | 产品说明素材；保留界面中第三方图标和字体原有许可。不作为真实 Obsidian GUI 或云端往返的验收证据。 |
+| `docs/images/browser-table.jpg` | 2026-09-14 使用 `examples/compatibility.xml` 的 S07 表格内容整理公开样稿，在真实浏览器的本地产品界面截图，展示普通表格、列宽、背景与合并。界面中的文件路径、项目关联均为演示配置。 | 产品说明素材；保留界面中第三方图标和字体原有许可。不包含私人稿件或真实飞书页面。 |
+| `docs/images/sync-preview.jpg` | 2026-09-14 在实际产品的完整「正文同步预览」窗口截图，使用上述公开样稿；同步另一侧为本地合成数据，修改一处表格文字以展示差异。未连接飞书，不是云端返回内容。 | 产品说明素材；保留界面中第三方图标和字体原有许可。仅演示界面和确认流程，不作为云端回执或往返验收证据。 |
 | `src/ui/whiteboard-preview.ts` 的 `type="blank"` 空态 | 原生 HTML / CSS 绘制白底边框和“空白画板”文字，无图片、SVG、字体下载或平台插图。 | 产品自身界面，适用项目 MIT 许可。 |
 | `tests/` 内联 SVG | 小型矩形、路径、文字和安全处理测试片段；不作为产品插图使用。 | 测试源码随项目分发。恶意 URL 等字符串仅用于验证拒绝外部加载。 |
+
+<!-- docs/images/obsidian-table.jpg 尚待采集。真实 Obsidian GUI 截图落盘后，在表中记录同一公开样稿 S07 的来源与许可；不能用浏览器或模拟宿主截图替代。 -->
 
 公开静态文件的 SHA-256：
 

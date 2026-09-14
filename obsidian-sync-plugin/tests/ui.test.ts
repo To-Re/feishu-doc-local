@@ -196,6 +196,23 @@ it('does not expose a new binding form after project or sidecar inspection fails
   const t=await setup();t.service.project.mockRejectedValue(new Error('项目配置文件损坏'));t.open();await screen.findByText('项目配置文件损坏');
   expect(screen.queryByRole('button',{name:'新建飞书文档'})).toBeNull();expect(screen.getByRole('button',{name:'CLI 设置'})).toBeTruthy();expect(screen.getByRole('button',{name:'重新读取项目关联'})).toBeTruthy();
 });
+it('lets a failed preview repair its catalog configuration without keeping the sync window open or calling the cloud',async()=>{
+  const t=await setup();t.plugin.settings.catalogPath='/retired/project/projects.json';
+  t.service.project.mockRejectedValue(new Error('项目索引目录已被移动或删除，请重新打开。'));
+  const save=vi.spyOn(t.plugin,'saveData');t.plugin.openPreview(t.file as any,'push');
+  await screen.findByText('项目索引目录已被移动或删除，请重新打开。');
+  expect(screen.getByText('当前项目配置：/retired/project/projects.json')).toBeTruthy();
+  expect(screen.getByRole('button',{name:'重新读取项目关联'})).toBeTruthy();
+  expect(screen.queryByRole('button',{name:'新建飞书文档'})).toBeNull();
+  fireEvent.click(screen.getByRole('button',{name:'CLI 设置'}));
+  expect(screen.queryByRole('heading',{name:'正文同步预览'})).toBeNull();expect(modals).toHaveLength(1);
+  fireEvent.input(screen.getByLabelText('项目配置文件'),{target:{value:'/current/project/projects.json'}});
+  fireEvent.click(screen.getByRole('button',{name:'保存配置'}));await screen.findByText('配置已保存；尚未运行 CLI。');
+  expect(t.plugin.settings.catalogPath).toBe('/current/project/projects.json');
+  expect(save).toHaveBeenCalledWith(expect.objectContaining({catalogPath:'/current/project/projects.json'}));
+  for(const method of [t.service.preview,t.service.apply,t.service.bind,t.service.comments,t.service.prepareImport])expect(method).not.toHaveBeenCalled();
+  expect(t.release).not.toHaveBeenCalled();t.plugin.onunload();
+});
 
 it('routes orphaned historical documents from project management into recovery instead of local registration',async()=>{
   const t=await setup();t.service.listProjects.mockResolvedValue([]);t.service.project.mockResolvedValue(undefined as any);t.service.existingBinding.mockResolvedValue({revision:'old',documentId:'Doc',url:'https://example.feishu.cn/docx/Doc',pending:false});
