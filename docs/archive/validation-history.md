@@ -1,6 +1,8 @@
 # 历史说明与验收记录
 
-这份文档保存开源入口整理前的使用说明与分阶段验收事实。历史名称为 Lark Review / 阅稿 · 飞书格式；当前项目名为「本地飞书文档」（feishu-doc-local）。下文的版本、测试数量与结果只对应记录当时，不代表当前全面兼容。最新使用入口见 [README](../README.md)，当前功能边界见 [样式覆盖矩阵](style-coverage.md) 和 [项目与同步指南](projects-and-sync.md)。
+> 历史验收记录，描述当时版本；当前用法见[使用文档](../README.md)。
+
+这份文档保存开源入口整理前的使用说明与分阶段验收事实。历史名称为 Lark Review / 阅稿 · 飞书格式；当前项目名为「本地飞书文档」（feishu-doc-local）。下文的版本、测试数量与结果只对应记录当时，不代表当前全面兼容。最新使用入口见 [README](../../README.md)，当前功能边界见 [样式覆盖矩阵](../style-coverage.md) 和 [项目与同步指南](../projects-and-sync.md)。
 
 Obsidian 插件、私有草稿恢复与目录交互的检查见 [2026-09-13 验证记录](validation-2026-09-13-plugins.md)，其中区分自动化测试、浏览器操作、实际 Obsidian 窗口操作和仍未验收的 GUI／云端范围。实验性 IDE 插件的原始历史记录保留在 `beta` 分支，本分支不将其列入当前维护或验收范围。
 
@@ -64,7 +66,7 @@ npm start -- --file ~/articles/article.xml --cli-config ~/articles/cli.json --pr
 
 “项目管理”只显示“项目配置路径”和“修改”按钮。编辑目录后点“保存”才切换，服务合并项目登记；冲突时保留输入与原配置。默认目录为 `~/.lark-review/`，旧实例显示实际使用的位置。正文、评论和资源仍在文章旁，浏览器只记住最近项目。该索引可供后续插件或客户端复用，当前尚未集成这些客户端。
 
-创建组合、目录规则、索引格式与失败恢复见 [项目与同步指南](projects-and-sync.md)。
+创建组合、目录规则、索引格式与失败恢复见 [项目与同步指南](../projects-and-sync.md)。
 
 ## 使用
 
@@ -90,13 +92,13 @@ npm start -- --file ~/articles/article.xml --cli-config ~/articles/cli.json --pr
 - 无改动往返保留原 XML 字节；修改可编辑块时保留未知块与原属性。行内附件的后文有专项回归。
 - 评论支持文字选区，也支持公式、图片、白板、附件等原子节点的整体高亮与定位。附件评论保留可读的文件名；编辑事务会迁移评论范围，删除引用后保留评论并标记“已删除”。外部整篇改稿后，旧评论位置标为待确认，避免字符串重复时误挂。
 
-[综合测试稿](../examples/compatibility.xml) 以 S00–S13 编号覆盖格式与协作行为；[本地资源测试稿](../examples/local-resources.xml) 以 S14 覆盖图片、行内附件、Card、Preview、同名不同内容附件及 CSV。两份样稿使用真实本地素材，不含伪造资源 token。默认欢迎稿来自 `examples/demo.xml`，其中附件和白板仍是示意 token，只用于原文保留测试；不能拿这些示意资源发布到飞书。已有 `.local/welcome.xml` 不会因样稿更新而被覆盖。
+[综合测试稿](../../examples/compatibility.xml) 以 S00–S13 编号覆盖格式与协作行为；[本地资源测试稿](../../examples/local-resources.xml) 以 S14 覆盖图片、行内附件、Card、Preview、同名不同内容附件及 CSV。两份样稿使用真实本地素材，不含伪造资源 token。默认欢迎稿来自 `examples/demo.xml`，其中附件和白板仍是示意 token，只用于原文保留测试；不能拿这些示意资源发布到飞书。已有 `.local/welcome.xml` 不会因样稿更新而被覆盖。
 
-[白板图源样例](../examples/whiteboards.xml) 以 S15 覆盖 Mermaid、SVG、PlantUML 和 blank，SVG/PlantUML 使用真实本地文件；CLI 发布前负责展开文件图源。[Sheets 样例](../examples/sheet-roundtrip.md) 提供 6×5 官方单元格输入、单格修改与恢复、预期值映射；它目前用于离线校验，不代表页面已有电子表格内部编辑器。
+[白板图源样例](../../examples/whiteboards.xml) 以 S15 覆盖 Mermaid、SVG、PlantUML 和 blank，SVG/PlantUML 使用真实本地文件；CLI 发布前负责展开文件图源。[Sheets 样例](../../examples/sheet-roundtrip.md) 提供 6×5 官方单元格输入、单格修改与恢复、预期值映射；它目前用于离线校验，不代表页面已有电子表格内部编辑器。
 
 ## AI 接入和发布边界
 
-见 [本地协议](protocol.md)。无需 MCP 或额外 AI SDK；`baselineXML` 和当前 XML 可用于对比人工改动。反馈 JSON 是本项目的本地协议，不是飞书云端评论导入格式。
+见 [本地协议](../protocol.md)。无需 MCP 或额外 AI SDK；`baselineXML` 和当前 XML 可用于对比人工改动。反馈 JSON 是本项目的本地协议，不是飞书云端评论导入格式。
 
 飞书交换使用官方 CLI 的文档命令。例如，对已备齐资源的实际文章，官方入口为 `lark-cli docs +create --doc-format xml --content @./article.xml`。其他实现需适配相同命令与回执；执行前须核对实际资源路径、当前 CLI 能力和资源权限。
 
@@ -122,13 +124,13 @@ Mermaid 已在真实浏览器将“本地初稿”改成“本地修订稿”，
 
 Sheets CLI 的读取、公式/样式增量写入、布局读取、dry-run 与 mock 已实现。实际测试读取被应用缺少 `sheets:spreadsheet:read` 拒绝，写入需要 `sheets:spreadsheet:write_only`；应用 scope 与文档可编辑权限是不同条件。权限尚未获准生效前不进行云端单元格写入，也不按未知响应结构猜测本地表格渲染。
 
-逐项状态见 [样式覆盖矩阵](style-coverage.md)。私有文档地址、完整响应和视觉证据仅保存在受控本地记录中，不提交 Git。项目同步层会读取官方完整 fetch 响应，并在发布时传递回读的 `reference_map`；文件打开入口仍接收 XML，不能直接打开完整 fetch JSON。本地 `resources` 映射下载图片、附件文件与白板预览，非栅格附件只在资源树按文本规则预览，云评论映射见下文“飞书评论同步”；复杂媒体跨文档复制尚未验收。
+逐项状态见 [样式覆盖矩阵](../style-coverage.md)。私有文档地址、完整响应和视觉证据仅保存在受控本地记录中，不提交 Git。项目同步层会读取官方完整 fetch 响应，并在发布时传递回读的 `reference_map`；文件打开入口仍接收 XML，不能直接打开完整 fetch JSON。本地 `resources` 映射下载图片、附件文件与白板预览，非栅格附件只在资源树按文本规则预览，云评论映射见下文“飞书评论同步”；复杂媒体跨文档复制尚未验收。
 
 ## 白板组件评论
 
 Demo 现有真实 SVG 与 Mermaid 流程图。点击其中节点，然后选择“评论选中组件”；评论自动保存在相邻 JSON，点击评论引用可回到该节点。云端下载的 SVG 预览保留真实节点 ID，也可以本地评论组件。没有节点结构的图片预览仍只能评论整块。
 
-本地尚未提供拖拽原生白板。关联文件后可通过“同步飞书评论”按钮交换评论、回复和解决状态。兼容 CLI 现已支持官方兼容的评论创建、回复、解决和恢复；创建定位到文档或 Docx 块，不能假称支持创建画板内部锚点。详见 [协议](protocol.md) 与 [本轮实测](whiteboard-comments-2026-09-12.md)。
+本地尚未提供拖拽原生白板。关联文件后可通过“同步飞书评论”按钮交换评论、回复和解决状态。兼容 CLI 现已支持官方兼容的评论创建、回复、解决和恢复；创建定位到文档或 Docx 块，不能假称支持创建画板内部锚点。详见 [协议](../protocol.md) 与 [本轮实测](whiteboard-comments-2026-09-12.md)。
 
 ## 飞书评论同步
 
@@ -149,7 +151,7 @@ Demo 现有真实 SVG 与 Mermaid 流程图。点击其中节点，然后选择�
 
 评论 ID、回执和同步记录仍在文章旁的 `.review.json`。重复同步按 ID 去重。找不到对应块时保留本地意见；超时且无法确认是否发送成功时，保留 `cloudSync.pending` 并暂停后续发送。先核对回执，不能直接删记录重试。全文评论和仍处于已解决状态的评论不接受云端回复，新增回复会留在本地并说明原因。已同步的评论正文改写不会自动覆盖原云线程。
 
-具体协议与恢复规则见 [本地协议](protocol.md)。
+具体协议与恢复规则见 [本地协议](../protocol.md)。
 
 ## 开发与调查
 

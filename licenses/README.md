@@ -143,7 +143,7 @@
 | devlop | 1.1.0 | MIT | [license](packages/devlop-1.1.0/license) |
 | diff | 9.0.0 | BSD-3-Clause | [LICENSE](packages/diff-9.0.0/LICENSE) |
 | dompurify | 3.4.15 | Apache-2.0 | [LICENSE](packages/dompurify-3.4.15/LICENSE), [LICENSE-MPL](packages/dompurify-3.4.15/LICENSE-MPL), [COPYRIGHT.txt](packages/dompurify-3.4.15/COPYRIGHT.txt) |
-| elkjs | 0.9.3 | EPL-2.0 | [LICENSE.md](packages/elkjs-0.9.3/LICENSE.md) |
+| elkjs | 0.9.3 | EPL-2.0 AND Apache-2.0 | [LICENSE.md](packages/elkjs-0.9.3/LICENSE.md), [COPYRIGHT.txt](packages/elkjs-0.9.3/COPYRIGHT.txt), [Apache-2.0.txt](packages/elkjs-0.9.3/Apache-2.0.txt) |
 | es-toolkit | 1.52.0 | MIT | [LICENSE](packages/es-toolkit-1.52.0/LICENSE), [NOTICE](packages/es-toolkit-1.52.0/NOTICE) |
 | fast-equals | 5.4.2 | MIT | [LICENSE](packages/fast-equals-5.4.2/LICENSE) |
 | hachure-fill | 0.5.2 | MIT | [LICENSE](packages/hachure-fill-0.5.2/LICENSE) |

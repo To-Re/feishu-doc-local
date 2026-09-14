@@ -1,6 +1,6 @@
 # 本地文档与反馈协议 v1
 
-正文 `article.xml` 是 UTF-8 DocxXML。完整文件由多个顶层块组成，通常以唯一的 `<title>` 开头；不是 `<document>` 包裹的 HTML。公开交换约定遵循 [官方语法](https://github.com/larksuite/cli/blob/main/skills/lark-doc/references/lark-doc-xml.md)。本地解析保留未知结构，不意味着这些结构已经通过飞书服务端验证。
+正文 `article.xml` 是 UTF-8 DocxXML。完整文件由多个顶层块组成，通常以唯一的 `<title>` 开头；不是 `<document>` 包裹的 HTML。正文写作采用[写稿协议](writing-protocol.md)所列的固定官方版本；本文说明本地反馈、定位、保存和同步契约。本地解析保留未知结构，不意味着这些结构已经通过飞书服务端验证。
 
 反馈 `article.review.json` 是旁置文件：
 
@@ -31,7 +31,7 @@
 
 一个项目登记一份规范化的本地 XML 绝对路径，并可关联一份实际 Docx 文档 ID 与 URL。同一索引内项目 ID、本地路径、云文档 ID 各自唯一；Wiki 链接先经 CLI 回读解析为实际 Docx 身份。项目索引不保存正文、评论、CLI 参数或凭证，也不移动源文件。
 
-本地服务版全新安装默认使用 `~/.lark-review/projects.json`，已有设置或旧实例索引保持原位置，`--projects-file` 可显式指定。界面通过“项目配置路径 → 修改 → 保存”切换目录，合并项目登记；重复绑定或冲突不会静默覆盖。旧共享开关 API 保留兼容，界面不再展示。`project-settings.json` 和同步快照目录仍在实例索引旁。Obsidian 同步扩展复用相同索引；静态浏览器版与 Obsidian 基础插件不读取此索引。索引 v1 的字段、路径规则与客户端接入约束见 [项目与同步指南](projects-and-sync.md)。
+本地服务版全新安装默认使用 `~/.lark-review/projects.json`，已有设置或旧实例索引保持原位置，`--projects-file` 可显式指定。界面通过“项目配置路径 → 修改 → 保存”切换目录，合并项目登记；重复绑定或冲突不会静默覆盖。旧共享开关 API 保留兼容，界面不再展示。`project-settings.json` 和同步快照目录仍在实例索引旁。Obsidian 同步扩展复用相同索引；静态浏览器版与 Obsidian 基础插件不读取此索引。索引 v1 的字段与客户端接入约束见下节，操作步骤见[项目与同步指南](projects-and-sync.md)。
 
 `--cli-config <JSON>` 接受可信本机的 `command,args`，目标由项目登记选择。旧 `--cloud-config` 同时指定 `command,args,documentId,url` 并要求 `--file`；二者互斥。服务器不从浏览器、XML 或反馈 JSON 接受可执行程序、参数或新的目标身份。页面新建项目时允许明确选择已有飞书 URL 或新建标题；真正的绑定由 CLI 回读与服务端索引建立。
 
@@ -48,6 +48,35 @@
 兼容旧调用方时，成功发布可保留本地原稿与两端基线；两端及素材尚未再修改时，准备结果返回 `action:refresh-local`，显式采用只更新本地，不重新发布。当前推送预览遇到此状态明确显示「推送已完成 · 更新本地副本」，确认只完成本地更新。快照位于实例的 `sync-history`；Obsidian 使用稿件旁的 `.review-sync-history`，均不写进项目索引。
 
 本地版本比较、云端写前重读和 CLI 的 `--revision-id` 共同减少误覆盖，但不能构成跨本地文件、CLI 与飞书的原子比较更新（CAS）。其他客户端可能在检查后修改云稿，分步发布也可能只完成部分。服务用 `.review.json.sync.lock` 防止遵守本协议的进程同时同步同稿；任意外部进程不受此锁约束。存在正文或评论 `pending` 时，正文预览与执行会停止，不自动重试云写。先核对回执、云端完整状态与本地快照，再恢复映射或基线，不能仅删除 pending 再发布。
+
+## 项目索引 v1
+
+项目索引是 UTF-8 JSON，顶层只含 `version` 和 `projects`。以下为脱敏示例；实际 `localPath` 必须是规范化绝对路径，不能写 `~`，占位云 ID 应替换为完整回读确认的实际 ID：
+
+```json
+{
+  "version": 1,
+  "projects": [
+    {
+      "id": "review-example",
+      "name": "示例文章",
+      "localPath": "/articles/article.xml",
+      "defaultDirection": "pull",
+      "cloud": {
+        "documentId": "DOC_ID",
+        "url": "https://example.feishu.cn/docx/DOC_ID"
+      },
+      "createdAt": "2026-09-12T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+纯本地项目省略 `cloud`，不要写成 `null`。`id`、名称、本地路径、默认方向、创建时间为必填；`defaultDirection` 仅支持 `pull/push`。同一列表的 `id`、`localPath` 与已绑定的 `cloud.documentId` 分别唯一。当前选中项目不写入共享索引。未知字段、错误版本和重复绑定会报错，不能随意把客户端私有设置塞进记录。
+
+`project-settings.json` 是本实例设置，不是项目索引。它含 `version:1`、`shared`、可选 `sharedPath` 和服务管理的 `localBaseline`。这些字段继续兼容旧客户端，界面不再提供共享开关。HTTP 设置回读提供实际 `path`、`defaultSharedPath` 和 `hasSharedPath`；界面从 `path` 取得当前目录，保存新位置沿用 `{shared:true,path:"/目录/projects.json"}`。
+
+未来客户端优先通过本地 [HTTP 接口](#本地-http) 访问，沿用同源与 CSRF 校验、文件版本及同步保护。若直接写索引，需要遵守同版本字段校验、规范路径与唯一绑定约束，以及 `.lock`、写前重读和原子文件替换约定；单纯读取同一 JSON 不等于已支持多端安全写入。CLI 身份配置由各实例启动时提供，共享索引不携带登录态或执行命令。
 
 ## 本地快照恢复
 
@@ -85,7 +114,7 @@ CLI 协议使用官方 `docs +fetch`、`drive +list-comments/+list-replies/+add-
 
 页面在编辑和只读模式都允许点击组件，再点“评论选中组件”；引用定位同时核对原白板位置、board 和 id。评论高亮不改变图形原配色。图源改字保留显式 board/id 时可继续定位；删除节点、来源改变、重复 ID 或预览未就绪会明确提示，保留意见并且不按同名文字重挂。外部 XML 修改仍遵循既有 unverified 规则。没有组件结构的 JPG/PNG 缓存和空白画板仍只能评论整块。
 
-本地目标不是飞书云评论协议。公开评论接口实测可回读画板内部意见及回复、所属画板和 Docx 块；本次返回的 relation 没有内部节点 ID。不能把 quote 猜成 node_id，或把 `anchor.block_id` 误当内部组件锚点。关联文件后可显式同步评论；外部 CLI 也可以按云 comment_id 回复、解决和恢复原生组件评论。具体证据见 [白板评论验收](whiteboard-comments-2026-09-12.md)。
+本地目标不是飞书云评论协议。公开评论接口实测可回读画板内部意见及回复、所属画板和 Docx 块；本次返回的 relation 没有内部节点 ID。不能把 quote 猜成 node_id，或把 `anchor.block_id` 误当内部组件锚点。关联文件后可显式同步评论；外部 CLI 也可以按云 comment_id 回复、解决和恢复原生组件评论。具体证据见 [白板评论验收](archive/whiteboard-comments-2026-09-12.md)。
 
 ## AI 读取与修订
 
@@ -185,4 +214,4 @@ CLI 协议使用官方 `docs +fetch`、`drive +list-comments/+list-replies/+add-
 
 项目同步层消费 CLI 完整 fetch 响应；本地文件入口仍只打开 XML，不接受整份 fetch JSON，也不把本地缓存清单当作官方引用映射。保留 XML 不等于所有复杂格式均可发布或与飞书像素一致，既有格式限制继续适用。
 
-独立 CLI 的开发验收已在专用测试稿完成真实 XML 发布、完整回读及资源下载，并在 revision 31 确认行内附件尾文修复。公式样例已完成本地评论、编辑落盘、兼容 CLI 写回、云端回读和恢复；附件字节、Card/Preview、原生三栏比例与 S14 本地资源上传也分别有实测回执。S15 四种 typed 白板在 revision 56→57 完成云写、原生节点和官方独立回读；Mermaid 实际浏览器改源、落盘、撤销重做、兼容 CLI 局部更新及官方回读在 revision 58→59 通过。SVG 实际改源保留真实子元素、CLI dry-run 和撤销通过，未把该次 SVG 改字写云端。三种非空白板的云端页面与本地预览均已检查，SVG 缓存保留服务端 viewBox；Mermaid 连接标签与飞书页面的白底遮罩仍有差异，不声明像素一致。主稿已用 CAS 同步 revision 59，18 项资源映射、两条原评论保留。Sheets CLI 只有离线与 mock 通过，真实读取受应用 scope 阻塞，没有云端单元格写回及本地表格渲染验收。逐项范围及未完成项见 [样式覆盖矩阵](style-coverage.md)。
+本地显示、CLI 协议验证和真实云端往返各有不同范围。当前限制见[格式支持](style-coverage.md)，阶段实测保留在[历史验收记录](archive/README.md)。

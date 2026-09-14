@@ -28,7 +28,11 @@ export class ContentCLIError extends Error {
     Object.defineProperty(this, 'receipt', {value: receipt ? Object.freeze({stdout: receipt.stdout, stderr: receipt.stderr, exitCode: receipt.exitCode}) : undefined, enumerable: false, writable: false});
   }
 }
-export type ContentCLIRunner = (command: string, args: readonly string[]) => Promise<string | ContentCLIReceipt>;
+export interface ContentCLIRunOptions {
+  /** The validated body file's directory; never taken from document contents. */
+  readonly cwd?: string;
+}
+export type ContentCLIRunner = (command: string, args: readonly string[], options?: ContentCLIRunOptions) => Promise<string | ContentCLIReceipt>;
 type ObjectValue = Record<string, unknown>;
 const MAX_BYTES = 16 * 1024 * 1024;
 const object = (value: unknown): value is ObjectValue => !!value && typeof value === 'object' && !Array.isArray(value);
@@ -44,8 +48,9 @@ function failureReceipt(error: unknown): ContentCLIReceipt | undefined {
   return {stdout: typeof error.stdout === 'string' ? error.stdout : '', stderr: typeof error.stderr === 'string' ? error.stderr : '',
     exitCode: typeof code === 'number' || typeof code === 'string' ? code : null};
 }
-const execute: ContentCLIRunner = (command, args) => new Promise((resolve, reject) => {
-  execFile(command, [...args], { shell: false, encoding: 'utf8', timeout: 120_000, killSignal: 'SIGKILL', maxBuffer: MAX_BYTES, windowsHide: true },
+const execute: ContentCLIRunner = (command, args, options) => new Promise((resolve, reject) => {
+  execFile(command, [...args], { shell: false, encoding: 'utf8', timeout: 120_000, killSignal: 'SIGKILL', maxBuffer: MAX_BYTES, windowsHide: true,
+    ...(options?.cwd === undefined ? {} : { cwd: options.cwd }) },
     (error, stdout, stderr) => {
       const receipt: ContentCLIReceipt = {stdout, stderr, exitCode: error ? error.code ?? null : 0};
       if (error) reject(failed(receipt)); else resolve(receipt);
@@ -83,7 +88,7 @@ function validateXML(xml: string, receipt?: ContentCLIReceipt) {
   parser.write(xml).close();
 }
 
-/** A sibling copy preserves the CLI's relative-media base directory. Original files are never passed as mutable inputs. */
+/** Stage beside the source; callers also set cwd because the CLI resolves relative media there first. Original files are never mutable inputs. */
 async function privateInput<T>(path: string, kind: 'xml' | 'json', action: (path: string) => Promise<T>): Promise<T> {
   if (typeof path !== 'string' || !isAbsolute(path) || path.includes('\0')) throw new Error('正文和引用映射需要本地绝对路径。');
   const source = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
@@ -112,9 +117,9 @@ export function createContentCLI(profile: { command: string; args: string[] }, r
     profile.args.some(arg => typeof arg !== 'string' || arg.includes('\0'))) throw new Error('本地飞书 CLI 启动配置无效。');
   const command = profile.command, prefix = [...profile.args];
   const receipts = new WeakMap<ObjectValue, ContentCLIReceipt>();
-  const call = async (args: string[]): Promise<ObjectValue> => {
+  const call = async (args: string[], cwd?: string): Promise<ObjectValue> => {
     let result: string | ContentCLIReceipt;
-    try { result = await runner(command, [...prefix, ...args, '--format', 'json']); }
+    try { result = await runner(command, [...prefix, ...args, '--format', 'json'], cwd === undefined ? undefined : { cwd }); }
     catch (error) { throw failed(failureReceipt(error)); }
     const receipt: ContentCLIReceipt = typeof result === 'string' ? {stdout: result, stderr: '', exitCode: 0} : result;
     if (!receipt || typeof receipt.stdout !== 'string' || typeof receipt.stderr !== 'string') throw invalid();
@@ -147,7 +152,7 @@ export function createContentCLI(profile: { command: string; args: string[] }, r
       if (typeof input.title !== 'string' || !input.title.trim() || input.title.includes('\0') || (input.parentToken !== undefined && !id(input.parentToken))) throw new Error('新建文档需要标题和有效父目录标识。');
       return privateInput(input.contentPath, 'xml', async path => {
         const data = await call(['docs', '+create', '--title', input.title, '--doc-format', 'xml', '--content', '@' + path,
-          ...(input.parentToken ? ['--parent-token', input.parentToken] : [])]);
+          ...(input.parentToken ? ['--parent-token', input.parentToken] : [])], dirname(path));
         const doc = data.document;
         if (!object(doc) || !id(doc.document_id) || (data.result !== undefined && data.result !== 'success') || data.task_id) throw invalid(receipts.get(data));
         const warnings: string[] = [];
@@ -173,7 +178,7 @@ export function createContentCLI(profile: { command: string; args: string[] }, r
         (input.command === 'block_delete' ? input.contentPath !== undefined || input.referenceMapPath !== undefined : !input.contentPath)) throw new Error('正文同步参数或版本无效，未写入飞书。');
       const perform = async (content?: string, reference?: string) => {
         const data = await call(['docs', '+update', '--doc', input.documentId, '--command', input.command, '--revision-id', String(input.revision), '--doc-format', 'xml',
-          ...(input.blockId ? ['--block-id', input.blockId] : []), ...(content ? ['--content', '@' + content] : []), ...(reference ? ['--reference-map', '@' + reference] : [])]);
+          ...(input.blockId ? ['--block-id', input.blockId] : []), ...(content ? ['--content', '@' + content] : []), ...(reference ? ['--reference-map', '@' + reference] : [])], content ? dirname(content) : undefined);
         if (data.result !== 'success' || data.task_id || (object(data.document) && data.document.document_id !== undefined && data.document.document_id !== input.documentId)) throw invalid(receipts.get(data));
       };
       if (!input.contentPath) return perform();

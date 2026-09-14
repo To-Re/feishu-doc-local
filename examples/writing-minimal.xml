@@ -1,0 +1,10 @@
+<title>本地写稿示例</title>
+<p>先在本地阅读、评论和修改，再决定是否关联飞书。</p>
+<h1>本次改动</h1>
+<p>保留 <b>正文</b> 和 <em>反馈</em> 的边界：1 &lt; 2，A &amp; B。</p>
+<ul><li>编辑正文</li><li>留下评论</li></ul>
+<h2>核对结果</h2>
+<table><colgroup><col width="180"/><col width="280"/></colgroup>
+<thead><tr><th><p>项目</p></th><th><p>结果</p></th></tr></thead>
+<tbody><tr><td><p>本地文件</p></td><td><p>等待核对</p></td></tr></tbody></table>
+<checkbox done="false">确认内容后再发布</checkbox>

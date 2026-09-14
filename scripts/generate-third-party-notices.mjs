@@ -76,9 +76,37 @@ for (const [path, entry] of Object.entries(lock.packages).sort(([a], [b]) => a.l
     notices.push({ source: `${path}/dist/purify.es.mjs (original first line)`,
       ...add(`licenses/packages/${slug}/COPYRIGHT.txt`, `${firstLine}\n`) });
   }
+  let selectedLicense = name === 'dompurify' ? 'Apache-2.0' : license;
+  if (name === 'elkjs') {
+    // These plain source comments are removed by minifiers. The package's root
+    // EPL text does not include its authors or the embedded Apache Worker notice.
+    const source = `${path}/lib/elk.bundled.js`;
+    const comments = [...(await read(source)).toString('utf8').matchAll(/\/\*[\s\S]*?\*\//g)]
+      .map(match => match[0]).filter(comment => /copyright/i.test(comment));
+    const expected = [
+      '9cba89b66d6fc021c4713addf7b3139ebcb04116c1fa5891752e61798a0ffb4c',
+      '62331fccefdebd6b35ba827022e702f544deacc38031b59c427bb33c58b214e9',
+      '9d0b9f85b5469b975a799fd9237d7939273647c5f9ee8f6b8ccbaaba0d7610cd',
+    ];
+    if (entry.version !== '0.9.3' || comments.length !== expected.length
+      || comments.some((comment, index) => hash(comment) !== expected[index])) {
+      throw new Error('Review the elkjs bundled copyright and embedded license notices against the upstream version.');
+    }
+    // Use the already installed, complete Apache text, verified independently of
+    // the DOMPurify package version; never substitute a short header for it.
+    const apache = await read('node_modules/dompurify/LICENSE');
+    if (hash(apache) !== 'cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30') {
+      throw new Error('Review the complete Apache 2.0 text used for the embedded elkjs Worker.');
+    }
+    notices.push({ source: `${source} (original copyright and license comments; trailing whitespace trimmed)`,
+      ...add(`licenses/packages/${slug}/COPYRIGHT.txt`, `${comments.map(comment => comment.replace(/[ \t]+$/gm, '')).join('\n\n')}\n`) },
+    { source: 'node_modules/dompurify/LICENSE (complete Apache 2.0 text for the embedded elkjs Worker)',
+      ...add(`licenses/packages/${slug}/Apache-2.0.txt`, apache) });
+    selectedLicense = 'EPL-2.0 AND Apache-2.0';
+  }
   records.push({ name, version: entry.version, packagePath: path,
     scope: entry.dev ? 'build-tooling-not-shipped' : 'runtime-dependency-closure',
-    declaredLicense: license, selectedLicense: name === 'dompurify' ? 'Apache-2.0' : license,
+    declaredLicense: license, selectedLicense,
     repository: repositoryURL(pkg),
     sourceArchive: typeof entry.resolved === 'string' && entry.resolved.startsWith('https://registry.npmjs.org/') ? entry.resolved : null,
     integrity: entry.integrity || null, notices });

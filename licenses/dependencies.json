@@ -2471,7 +2471,7 @@
       "packagePath": "node_modules/elkjs",
       "scope": "runtime-dependency-closure",
       "declaredLicense": "EPL-2.0",
-      "selectedLicense": "EPL-2.0",
+      "selectedLicense": "EPL-2.0 AND Apache-2.0",
       "repository": "https://github.com/kieler/elkjs",
       "sourceArchive": "https://registry.npmjs.org/elkjs/-/elkjs-0.9.3.tgz",
       "integrity": "sha512-f/ZeWvW/BCXbhGEf1Ujp29EASo/lk1FDnETgNKwJrsVvGZhUWCZyg3xLJjAsxfOmt8KjswHmI5EwCQcPMpOYhQ==",
@@ -2480,6 +2480,16 @@
           "source": "node_modules/elkjs/LICENSE.md",
           "path": "licenses/packages/elkjs-0.9.3/LICENSE.md",
           "sha256": "89591d4578fb1ebd91501312a3d25f021bd865a2e436641c1cf7b1bc7e3c1617"
+        },
+        {
+          "source": "node_modules/elkjs/lib/elk.bundled.js (original copyright and license comments; trailing whitespace trimmed)",
+          "path": "licenses/packages/elkjs-0.9.3/COPYRIGHT.txt",
+          "sha256": "4dd37e6dda4be58f61a19bdf36d67790da52bf0080cfc9e6d6c793a1c9c1a948"
+        },
+        {
+          "source": "node_modules/dompurify/LICENSE (complete Apache 2.0 text for the embedded elkjs Worker)",
+          "path": "licenses/packages/elkjs-0.9.3/Apache-2.0.txt",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
         }
       ]
     },

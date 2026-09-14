@@ -7,7 +7,7 @@
 | [@To-Re](https://github.com/To-Re) | 项目发起、需求与设计决策、人工体验验收和维护 |
 | [OpenAI Codex](https://github.com/openai/codex) | 代码实现、重构、测试、文档，以及多个 AI agent 之间的交叉评审 |
 
-AI 生成代码仍需通过测试和人工验收。各端的实际验证范围和已知限制见 [验证记录](docs/validation-2026-09-13-plugins.md)。
+AI 生成代码仍需通过测试和人工验收。各端的实际验证范围和已知限制见 [验证记录](docs/archive/validation-2026-09-13-plugins.md)。
 
 相关 Git 提交保留维护者的公开提交身份，并使用 [Codex 官方默认的共同作者标记](https://github.com/openai/codex/blob/e4a3612f11ba68ac82111ea986801a3337554083/codex-rs/core/src/commit_attribution.rs#L1) 记录 AI 参与：
 

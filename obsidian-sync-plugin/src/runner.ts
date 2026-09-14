@@ -16,9 +16,10 @@ interface RunningCLI {child:ChildProcess;abort:(reason:string,code?:string)=>voi
 export class ManagedCLIRunner {
   private children=new Set<RunningCLI>();private disposed=false;
   constructor(private readonly execute:typeof spawn=spawn,private readonly options:RunnerOptions={}){}
-  readonly run:ContentCLIRunner=(command,args)=>new Promise<ContentCLIReceipt>((resolve,reject)=>{
+  readonly run:ContentCLIRunner=(command,args,runOptions)=>new Promise<ContentCLIReceipt>((resolve,reject)=>{
     if(this.disposed){reject(new Error('飞书同步扩展已卸载，未执行命令。'));return;}
-    if(this.options.cwd!==undefined&&(typeof this.options.cwd!=='string'||!isAbsolute(this.options.cwd)||/[\0\r\n]/.test(this.options.cwd))){reject(new Error('CLI 工作目录必须是宿主提供的仓库绝对路径。'));return;}
+    if([this.options.cwd,runOptions?.cwd].some(cwd=>cwd!==undefined&&(typeof cwd!=='string'||!isAbsolute(cwd)||/[\0\r\n]/.test(cwd)))){reject(new Error('CLI 工作目录必须是宿主提供的仓库绝对路径。'));return;}
+    const cwd=runOptions?.cwd??this.options.cwd;
     let settled=false,job:RunningCLI|undefined,timer:ReturnType<typeof setTimeout>|undefined;
     const stdout:Buffer[]=[],stderr:Buffer[]=[];let bytes=0;
     const finish=(error:Error|null,receipt?:ContentCLIReceipt)=>{
@@ -28,7 +29,7 @@ export class ManagedCLIRunner {
     const env={...(this.options.env??process.env)};delete env.NODE_OPTIONS;delete env.NODE_PATH;
     const program=this.options.nodePath||command,parameters=this.options.nodePath?[command,...args]:[...args];
     try{
-      const child=this.execute(program,parameters,{shell:false,detached:process.platform!=='win32',env,...(this.options.cwd===undefined?{}:{cwd:this.options.cwd}),
+      const child=this.execute(program,parameters,{shell:false,detached:process.platform!=='win32',env,...(cwd===undefined?{}:{cwd}),
         stdio:['pipe','pipe','pipe'],windowsHide:true});
       job={child,abort:(reason,code='ABORTED')=>{
         if(settled)return;const stopped=this.killTree(child);

@@ -1,5 +1,7 @@
 # 官方 CLI 的 Mac 实测
 
+> 历史验收记录，描述当时版本；当前用法见[使用文档](../README.md)。
+
 2026-09-12 至 13 日，在 macOS 26.4.1 / Apple Silicon 上，使用 GitHub 发布的 [lark-cli v1.0.95](https://github.com/larksuite/cli/releases/tag/v1.0.95) `darwin-arm64` 二进制完成真实云端验收。本次直接使用该官方发行版，修复候选的结果单独记录。
 
 结论：阅稿器可以直接使用官方 CLI 完成下列已验收流程。替代实现需适配相同命令、DocxXML 和 JSON 回执边界；命令兼容不意味着不同实现、不同发行版本的全部能力和缺陷相同。旁置 `*.review.json` 仍是阅稿器自己的本地协议。
