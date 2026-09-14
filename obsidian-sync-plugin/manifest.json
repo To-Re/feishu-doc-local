@@ -1,7 +1,7 @@
 {
   "id": "feishu-doc-local-sync",
   "name": "本地飞书文档 · 飞书同步",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "minAppVersion": "1.8.0",
   "description": "可选扩展：通过已配置的官方 Lark CLI 手动同步正文、资源与评论。无需本地网页服务。",
   "author": "github.com/To-Re",

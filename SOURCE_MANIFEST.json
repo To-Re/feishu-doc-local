@@ -212,6 +212,11 @@
       "sha256": "3db5301e258fb7432cf16e50b1479fda100039c8abaa508d46fd29f14f5dde70"
     },
     {
+      "path": "docs/releases/v0.0.2.md",
+      "bytes": 3139,
+      "sha256": "9efab9472fcb8529a1e3e86993e87490febccab4a2459254b68788743feb3e3c"
+    },
+    {
       "path": "docs/style-coverage.md",
       "bytes": 4129,
       "sha256": "bacf2cc86decc066528d4cd8780cccc94a75477b9db88027a2534c73240761aa"
@@ -1359,17 +1364,17 @@
     {
       "path": "obsidian-plugin/manifest.json",
       "bytes": 316,
-      "sha256": "95b785d5868448986373705f47d8a0556baf45f14616fa2cffce5e02e308510a"
+      "sha256": "b571af579f4dfcd4984a82b9f39aa681fa71c387f08e0a53f2075364ebd7a556"
     },
     {
       "path": "obsidian-plugin/package-lock.json",
       "bytes": 4477,
-      "sha256": "a30669f0060b9d0056abfd6d85e51cbf597c80b32869fecc9ef4c9978633edaf"
+      "sha256": "0824880257ed38de66005bf92a7a759a55c5fe18321a14125482c256ddef83ba"
     },
     {
       "path": "obsidian-plugin/package.json",
       "bytes": 402,
-      "sha256": "e3246a3ad9b02c0f3cb6e62bf952f9bff344dc3be1a598debe7854945058c4f9"
+      "sha256": "e9b0c702163e487fe0939f23c05406437244f502a843797dbc7cd3a1091b5cd0"
     },
     {
       "path": "obsidian-plugin/src/document.ts",
@@ -1448,8 +1453,8 @@
     },
     {
       "path": "obsidian-plugin/versions.json",
-      "bytes": 23,
-      "sha256": "ffec905f7d9949ede6e6a549a6176595bb1ffdbb3f82373a1e9cdf01592bf233"
+      "bytes": 43,
+      "sha256": "7041de7122e2581a4501cd830b397a262030ed8fba572a23cfbde198599d582a"
     },
     {
       "path": "obsidian-plugin/vitest.config.ts",
@@ -1469,17 +1474,17 @@
     {
       "path": "obsidian-sync-plugin/manifest.json",
       "bytes": 327,
-      "sha256": "296c83d4f67d4ff691028b7feb0430e6fe4907f260895414066917aa5ff66df2"
+      "sha256": "0eb14c61ebf6ee424cb3bdaa8a0889da765881d786f97512b1300f73184f47f1"
     },
     {
       "path": "obsidian-sync-plugin/package-lock.json",
       "bytes": 4487,
-      "sha256": "42eaa17fb1c02f92dfe583651aff89b6c11991c1011cc42425c10665a8f584f7"
+      "sha256": "ef66c2c118b8a382e5c451150758429b8dc4441baa55f082f02a2ce87691cafe"
     },
     {
       "path": "obsidian-sync-plugin/package.json",
       "bytes": 375,
-      "sha256": "d1f27fb5b1954b01f977afef57069fcdc2d2649d35279387a2a64448685d5ba8"
+      "sha256": "333db5daa930cd155bbc51966a3e9584ddabec1320ed565c55131e8373b01c0b"
     },
     {
       "path": "obsidian-sync-plugin/src/SnapshotRestoreModal.tsx",
@@ -1563,8 +1568,8 @@
     },
     {
       "path": "obsidian-sync-plugin/versions.json",
-      "bytes": 23,
-      "sha256": "ffec905f7d9949ede6e6a549a6176595bb1ffdbb3f82373a1e9cdf01592bf233"
+      "bytes": 43,
+      "sha256": "7041de7122e2581a4501cd830b397a262030ed8fba572a23cfbde198599d582a"
     },
     {
       "path": "obsidian-sync-plugin/vitest.config.ts",
@@ -1574,12 +1579,12 @@
     {
       "path": "package-lock.json",
       "bytes": 182504,
-      "sha256": "2186f6d0526c9faf95fb59415732fd7d8c39ec0e054842f91db3f9ddc8bff5b5"
+      "sha256": "b289db77694b19f2f0a4829c837c8496dbfe00491f32747da5850729fa97211a"
     },
     {
       "path": "package.json",
       "bytes": 2300,
-      "sha256": "9daab290a56517cc912c9b120c9e7cb6affcef2fc625ba31ac767eb1f89e3460"
+      "sha256": "75f6b425e1617940f54ba4f60b0b146bb21bc2c3532722dc6c5b1f933ed158e5"
     },
     {
       "path": "scripts/build-server.mjs",
