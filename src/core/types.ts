@@ -15,7 +15,12 @@ export type ResourceMapping = {
   value: string; path: string;
 } & ({ tag: 'img'; attribute: 'src' | 'token'; representation: 'original' } | { tag: 'whiteboard'; attribute: 'src' | 'token' | 'path'; representation: 'preview' } |
   { tag: 'source'; attribute: 'token'; representation: 'original' });
-export interface ResourceManifest { version: 1; items: ResourceMapping[]; }
+/** Optional historical evidence, never a request to retry or change access. */
+export interface ResourceFailure {
+  tag: 'img' | 'source' | 'whiteboard'; attribute: 'src' | 'token' | 'path'; value: string;
+  reason: 'not-downloaded' | 'http-403';
+}
+export interface ResourceManifest { version: 1; items: ResourceMapping[]; failures?: ResourceFailure[]; }
 export interface Review {
   format: 'lark-review'; version: 1;
   document: { name: string; baselineXML: string; xml: string; updatedAt: string; };

@@ -228,3 +228,11 @@
 /* Local attachment previews retain the protected XML atom and its comment anchor. */
 .document-content .lr-attachment-text{font:12px/1.75 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;max-height:440px;overflow:auto;margin:0;padding:16px;border:0;border-radius:0;background:#fafbfc}
 .lr-attachment-media{display:block;width:100%;max-height:520px;margin:0 auto;background:#111;object-fit:contain}.lr-attachment-content[hidden]{display:none}.lr-attachment-open{margin-left:auto;flex-shrink:0;padding:6px 10px;font-size:12px;color:#3370ff}.lr-attachment-download{color:#3370ff;text-decoration:none}.lr-attachment-content{min-width:0}
+
+/* Missing media stays visible at its original document position. */
+.document-content .lr-resource-unavailable{border:1px dashed #b97720;background:#fff9ee;color:#765019;min-height:48px;white-space:normal;overflow-wrap:anywhere}
+.lr-resource-placeholder{display:block;padding:12px;font-size:13px;line-height:1.7}
+.lr-resource-unavailable .lr-attachment-status{color:#765019;background:#fff9ee}
+.document-content .lr-attachment-inline.lr-resource-unavailable{display:inline-flex;flex-wrap:wrap;min-height:0}
+.lr-attachment-inline .lr-attachment-status{padding:2px 5px;font-size:11px}
+.resource-notice{border-color:#d8b178;background:#fff9ee}.resource-notice button{text-align:left;white-space:normal;overflow-wrap:anywhere;font-size:12px;color:inherit;background:transparent;border:0;padding:4px}.resource-notice p{font-size:12px}.resource-notice button:hover{text-decoration:underline}

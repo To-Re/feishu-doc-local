@@ -13,12 +13,33 @@ const response=(value:unknown,status=200)=>({ok:status>=200&&status<300,status,j
 afterEach(()=>{cleanup();vi.unstubAllGlobals();vi.restoreAllMocks();});
 
 describe('resource preview refresh and reading position',()=>{
+  it('does not display raw host errors and reports unavailable image URLs without relying on an error event',async()=>{
+    const access={assetURL:()=> 'data:,',readResource:async()=>{throw new Error('private-token request payload');}};
+    const mounted=render(<ResourcePreview file={file} handle={handle} review={review} xml={xml} access={access}/>);
+    await waitFor(()=>expect(screen.getByRole('status').textContent).toContain('资源缺失或不可读取'));
+    expect(mounted.container.textContent).not.toContain('private-token');
+    mounted.rerender(<ResourcePreview file={{kind:'resource',path:'missing.png',name:'missing.png'}} handle={handle} review={review} xml={xml} access={access}/>);
+    expect(screen.getByRole('status').textContent).toContain('图片不可读取');
+    expect(screen.queryByRole('img')).toBeNull();
+  });
+  it('reports video decode errors and failed local refresh without swallowing the error or retrying automatically',async()=>{
+    const refresh=vi.fn(async()=>{throw new Error('private refresh details');});
+    const access={assetURL:()=> 'blob:local-video',readResource:async()=>({text:''}),refresh};
+    const mounted=render(<ResourcePreview file={{kind:'resource',path:'bad.mp4',name:'bad.mp4'}} handle={handle} review={review} xml={xml} access={access}/>);
+    fireEvent.error(mounted.container.querySelector('video')!);
+    expect(screen.getByRole('status').textContent).toContain('影音文件缺失');
+    expect(refresh).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button',{name:'刷新资源'}));
+    await waitFor(()=>expect(mounted.container.textContent).toContain('资源缺失或不可读取'));
+    expect(mounted.container.textContent).not.toContain('private refresh details');
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
   it('recovers a failed read with a user refresh and aborts an older in-flight refresh',async()=>{
     const requests:Array<{signal:AbortSignal;finish:(value:Response)=>void}>=[];
     vi.stubGlobal('fetch',vi.fn((_url:string,options:RequestInit)=>new Promise<Response>(finish=>requests.push({signal:options.signal as AbortSignal,finish}))));
     render(<ResourcePreview file={file} handle={handle} review={review} xml={xml}/>);
     await act(async()=>requests[0].finish(response({error:'资源已被另一处移走'},404)));
-    expect(screen.getByRole('status').textContent).toBe('资源已被另一处移走');
+    expect(screen.getByRole('status').textContent).toBe('本地资源文件不存在，原始引用已保留。');
     fireEvent.click(screen.getByRole('button',{name:'刷新资源'}));
     expect(screen.getByRole('region',{name:'资源预览'}).getAttribute('aria-busy')).toBe('true');
     fireEvent.click(screen.getByRole('button',{name:'刷新资源'}));
@@ -50,7 +71,7 @@ describe('resource preview refresh and reading position',()=>{
     expect(pre.textContent).toContain('第二份长文本');
     fireEvent.click(screen.getByRole('button',{name:'刷新资源'}));
     await act(async()=>pending[2](response({error:'读取权限被撤销'},403)));
-    expect(screen.getByRole('status').textContent).toBe('读取权限被撤销 当前显示为上次读取的内容。');
+    expect(screen.getByRole('status').textContent).toBe('本地资源读取被拒绝，请检查当前目录的读取授权。 当前显示为上次读取的内容。');
     expect(pre.textContent).toContain('第二份长文本');expect(pre.scrollTop).toBe(510);
   });
 

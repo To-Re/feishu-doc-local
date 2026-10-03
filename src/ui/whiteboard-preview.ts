@@ -238,10 +238,10 @@ export function attachSVGPreview(container: HTMLElement, load: (signal: AbortSig
       if(options?.onComponentSelect)detachComponents=bindComponents(content,safe,components,options.board,options);
       content.replaceChildren(safe); onState?.('ready');
     }
-  }).catch(error => {
+  }).catch(() => {
     if (disposed) return;
     const message = document.createElement('p'); message.className = 'whiteboard-preview-message'; message.setAttribute('role','status');
-    message.textContent = `白板预览缓存不可用：${String(error instanceof Error ? error.message : error).slice(0,500)} 原始引用已保留。`;
+    message.textContent = '白板预览缓存不可用：文件缺失、不可读取或格式不正确。原始引用已保留。';
     content.replaceChildren(message); onState?.('error');
   });
   return () => { disposed = true; controller.abort(); detachComponents?.(); content.remove(); };

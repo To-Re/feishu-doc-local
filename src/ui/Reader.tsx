@@ -7,7 +7,7 @@ import { parseDocxXML } from '../core/docxml';
 import { captureAnchor, captureWhiteboardComponentAnchor, mapAnchor, mapComments } from '../core/anchors';
 import type { Anchor, Review, ReviewComment } from '../core/types';
 import { xmlExtensions, WHITEBOARD_COMPONENT_SELECTION } from './xml-extensions';
-import { resolveResource, RESOURCE_REFRESH } from '../core/resources';
+import { resolveResource, resolveResourceFailure, RESOURCE_REFRESH } from '../core/resources';
 import { localResourcePath } from '../core/project-files';
 import { isTextAttachment } from '../core/local-media';
 import type { Node as PMNode } from '@tiptap/pm/model';
@@ -90,11 +90,13 @@ export function Reader(props: Props) {
   const loading = useRef(false);
   const resourceSignature = JSON.stringify(props.getReview().resources || null);
   const [warnings, setWarnings] = useState(adapter.current.warnings);
+  const [resourceIssues, setResourceIssues] = useState<{element:HTMLElement;message:string}[]>([]);
   const editor:Editor|null = useEditor({
     extensions: [
       ...xmlExtensions(props.assetURL, (tag, attrs) => resolveResource(latest.current.getReview().resources, tag, attrs),
         (path,signal) => latest.current.readResourceText ? latest.current.readResourceText(path,signal) : readLocalPreviewText(latest.current.assetURL,path,signal),
-        (from,target)=>{const active=liveEditor.current;if(active)latest.current.onSelection(captureWhiteboardComponentAnchor(active.state.doc,from,target));}),
+        (from,target)=>{const active=liveEditor.current;if(active)latest.current.onSelection(captureWhiteboardComponentAnchor(active.state.doc,from,target));},
+        (tag,attrs)=>resolveResourceFailure(latest.current.getReview().resources,tag,attrs)),
       Extension.create({
         name: 'reviewHighlights',
         addProseMirrorPlugins() {
@@ -170,7 +172,24 @@ export function Reader(props: Props) {
   },[props.comments,props.showResolved,editor]);
   // Refresh only resource node views. A cache update is not an XML edit or reload.
   useEffect(() => { if (editor) editor.view.dispatch(editor.state.tr.setMeta(RESOURCE_REFRESH,true).setMeta('addToHistory',false)); },[resourceSignature,editor]);
+  useEffect(() => {
+    if (!editor) return;
+    const root = editor.view.dom;
+    const refresh = () => {
+      const next = [...root.querySelectorAll<HTMLElement>('[data-resource-issue]')].map(element=>({element,message:element.dataset.resourceIssue!}));
+      setResourceIssues(previous=>previous.length===next.length && previous.every((item,index)=>item.element===next[index].element && item.message===next[index].message) ? previous : next);
+    };
+    const observer = new MutationObserver(refresh);
+    observer.observe(root,{subtree:true,childList:true,attributes:true,attributeFilter:['data-resource-issue']});
+    refresh();
+    return()=>observer.disconnect();
+  },[editor]);
   return <>
+    {resourceIssues.length > 0 && <details className="format-notice resource-notice"><summary>资源缺失或预览不可用 · {resourceIssues.length} 处</summary>
+      <p>以下位置未完整显示；未展开的附件内容尚未检查。</p>
+      <ul>{resourceIssues.map(({element,message},index)=><li key={index}><button type="button" onClick={()=>{
+        if(element.isConnected){element.scrollIntoView({block:'center'});element.tabIndex=-1;element.focus({preventScroll:true});}
+      }}>{index+1}. {message}</button></li>)}</ul></details>}
     {warnings.length > 0 && <details className="format-notice"><summary>部分内容以保留原稿的方式展示 · {warnings.length} 项</summary><ul>{warnings.map((w,i)=><li key={i}>{w}</li>)}</ul></details>}
     <EditorContent editor={editor}/>
   </>;

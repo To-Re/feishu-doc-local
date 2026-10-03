@@ -148,15 +148,15 @@ describe('project resource navigation',()=>{
     expect(captured.editor!.isEditable).toBe(false);
     expect(screen.queryByText('LOCAL DOCUMENT')).toBeNull();
   });
-  it('does not show a late response from a previously selected resource and displays server errors verbatim',async()=>{
+  it('does not show late responses or raw server errors and reports the preview size limit',async()=>{
     let finish!:(response:Response)=>void;
     vi.stubGlobal('fetch',vi.fn((url:string)=>url.includes('first.txt')?new Promise<Response>(resolve=>{finish=resolve;}):response({error:'文本资源需小于 2 MB。'},413)));
     const review=createReview('article.xml',xml);
     const mounted=render(<ResourcePreview file={{kind:'resource',path:'first.txt',name:'first.txt'}} handle={handle} xml={xml} review={review}/>);
     mounted.rerender(<ResourcePreview file={{kind:'resource',path:'second.txt',name:'second.txt'}} handle={handle} xml={xml} review={review}/>);
-    await screen.findByText('文本资源需小于 2 MB。');
+    await screen.findByText('资源超过本地预览大小限制，原始引用已保留。');
     await act(async()=>{finish(await response({text:'old resource'}));});
     expect(screen.queryByText('old resource')).toBeNull();
-    expect(screen.getByText('文本资源需小于 2 MB。')).toBeDefined();
+    expect(screen.getByText('资源超过本地预览大小限制，原始引用已保留。')).toBeDefined();
   });
 });

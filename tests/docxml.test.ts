@@ -381,10 +381,10 @@ describe('strict DocxXML adapter', () => {
   it('attaches local whiteboard previews while preserving the original XML and releasing removed views', () => {
     const source = '<whiteboard type="blank" data-keep=\'yes\'></whiteboard><whiteboard src="existing-board"/><p>尾段</p>';
     const { document, editor } = open(source);
-    expect(editor.view.dom.querySelectorAll('.whiteboard-preview')).toHaveLength(2);
+    expect(editor.view.dom.querySelectorAll('.whiteboard-preview')).toHaveLength(1);
     const canvas = editor.view.dom.querySelector('.whiteboard-preview-blank')!;
     expect(canvas.getAttribute('aria-label')).toBe('空白画板');
-    expect(editor.view.dom.querySelector('.whiteboard-preview-message')?.textContent).toContain('尚未缓存');
+    expect(editor.view.dom.querySelector('[data-resource-issue]')?.textContent).toContain('白板 · 无可用本地映射');
     expect(document.serialize(editor.getJSON())).toBe(source);
     replaceText(editor, '尾段', '改后');
     expect(document.serialize(editor.getJSON())).toBe(source.replace('尾段', '改后'));

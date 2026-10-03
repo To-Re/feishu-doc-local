@@ -7,8 +7,9 @@ import { canSplit } from '@tiptap/pm/transform';
 import { render as renderLatex } from 'katex';
 import { attachWhiteboardPreview, attachSVGPreview, whiteboardIdentity } from './whiteboard-preview';
 import type { AnchorTarget } from '../core/types';
-import { RESOURCE_REFRESH, isSafeResourcePath, isWhiteboardSVGPath, type ResourceResolver, type ResourceTextLoader } from '../core/resources';
+import { RESOURCE_REFRESH, isSafeResourcePath, isWhiteboardSVGPath, type ResourceResolver, type ResourceTextLoader, type ResourceFailureResolver } from '../core/resources';
 import { attachmentView, renderAttachment } from './attachment-preview';
+import { clearResourceIssue, markResourceIssue, missingResourceReason, resourceLabel } from './resource-issue';
 import { docxColor as color } from './docx-color';
 import { codeHighlightingPlugin } from './code-highlighting';
 export const WHITEBOARD_COMPONENT_SELECTION = 'whiteboardComponentSelection';
@@ -236,7 +237,7 @@ function latexContent(inline: boolean) {
     },
   });
 }
-function protectedContent(inline: boolean, assetURL?: (path: string) => string, resolveResource?: ResourceResolver, loadResource?: ResourceTextLoader, onComponentSelect?: (from:number,target:AnchorTarget)=>void) {
+function protectedContent(inline: boolean, assetURL?: (path: string) => string, resolveResource?: ResourceResolver, loadResource?: ResourceTextLoader, onComponentSelect?: (from:number,target:AnchorTarget)=>void, resolveFailure?: ResourceFailureResolver) {
   return TiptapNode.create({
     name: inline ? 'protectedInline' : 'protectedBlock',
     group: inline ? 'inline' : 'block', inline, atom: true, isolating: true, selectable: true,
@@ -250,22 +251,33 @@ function protectedContent(inline: boolean, assetURL?: (path: string) => string, 
         dom.contentEditable = 'false';
         dom.setAttribute('data-lark-protected', '');
         let destroyPreview: (() => void) | undefined;
+        let renderVersion = 0;
         const selectComponent=(target:AnchorTarget)=>{
           const position=getPos();
           if(typeof position!=='number'||editor.isDestroyed)return;
           editor.view.dispatch(editor.state.tr.setSelection(NodeSelection.create(editor.state.doc,position)).setMeta(WHITEBOARD_COMPONENT_SELECTION,true));
           onComponentSelect?.(position,target);
         };
-        const previewState=(state:string)=>{if(state==='ready')dom.dispatchEvent(new CustomEvent('whiteboard-preview-ready',{bubbles:true}));};
+        const previewState=(state:string)=>{
+          if(state==='ready'){clearResourceIssue(dom);dom.dispatchEvent(new CustomEvent('whiteboard-preview-ready',{bubbles:true}));}
+          if(state==='error')markResourceIssue(dom,'白板','预览文件不可读取、已损坏或格式不受支持。');
+        };
         function render() {
+          const version = ++renderVersion;
           destroyPreview?.(); destroyPreview = undefined;
+          clearResourceIssue(dom);
           dom.classList.remove('lr-attachment', 'lr-attachment-inline', 'lr-attachment-block');
           dom.removeAttribute('data-attachment-view'); dom.removeAttribute('aria-label');
           const label = document.createElement('span'); label.textContent = current.attrs.label || '受保护内容'; dom.replaceChildren(label);
           const tag = current.attrs.lrTag;
           const attrs = current.attrs.lrAttrs || {};
           const attachment = attachmentView(current.attrs.rawXML, tag, inline);
-          if (attachment) { destroyPreview=renderAttachment(dom, attachment, inline, assetURL, resolveResource, loadResource); return; }
+          if (attachment) { destroyPreview=renderAttachment(dom, attachment, inline, assetURL, resolveResource, loadResource, resolveFailure); return; }
+          const unavailable=(kind:string,reason:string)=>{
+            const name=resourceLabel(kind,attrs);
+            label.textContent=`${name} · ${reason}`;label.className='lr-resource-placeholder';
+            markResourceIssue(dom,name,reason);
+          };
           const resource = resolveResource?.(tag,attrs);
           let path: string | undefined;
           if (tag === 'whiteboard' && typeof current.attrs.rawXML === 'string') {
@@ -274,6 +286,12 @@ function protectedContent(inline: boolean, assetURL?: (path: string) => string, 
             const boardType = (board.getAttribute('type') || '').trim().toLowerCase();
             const inlineSVG = hasInlineContent && boardType === 'svg';
             const locallyRenderable = hasInlineContent && ['svg','mermaid'].includes(boardType);
+            if (!hasInlineContent && !resource && (attrs.token || attrs.src || attrs.path)) {
+              unavailable('白板',missingResourceReason(resolveFailure?.(tag,attrs)));return;
+            }
+            if (!locallyRenderable && resource && isWhiteboardSVGPath(resource.path) && !loadResource) {
+              unavailable('白板','当前阅读器尚未连接本地预览文件。');return;
+            }
             if (!inlineSVG && resource?.representation === 'preview' && isWhiteboardSVGPath(resource.path) && loadResource) {
               label.textContent = '白板云端预览（本地缓存）'; label.className = 'lr-media-caption';
               const preview = document.createElement('div'); preview.className = 'whiteboard-preview'; dom.prepend(preview);
@@ -295,8 +313,12 @@ function protectedContent(inline: boolean, assetURL?: (path: string) => string, 
             const rawPath = typeof current.attrs.assetPath === 'string' ? current.attrs.assetPath : '';
             const local = rawPath.startsWith('@') ? rawPath.slice(1) : '';
             path = isSafeResourcePath(local) ? local : resource?.representation === 'original' ? resource.path : undefined;
+            if (!path) { unavailable('图片',missingResourceReason(resolveFailure?.(tag,attrs)));return; }
           }
+          if (path && !assetURL) { unavailable(tag==='img'?'图片':'白板','当前阅读器尚未连接本地资源。');return; }
           if (assetURL && isSafeResourcePath(path)) {
+            const url=assetURL(path);
+            if (!url || url==='data:,') { unavailable(tag==='img'?'图片':'白板','本地缓存不可用：文件缺失、不可读取或格式不受支持。原始引用已保留。');return; }
             const img = document.createElement('img');
             img.alt = tag === 'whiteboard' ? '白板预览（本地缓存）' : current.attrs.label || '本地图片'; img.loading = 'lazy';
             if (tag === 'img') {
@@ -309,10 +331,11 @@ function protectedContent(inline: boolean, assetURL?: (path: string) => string, 
               if (typeof attrs.caption === 'string') label.className = 'lr-media-caption';
             }
             img.addEventListener('error',() => {
+              if (version !== renderVersion) return;
               img.remove();
-              label.textContent = tag === 'whiteboard' ? '白板预览缓存不可用，原始引用已保留。' : `${current.attrs.label || '图片'}（本地缓存不可用）`;
+              unavailable(tag==='whiteboard'?'白板':'图片','本地缓存不可用：文件缺失、不可读取或已损坏。原始引用已保留。');
             });
-            img.src = assetURL(path); dom.prepend(img);
+            img.src = url; dom.prepend(img);
           }
         }
         const refresh = ({transaction}: {transaction: import('@tiptap/pm/state').Transaction}) => { if (transaction.getMeta(RESOURCE_REFRESH)) render(); };
@@ -321,7 +344,7 @@ function protectedContent(inline: boolean, assetURL?: (path: string) => string, 
         return { dom, ignoreMutation: () => true,
           stopEvent(event) { return event.target instanceof Element && !!event.target.closest('.lr-attachment button,.lr-attachment a,.lr-attachment video,.lr-attachment audio,.lr-attachment pre'); },
           update(next) { if (next.type !== current.type) return false; if (next !== current) { current = next; render(); } return true; },
-          destroy() { editor.off('transaction',refresh); destroyPreview?.(); },
+          destroy() { renderVersion++; editor.off('transaction',refresh); destroyPreview?.(); },
         };
       };
     },
@@ -329,11 +352,11 @@ function protectedContent(inline: boolean, assetURL?: (path: string) => string, 
 }
 
 /** No DocxXML is inserted as HTML; only schema-owned DOM and safe local image URLs are rendered. */
-export function xmlExtensions(assetURL?: (path: string) => string, resolveResource?: ResourceResolver, loadResource?: ResourceTextLoader, onComponentSelect?: (from:number,target:AnchorTarget)=>void): Extensions {
+export function xmlExtensions(assetURL?: (path: string) => string, resolveResource?: ResourceResolver, loadResource?: ResourceTextLoader, onComponentSelect?: (from:number,target:AnchorTarget)=>void, resolveFailure?: ResourceFailureResolver): Extensions {
   return [
     StarterKit.configure({ heading: false, codeBlock: false, trailingNode: false, link: { openOnClick: false, autolink: false, linkOnPaste: false, HTMLAttributes: { target: null, rel: 'noopener noreferrer' } } }),
     TableKit.configure({ table: { resizable: false } }),
     XMLMetadata, XMLHeading, XMLTitle, XMLCheckbox, XMLCallout, XMLSpan, XMLCodeBlock, XMLGrid, XMLColumn, latexContent(false), latexContent(true),
-    protectedContent(false, assetURL, resolveResource, loadResource,onComponentSelect), protectedContent(true, assetURL, resolveResource, loadResource,onComponentSelect),
+    protectedContent(false, assetURL, resolveResource, loadResource,onComponentSelect,resolveFailure), protectedContent(true, assetURL, resolveResource, loadResource,onComponentSelect,resolveFailure),
   ];
 }
