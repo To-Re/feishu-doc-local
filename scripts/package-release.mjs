@@ -117,7 +117,6 @@ artifacts.push({ name: `feishu-doc-local-server-v${version}.zip`, top: 'feishu-d
 
 for (const [directory, suffix, top] of [
   ['obsidian-plugin', 'obsidian', 'feishu-doc-local'],
-  ['obsidian-sync-plugin', 'obsidian-sync', 'feishu-doc-local-sync'],
 ]) {
   const files = new Map();
   // Exact plugin install allowlist excludes build metadata and local data.json.
@@ -137,4 +136,4 @@ for (const item of outputs) {
   console.log(`${item.name}: ${item.files.size} files, ${item.bytes.length} bytes`);
 }
 await writeFile(resolve(destination, 'SHA256SUMS'), sums.join('\n') + '\n', { flag: 'wx' });
-console.log('Prepared exactly four runtime packages and SHA256SUMS; source export remains separate.');
+console.log('Prepared exactly three runtime packages and SHA256SUMS; source export remains separate.');

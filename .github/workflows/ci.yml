@@ -35,3 +35,4 @@ jobs:
       - run: npm test --prefix obsidian-sync-plugin
       - run: npm run build --prefix obsidian-sync-plugin
       - run: node scripts/generate-third-party-notices.mjs --check --verify-bundle
+      - run: node scripts/package-release.mjs --output "$RUNNER_TEMP/feishu-release-packages"

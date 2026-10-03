@@ -1,9 +1,9 @@
 {
   "id": "feishu-doc-local",
   "name": "本地飞书文档",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "minAppVersion": "1.8.0",
-  "description": "本地编辑飞书 DocxXML，选文评论、源码、图源、目录导航和草稿恢复；可选安装飞书同步扩展。",
+  "description": "本地编辑、阅读和评论飞书 DocxXML；CLI 可选配置，支持预览确认后同步与恢复。",
   "author": "github.com/To-Re",
   "isDesktopOnly": true
 }
