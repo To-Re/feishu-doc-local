@@ -9,6 +9,7 @@ import type { Anchor, Review, ReviewComment } from '../core/types';
 import { xmlExtensions, WHITEBOARD_COMPONENT_SELECTION } from './xml-extensions';
 import { resolveResource, RESOURCE_REFRESH } from '../core/resources';
 import { localResourcePath } from '../core/project-files';
+import { isTextAttachment } from '../core/local-media';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import { applyWhiteboardComponentHighlights } from './whiteboard-comments';
 import { SourceDraftRecovery, useSourceDrafts, type SourceDraftSnapshot } from './source-drafts';
@@ -18,6 +19,12 @@ import { SourceDraftRecovery, useSourceDrafts, type SourceDraftSnapshot } from '
 export async function readWhiteboardResource(assetURL: (path: string) => string, path: string, signal: AbortSignal): Promise<string> {
   const normalized = localResourcePath(path);
   if (!normalized || !/\.svg$/i.test(normalized)) throw new Error('白板预览需要文章内的 SVG 文件。');
+  return readLocalPreviewText(assetURL,normalized,signal);
+}
+
+export async function readLocalPreviewText(assetURL: (path: string) => string, path: string, signal: AbortSignal): Promise<string> {
+  const normalized=localResourcePath(path);
+  if(!normalized||!(/\.svg$/i.test(normalized)||isTextAttachment(normalized)))throw new Error('不支持此文本预览格式。');
   const url = new URL(assetURL(normalized),window.location.href);
   if (url.origin !== window.location.origin || url.pathname !== '/api/asset' || url.hash || url.username || url.password ||
     !url.searchParams.get('id') || url.searchParams.get('path') !== normalized) throw new Error('白板预览未关联当前文档会话。');
@@ -86,7 +93,7 @@ export function Reader(props: Props) {
   const editor:Editor|null = useEditor({
     extensions: [
       ...xmlExtensions(props.assetURL, (tag, attrs) => resolveResource(latest.current.getReview().resources, tag, attrs),
-        (path,signal) => latest.current.readResourceText ? latest.current.readResourceText(path,signal) : readWhiteboardResource(latest.current.assetURL,path,signal),
+        (path,signal) => latest.current.readResourceText ? latest.current.readResourceText(path,signal) : readLocalPreviewText(latest.current.assetURL,path,signal),
         (from,target)=>{const active=liveEditor.current;if(active)latest.current.onSelection(captureWhiteboardComponentAnchor(active.state.doc,from,target));}),
       Extension.create({
         name: 'reviewHighlights',

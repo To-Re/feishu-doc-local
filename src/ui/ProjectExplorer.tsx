@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode }
 import { ChevronDown, ChevronRight, FileCode2, FileJson, File, Folder, FolderOpen, Image, RefreshCw } from 'lucide-react';
 import type { DocumentHandle, Review } from '../core/types';
 import { isProjectImage, projectFiles, type ProjectFile } from '../core/project-files';
+import { localMediaType } from '../core/local-media';
 
 type Branch = { name: string; path: string; children: Map<string, Branch>; file?: ProjectFile };
 export function ProjectExplorer({handle,xml,review,selected,onSelect,dirty,open=true}:{handle:DocumentHandle;xml:string;review:Review;selected:string;onSelect:(file:ProjectFile)=>void;dirty:boolean;open?:boolean}) {
@@ -59,6 +60,7 @@ export function ResourcePreview({file,handle,review,xml,initialScroll,onScrollCh
   useEffect(()=>{
     setImageError(false);
     if(file.kind!=='resource')return;
+    if(localMediaType(file.path))return;
     if(isProjectImage(file.path)){setImageLoading(true);return;}
     setState(previous=>({key:fileKey,text:previous.key===fileKey?previous.text:undefined,loading:true}));
     const controller=new AbortController();
@@ -82,6 +84,8 @@ export function ResourcePreview({file,handle,review,xml,initialScroll,onScrollCh
     try{if(accessRef.current?.refresh)await accessRef.current.refresh();if(currentFile.current===selected)setRefresh(value=>value+1);}
     catch(error){if(currentFile.current===selected)setState(previous=>({...previous,key:selected,error:error instanceof Error?error.message:String(error),loading:false}));}
   };
-  const imageURL=!isProjectImage(file.path)?undefined:access?access.assetURL(file.path):`/api/asset?id=${encodeURIComponent(handle.id)}&path=${encodeURIComponent(file.path)}${refresh?`&refresh=${refresh}`:''}`;
+  const mediaType=localMediaType(file.path);
+  const imageURL=!(isProjectImage(file.path)||mediaType)?undefined:access?access.assetURL(file.path):`/api/asset?id=${encodeURIComponent(handle.id)}&path=${encodeURIComponent(file.path)}${refresh?`&refresh=${refresh}`:''}`;
+  if(mediaType)return <section className="resource-preview" aria-label="资源预览"><header><strong>{file.name}</strong><button type="button" onClick={refreshResource}>刷新资源</button></header>{imageError||imageURL==='data:,'?<p role="status">影音文件缺失、过大、格式或编码不受支持，请核对本地素材。</p>:mediaType.startsWith('video/')?<video key={fileKey+refresh} className="lr-attachment-media" aria-label={file.name} controls playsInline preload="metadata" src={imageURL} onError={()=>setImageError(true)}/>:<audio key={fileKey+refresh} className="lr-attachment-media" aria-label={file.name} controls preload="metadata" src={imageURL} onError={()=>setImageError(true)}/>}</section>;
   return <section className="resource-preview" aria-label="资源预览" aria-busy={loading||undefined}><header><strong>{file.name}</strong>{file.kind==='review'&&<span>评论与处理记录，随正文编辑自动保存</span>}{file.kind==='resource'&&<button type="button" onClick={refreshResource} aria-label="刷新资源" title="重新读取本地资源" style={{alignSelf:'flex-start'}}><RefreshCw size={13}/>{loading?'正在刷新…':'刷新资源'}</button>}</header>{isProjectImage(file.path)&&error&&<p role="status">{error}</p>}{isProjectImage(file.path)?imageError?<p role="status">图片不可读取，原文件引用已保留。</p>:<img alt={file.name} onLoad={()=>setImageLoading(false)} onError={()=>{setImageLoading(false);setImageError(true);}} key={refresh} src={imageURL}/>:<>{error&&<p role="status">{error}{text!==undefined&&' 当前显示为上次读取的内容。'}</p>}{text!==undefined?<pre ref={pre} onScroll={event=>{scroll.current={top:event.currentTarget.scrollTop,left:event.currentTarget.scrollLeft};onScrollChange?.(scroll.current);}}>{text}</pre>:!error&&<p>正在读取…</p>}</>}</section>;
 }

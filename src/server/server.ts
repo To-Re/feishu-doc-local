@@ -288,7 +288,17 @@ export async function createLocalServer(staticRoot: string, initialPath: string,
           }
           if (url.pathname === '/api/asset' && request.method === 'GET') {
             const image = await file.asset(url.searchParams.get('path') || '');
-            response.writeHead(200,{'Content-Type':mime[image.extension]}); response.end(image.data); return;
+            const mediaTypes:Record<string,string>={'.mp4':'video/mp4','.m4v':'video/mp4','.webm':'video/webm','.mp3':'audio/mpeg','.wav':'audio/wav','.ogg':'audio/ogg'};
+            const contentType=mime[image.extension]||mediaTypes[image.extension];
+            const headers={'Content-Type':contentType,'X-Content-Type-Options':'nosniff','Accept-Ranges':'bytes'};
+            if(request.headers.range&&mediaTypes[image.extension]) {
+              const match=/^bytes=(\d*)-(\d*)$/.exec(request.headers.range),size=image.data.length;
+              const start=match?.[1]?Number(match[1]):match?.[2]?Math.max(0,size-Number(match[2])):NaN;
+              const end=match?.[1]&&match[2]?Math.min(Number(match[2]),size-1):size-1;
+              if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<0||start>end||start>=size){response.writeHead(416,{...headers,'Content-Range':`bytes */${size}`});response.end();return;}
+              response.writeHead(206,{...headers,'Content-Range':`bytes ${start}-${end}/${size}`,'Content-Length':end-start+1});response.end(image.data.subarray(start,end+1));return;
+            }
+            response.writeHead(200,{...headers,'Content-Length':image.data.length}); response.end(image.data); return;
           }
           if (url.pathname === '/api/resource' && request.method === 'GET') {
             json(response,await file.resource(url.searchParams.get('path') || '')); return;

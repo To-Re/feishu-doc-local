@@ -1,4 +1,6 @@
-import { isSafeResourcePath, type ResourceResolver } from '../core/resources';
+import { isSafeResourcePath, type ResourceResolver, type ResourceTextLoader } from '../core/resources';
+import { localResourcePath } from '../core/project-files';
+import { isTextAttachment, localMediaType } from '../core/local-media';
 
 /** Inspect only the supported attachment shape; keep its protected editor atom intact. */
 export function attachmentView(rawXML: unknown, tag: unknown, inline: boolean) {
@@ -30,9 +32,9 @@ function fileSize(value: string | undefined) {
   return '';
 }
 
-/** Schema-owned text and local raster images only: attachment contents never become HTML. */
+/** Local previews never execute attachment HTML, scripts or remote URLs. */
 export function renderAttachment(dom: HTMLElement, attachment: NonNullable<ReturnType<typeof attachmentView>>,
-  inline: boolean, assetURL?: (path: string) => string, resolveResource?: ResourceResolver) {
+  inline: boolean, assetURL?: (path: string) => string, resolveResource?: ResourceResolver, loadResource?: ResourceTextLoader) {
   const { attrs, preview } = attachment;
   const name = attrs.name || '未命名附件';
   const extension = name.match(/\.([a-z\d]{1,8})$/i)?.[1]?.toUpperCase() || 'FILE';
@@ -51,20 +53,62 @@ export function renderAttachment(dom: HTMLElement, attachment: NonNullable<Retur
     details.append(meta);
   }
   header.append(icon, details); dom.replaceChildren(header);
-  if (!preview) return;
+  const controller=new AbortController();
+  let media:HTMLMediaElement|undefined,downloadURL:string|undefined;
+  const dispose=()=>{controller.abort();if(downloadURL)URL.revokeObjectURL(downloadURL);if(media){media.pause();media.removeAttribute('src');media.load();media.remove();}};
+  if (inline) return dispose;
   const message = document.createElement('span'); message.className = 'lr-attachment-status';
   dom.append(message);
   const local = attrs.path?.startsWith('@') ? attrs.path.slice(1) : undefined;
   const resource = resolveResource?.('source', attrs);
-  const path = isSafeResourcePath(local) ? local : resource?.representation === 'original' ? resource.path : undefined;
+  const path = localResourcePath(local) ? local : resource?.representation === 'original' ? resource.path : undefined;
+  if(!path){message.textContent='附件未下载到本地，暂时无法预览。请在飞书原文查看或补齐本地素材。';return dispose;}
   const raster = !attrs.mime || /^image\/(?:png|jpeg|jpg|gif|webp|avif)$/i.test(attrs.mime);
-  if (!raster || !assetURL || !isSafeResourcePath(path)) {
-    message.textContent = raster ? '预览尚未缓存在本地' : '此附件暂不支持本地预览';
-    return;
+  const mediaType=localMediaType(path);
+  const playable=mediaType&&(!attrs.mime||attrs.mime==='application/octet-stream'||attrs.mime===mediaType);
+  const text=isTextAttachment(path);
+  if(!text&&!playable&&!(raster&&isSafeResourcePath(path))){message.textContent='此附件暂不支持本地预览，原始文件引用已保留。';return dispose;}
+  const content=document.createElement('div');content.className='lr-attachment-content';dom.insertBefore(content,message);
+  let started=false;
+  const show=()=>{
+    if(started||controller.signal.aborted)return;started=true;
+    if(text){
+      if(!loadResource){message.textContent='当前阅读器尚未连接本地文本资源。';return;}
+      message.textContent='正在读取本地附件…';
+      void loadResource(path,controller.signal).then(value=>{
+        if(controller.signal.aborted)return;
+        const pre=document.createElement('pre');pre.className='lr-attachment-text';pre.textContent=value;pre.tabIndex=0;
+        content.append(pre);message.textContent='本地文本预览';
+        if(typeof URL.createObjectURL==='function') {
+          downloadURL=URL.createObjectURL(new Blob([value],{type:'text/plain;charset=utf-8'}));
+          const download=document.createElement('a');download.href=downloadURL;download.download=name;download.textContent='保存副本';download.className='lr-attachment-download';message.append(' · ',download);
+        }
+      },()=>{if(!controller.signal.aborted)message.textContent='附件文件缺失或不可读取，原始引用已保留。';});
+      return;
+    }
+    if(playable){
+      if(!assetURL){message.textContent='当前阅读器尚未连接本地影音资源。';return;}
+      const url=assetURL(path);
+      if(!url||url==='data:,'){message.textContent='影音文件缺失、超过 25 MB 或格式不受支持，请补齐本地素材。';return;}
+      media=document.createElement(mediaType.startsWith('video/')?'video':'audio');
+      media.className='lr-attachment-media';media.controls=true;media.preload='metadata';media.setAttribute('aria-label',name);
+      if(media instanceof HTMLVideoElement)media.playsInline=true;
+      media.addEventListener('error',()=>{if(!controller.signal.aborted)message.textContent='影音文件不可读取或当前浏览器不支持其编码，原始引用已保留。';});
+      media.src=url;content.append(media);message.textContent='本地影音预览，点击播放';return;
+    }
+    if(!assetURL){message.textContent='预览尚未缓存在本地';return;}
+    const image = document.createElement('img');
+    image.className = 'lr-attachment-preview'; image.alt = `附件预览：${name}`; image.loading = 'lazy';
+    message.textContent = '本地附件预览';
+    image.addEventListener('error', () => { image.remove(); message.textContent = '附件预览缓存不可用，原始引用已保留。'; });
+    image.src = assetURL(path); content.append(image);
+  };
+  if(preview)show();
+  else {
+    message.textContent='本地附件';
+    const button=document.createElement('button');button.type='button';button.className='lr-attachment-open';button.textContent='展开预览';
+    button.addEventListener('click',event=>{event.preventDefault();show();content.hidden=!content.hidden;button.textContent=content.hidden?'展开预览':'收起预览';});
+    content.hidden=true;header.append(button);
   }
-  const image = document.createElement('img');
-  image.className = 'lr-attachment-preview'; image.alt = `附件预览：${name}`; image.loading = 'lazy';
-  message.textContent = '本地附件预览';
-  image.addEventListener('error', () => { image.remove(); message.textContent = '附件预览缓存不可用，原始引用已保留。'; });
-  image.src = assetURL(path); dom.insertBefore(image, message);
+  return dispose;
 }

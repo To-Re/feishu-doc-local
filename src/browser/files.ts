@@ -3,6 +3,7 @@ import { createReview, uid } from '../core/types';
 import { parseDocxXML } from '../core/docxml';
 import { isProjectImage, localResourcePath, projectFiles } from '../core/project-files';
 import { sha256, validateBrowserReview, type StoredBrowserReview } from './review';
+import { localMediaType, mediaMatches, MEDIA_LIMIT, isTextAttachment } from '../core/local-media';
 
 export class BrowserFileError extends Error {
   constructor(message: string, readonly code = 'CONFLICT', readonly status = 409) { super(message); this.name = 'BrowserFileError'; }
@@ -172,7 +173,7 @@ export async function openBrowserDirectory(directory: BrowserDirectoryHandle): P
     }
     async function prepareResources() {
       const paths = new Set(projectFiles(handle, latest!.xml, latest!.review).filter(file => file.kind === 'resource' &&
-        (isProjectImage(file.path) || /\.svg$/i.test(file.path))).map(file => file.path).sort());
+        (isProjectImage(file.path) || localMediaType(file.path) || isTextAttachment(file.path) || /\.svg$/i.test(file.path))).map(file => file.path).sort());
       const signatures: string[][] = [];
       let total = 0;
       for (const [path, cached] of urls) if (!paths.has(path)) { URL.revokeObjectURL(cached.url); urls.delete(path); }
@@ -184,15 +185,16 @@ export async function openBrowserDirectory(directory: BrowserDirectoryHandle): P
           record[1] = signature;
           // SVG stays inert text and is sanitized by Reader. Stat its referenced
           // file here so polling can refresh it without rebuilding every board.
-          if (/\.svg$/i.test(path)) continue;
+          if (/\.svg$/i.test(path)||isTextAttachment(path)) continue;
           total += file.size;
-          if (file.size > IMAGE_LIMIT || total > totalImageLimit) throw new BrowserFileError('图片缓存超过大小限制。', 'TOO_LARGE', 413);
+          const mediaType=localMediaType(path);
+          if (file.size > (mediaType?MEDIA_LIMIT:IMAGE_LIMIT) || total > totalImageLimit) throw new BrowserFileError('图片或影音缓存超过大小限制。', 'TOO_LARGE', 413);
           const cached = urls.get(path);
           if (cached?.signature === signature) { record[2] = cached.url; continue; }
           const content = await file.arrayBuffer(), extension = path.split('.').at(-1)!.toLowerCase();
           ready();
-          if (!rasterMatches(new Uint8Array(content), extension)) throw new BrowserFileError('资源不是受支持的栅格图片。', 'UNSAFE_RESOURCE', 403);
-          const url = URL.createObjectURL(new Blob([content], { type: rasterTypes[extension] }));
+          if (!(mediaType?mediaMatches(new Uint8Array(content),path):rasterMatches(new Uint8Array(content), extension))) throw new BrowserFileError('资源不是受支持的图片或影音文件。', 'UNSAFE_RESOURCE', 403);
+          const url = URL.createObjectURL(new Blob([content], { type: mediaType||rasterTypes[extension] }));
           const previous = urls.get(path); if (previous) URL.revokeObjectURL(previous.url);
           urls.set(path, { signature, url });
           record[2] = url;

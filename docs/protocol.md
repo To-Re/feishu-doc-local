@@ -19,6 +19,8 @@
 }
 ```
 
+`document.name` 必须与同目录 XML 的文件名（含 `.xml` 扩展名）完全一致，例如 `article.xml`，不能填文章标题；不匹配时会拒绝打开该反馈文件。文章标题保留在 XML 的 `<title>` 中。
+
 `baselineXML` 保存开始评审时的正文，`document.xml` 是反馈对应的正文快照。当前真源仍是 XML 文件。外部仅修改 XML 后，快照与真源暂时不同是可识别状态，页面会保留评论并将位置标记为待确认。
 
 评论包含 `id, author, body, createdAt, status, anchor, replies`。`status` 是 `open` 或 `resolved`；`anchor` 包含原引用 `quote`、ProseMirror 文档偏移 `from/to` 和 `state`。**偏移不是 XML 字符下标**。表格和结构节点也占位置，文本按 UTF-16 计数。浏览器使用真实编辑事务迁移这些偏移；不存在全篇选一句相同文本就直接重挂的逻辑。
@@ -167,9 +169,11 @@ CLI 协议使用官方 `docs +fetch`、`drive +list-comments/+list-replies/+add-
 
 正文白板的 SVG 缓存通过 `GET /api/resource` 取得受限文本，再清理脚本、事件、外部资源和越界样式，仅将安全图形放入白板容器，保留导出文件的真实 `viewBox`，不根据标签重新估算画布。带真实内联 SVG 子元素时优先预览本地正在编辑的 SVG；其他符合条件的白板可使用精确映射的云端 SVG 缓存。资源树点击同一 SVG 仍显示只读源码，不走图形渲染。这些是不同展示入口，均不执行 SVG 中的活动内容。
 
-附件按 XML 的展示方式呈现：行内 `source` 显示文件名；`figure view-type="Card"` 显示名称、类型及合法的字节大小；`figure view-type="Preview"` 和独立 `source` 可显示本地栅格原图。支持的 `figure` 必须只有一个直接 `source` 子节点，没有其他正文，映射读取该子节点的 `token`，不按 figure ID 查找资源。原稿中的安全 `source path="@./assets/file.png"` 也可直接预览。
+附件按 XML 的展示方式呈现：行内 `source` 显示文件名；`figure view-type="Card"` 显示名称、类型及合法的字节大小，点击展开预览；`figure view-type="Preview"` 和独立 `source` 可显示本地栅格原图、Markdown/文本源码及原生影音播放器。支持的 `figure` 必须只有一个直接 `source` 子节点，没有其他正文，映射读取该子节点的 `token`，不按 figure ID 查找资源。原稿中的安全 `source path="@./assets/file.png"` 也可直接预览。没有本地路径或精确映射时提示“附件未下载到本地”，不能误报为格式不支持。
 
-所有附件仍是不可编辑内部的保护节点，新增卡片和图片 DOM 不改变 XML 或评论偏移。`source` 指定非栅格 MIME 时不加载图片；PDF 等附件不展开，复杂或未知 figure 继续保留占位。资源树可将明确引用的 HTML 等受支持文本作为只读源码展示，不作为网页执行。缓存更新只刷新显示，不生成正文修改，不重置选区、评论或撤销记录。
+所有附件仍是不可编辑内部的保护节点，新增预览 DOM 不改变 XML 或评论偏移。`source` 指定非栅格 MIME 时不加载图片；PDF 等附件不展开，复杂或未知 figure 继续保留占位。资源树可将明确引用的 HTML 等受支持文本作为只读源码展示，不作为网页执行。缓存更新只刷新显示，不生成正文修改，不重置选区、评论或撤销记录。
+
+影音预览支持 MP4/M4V/WebM 视频和 MP3/WAV/OGG 音频，必须已下载、由当前文档明确引用，且单文件不超过 25,000,000 字节。读取时核对容器标识；实际编码由宿主浏览器解码。服务端使用既有文档会话与同源校验，拒绝未引用、链接、越界及特殊文件；支持 HTTP 单段 Range 以供拖动播放进度。Obsidian/静态浏览器端使用 Vault/目录授权读取并缓存 Blob，换文件或关闭时释放。不会自动播放或远程下载。
 
 这是本项目的本地缓存清单，**独立于官方 `reference_map`**。它记录媒体与附件文件的本地路径，不把文件内容嵌入 JSON；也不承载云端评论、HTML5 内容或原生白板节点，不能作为 `--reference-map` 参数发布。完整 fetch 响应、官方 `reference_map`（若返回）、白板节点和其他下载材料应另行保存。
 
@@ -190,7 +194,7 @@ CLI 协议使用官方 `docs +fetch`、`drive +list-comments/+list-replies/+add-
 - `PUT /api/document?id=...`：请求 `{xml,review,revision}`；设置 `Content-Type: application/json` 和 `X-CSRF-Token`。返回最新 Snapshot。
 - `POST /api/open`：正文 `{path:绝对路径}`，返回文档句柄；不复制、不导出。
 - `POST /api/pick`：macOS 系统选择文件，取消返回 `null`。
-- `GET /api/asset?id=...&path=...`：读取当前已打开文档目录内的安全本地图片，供直接路径及资源映射预览。
+- `GET /api/asset?id=...&path=...`：读取当前已打开文档目录内的安全本地图片及明确引用的受支持影音；影音支持单段 Range。
 - `GET /api/resource?id=...&path=...`：读取当前稿件显式引用且符合上述规则的文本文件，返回 `{path,text}`；没有资源写接口。
 - `GET /api/projects`：`{projects,activeProjectId?,cloudAvailable}`。
 - `POST /api/projects`：`{name,local,cloud,defaultDirection}`，返回 `{session,snapshot,projects,warning?}`；具体创建组合见 [指南](projects-and-sync.md)。

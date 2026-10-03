@@ -81,6 +81,15 @@ async function fixture(xml = '<p>原稿</p>', withReview = true) {
 function changed(review: Review, xml = '<p>修订稿</p>'): Review { return { ...review, document: { ...review.document, xml } }; }
 
 describe('Obsidian vault document store', () => {
+  it('reads cached video and Markdown attachments through the Vault without changing source files',async()=>{
+    const {vault,store,document}=await fixture('<source path="@clip.mp4"/><source path="@note.md"/>');
+    vault.put('articles/clip.mp4',new Uint8Array([0,0,0,20,102,116,121,112,105,115,111,109,0,0,0,0,105,115,111,109]));
+    vault.put('articles/note.md','# 本地附件');
+    await document.read();expect(document.assetURL('clip.mp4')).toMatch(/^blob:/);
+    expect((await document.readResource('note.md')).text).toBe('# 本地附件');
+    const revision=document.resourceRevision;vault.put('articles/note.md','# 更新');await document.read();expect(document.resourceRevision).not.toBe(revision);
+    expect(vault.writes).toEqual([]);store.dispose();expect(document.assetURL('clip.mp4')).toBe('data:,');
+  });
   it('lists only direct XMLs and exposes vault-relative paths', async () => {
     const { vault, store, document } = await fixture();
     vault.put('articles/第二篇.XML', '<p/>'); vault.put('articles/nested/inside.xml', '<p/>'); vault.put('articles/readme.md', '说明');

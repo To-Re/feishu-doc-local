@@ -74,7 +74,7 @@ reference-map.json           # 仅在保留官方结构化引用时需要
 | 分栏 | `grid` 直接包含 `column width-ratio="0.5"`，所有比例之和为 1；栏内写块 | 按比例呈现，正文可编辑 |
 | 高亮块 | `callout` 可有 `emoji`、`background-color`、`border-color`、`text-color` | 可编辑支持的子块；颜色与图标呈现 |
 | 图片 | `img` 的 `path`、`href`、`src` 三选一；可带 `width,height,caption,name` | 本地图片或已缓存资源可显示、整体评论；不自动加载远程图片 |
-| 附件 | `source path="@./report.pdf" name="报告.pdf"`，或 `token` 复制；可独立、段内、或包在 `figure view-type="Card\|Preview"` 中 | 保护；附件卡片/支持的预览和整体评论 |
+| 附件 | `source path="@./report.pdf" name="报告.pdf"`，或 `token` 复制；可独立、段内、或包在 `figure view-type="Card\|Preview"` 中 | 保护；图片、Markdown/文本和受支持的影音可本地预览，PDF 等保留卡片；整体评论 |
 | 白板 | `whiteboard type="blank\|mermaid\|plantuml\|svg"`；有图源时可用 `path`；或 `src` 复制 | 按下节区分图源编辑、预览和保护 |
 
 列表项 `seq` 的归属还核对了该版本的[列表解析](https://github.com/larksuite/cli/blob/b8b21da3a57b5634b0dc6f5074d479f1e751e658/shortcuts/doc/internal/docxparse/profile.go#L219-L239)，不要把起始编号放到自创属性上。

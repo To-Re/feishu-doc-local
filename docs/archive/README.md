@@ -5,6 +5,7 @@
 - [官方 CLI 的 macOS 实测](official-cli-mac-2026-09-13.md)
 - [Obsidian 实际操作及待验收范围](validation-2026-09-13-plugins.md)
 - [同步预览与快照恢复验收](validation-2026-09-14-sync-ui.md)
+- [本地附件预览与素材缺失验收](validation-2026-09-27-attachments.md)
 - [完整样式对照记录](style-coverage-2026-09-13.md)
 - [v0.0.1 发布包核验](release-audit-v0.0.1.md)
 

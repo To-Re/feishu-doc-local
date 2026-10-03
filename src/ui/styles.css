@@ -224,3 +224,7 @@
 
 .content-sync-decision{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid #eff0f1;padding-bottom:12px;background:#fff}
 .content-sync-decision>.project-dialog-actions{margin:0}
+
+/* Local attachment previews retain the protected XML atom and its comment anchor. */
+.document-content .lr-attachment-text{font:12px/1.75 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;max-height:440px;overflow:auto;margin:0;padding:16px;border:0;border-radius:0;background:#fafbfc}
+.lr-attachment-media{display:block;width:100%;max-height:520px;margin:0 auto;background:#111;object-fit:contain}.lr-attachment-content[hidden]{display:none}.lr-attachment-open{margin-left:auto;flex-shrink:0;padding:6px 10px;font-size:12px;color:#3370ff}.lr-attachment-download{color:#3370ff;text-decoration:none}.lr-attachment-content{min-width:0}

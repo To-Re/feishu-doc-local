@@ -9,6 +9,7 @@ import { localResourcePath, projectFiles } from '../core/project-files';
 import { isAnchorTarget } from '../core/anchors';
 import { isCloudSyncState } from '../core/cloud-state';
 import { isContentSyncState } from '../core/content-state';
+import { localMediaType, mediaMatches, MEDIA_LIMIT } from '../core/local-media';
 
 export class FileError extends Error {
   constructor(message: string, readonly code = 'CONFLICT', readonly status = 409) { super(message); }
@@ -197,6 +198,33 @@ export async function openLocalFile(input: string, hooks: FileHooks = {}) {
   let queue: Promise<unknown> = Promise.resolve();
   const run = <T>(action: () => Promise<T>): Promise<T> => { const next = queue.then(action, action); queue = next.catch(() => undefined); return next; };
   async function asset(relative: string) {
+    if(localMediaType(relative)) {
+      const normalized=localResourcePath(relative)!;
+      const snapshot=await read();
+      if(!projectFiles({name,path,reviewPath},snapshot.xml,snapshot.review).some(file=>file.kind==='resource'&&file.path===normalized))
+        throw new FileError('此影音文件未被当前文章引用。','UNLISTED_RESOURCE',403);
+      if(await realpath(folder)!==folder)throw new FileError('文章目录已变化，请重新打开。','PATH_CHANGED');
+      const target=resolve(folder,normalized);
+      let handle;
+      try {
+        let component=folder;
+        for(const part of normalized.split('/')) {
+          component=resolve(component,part);
+          const info=await lstat(component);
+          if(info.isSymbolicLink()||(component!==target&&!info.isDirectory()))throw new FileError('影音文件不支持链接或特殊目录。','UNSAFE_ASSET',403);
+        }
+        handle=await open(target,constants.O_RDONLY|constants.O_NOFOLLOW|constants.O_NONBLOCK);
+        const info=await handle.stat();
+        if(!info.isFile()||info.nlink!==1||info.size>MEDIA_LIMIT)throw new FileError('影音文件类型或大小不支持（最大 25 MB）。','UNSAFE_ASSET',403);
+        const data=await handle.readFile(),after=await handle.stat();
+        if(data.length>MEDIA_LIMIT||after.size!==info.size||after.mtimeMs!==info.mtimeMs)throw new FileError('读取期间影音文件已变化。','CONFLICT');
+        if(!mediaMatches(data,normalized))throw new FileError('影音文件内容与格式不符。','UNSAFE_ASSET',403);
+        return {data,extension:extname(target).toLowerCase()};
+      } catch(error) {
+        if((error as NodeJS.ErrnoException).code==='ENOENT')throw new FileError('影音文件尚未下载到本地。','NOT_FOUND',404);
+        throw error;
+      } finally {await handle?.close();}
+    }
     if (!relative || /^(?:[a-z][a-z\d+.-]*:|[/\\])/i.test(relative) || relative.includes('\\') || relative.split('/').includes('..') || !raster.test(relative))
       throw new FileError('只支持文章目录中的本地图片。', 'UNSAFE_ASSET', 403);
     let target: string;

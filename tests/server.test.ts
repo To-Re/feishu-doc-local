@@ -40,6 +40,18 @@ function withComment(review: Review, id: string): Review {
 }
 
 describe('local XML file service',() => {
+  it('serves referenced native video with byte ranges and rejects unlisted or disguised media',async()=>{
+    const f=await fixture(),mp4=Buffer.from([0,0,0,20,102,116,121,112,105,115,111,109,0,0,0,0,105,115,111,109]);
+    await writeFile(f.file,'<source path="@demo.mp4"/><source path="@fake.mp4"/>');
+    await writeFile(join(f.documents,'demo.mp4'),mp4);await writeFile(join(f.documents,'fake.mp4'),'<html>not video</html>');await writeFile(join(f.documents,'unlisted.mp4'),mp4);
+    const url=f.url+'/api/asset?'+new URLSearchParams({id:f.session.document.id,path:'demo.mp4'});
+    const all=await fetch(url);expect(all.status).toBe(200);expect(all.headers.get('content-type')).toBe('video/mp4');expect(Buffer.from(await all.arrayBuffer())).toEqual(mp4);
+    const part=await fetch(url,{headers:{Range:'bytes=4-7'}});expect(part.status).toBe(206);expect(part.headers.get('content-range')).toBe('bytes 4-7/20');expect(await part.text()).toBe('ftyp');
+    const suffix=await fetch(url,{headers:{Range:'bytes=-4'}});expect(suffix.status).toBe(206);expect(await suffix.text()).toBe('isom');
+    expect((await fetch(url,{headers:{Range:'bytes=100-'}})).status).toBe(416);
+    expect((await fetch(url.replace('demo.mp4','unlisted.mp4'))).status).toBe(403);expect((await fetch(url.replace('demo.mp4','fake.mp4'))).status).toBe(403);
+    expect((await fetch(url,{headers:{Origin:'https://example.com'}})).status).toBe(403);
+  });
   it('returns explicit text resources as inert JSON under the existing local capability and origin checks',async()=>{
     const f=await fixture();
     await writeFile(f.file,'<p>稿件</p><source path="@note.txt"/>');

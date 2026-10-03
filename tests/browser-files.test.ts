@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { openBrowserDirectory, chooseBrowserDirectory, type BrowserDirectoryHandle } from '../src/browser/files';
 import { createReview, type Review } from '../src/core/types';
 import { validateReview } from '../src/server/files';
+import { localMediaType } from '../src/core/local-media';
 
 const encode = (text: string) => new TextEncoder().encode(text);
 type Stage = 'read' | 'open' | 'write' | 'close' | 'afterClose';
@@ -79,6 +80,18 @@ async function setup(xml = '<p>原文</p>', existingReview = true) {
 function edited(review: Review, xml = '<p>修改后</p>'): Review { return { ...review, document: { ...review.document, xml }, operations: [...review.operations, { id: 'op', type: 'document.edit', author: '我', at: new Date().toISOString(), summary: '修改正文' }] }; }
 
 describe('browser directory capabilities', () => {
+  it('does not treat inherited property names or remote paths as media formats',()=>{
+    for(const path of ['file.constructor','file.__proto__','file.toString','https://example.com/a.mp4','../a.mp4'])expect(localMediaType(path)).toBeUndefined();
+  });
+  it('loads only referenced native media, rejects disguised files and revokes replaced media blobs',async()=>{
+    const {fs,store,document}=await setup('<source path="@demo.mp4"/><source path="@fake.mp4"/><source path="@large.mp4"/>');
+    const mp4=new Uint8Array([0,0,0,20,102,116,121,112,105,115,111,109,0,0,0,0,105,115,111,109]);
+    fs.set('demo.mp4',mp4);fs.set('fake.mp4','<html>not media</html>');fs.set('large.mp4',new Uint8Array(25_000_001));fs.set('unlisted.mp4',mp4);
+    await document.read();const first=document.assetURL('demo.mp4');expect(first).toMatch(/^blob:/);
+    for(const name of ['fake.mp4','large.mp4','unlisted.mp4','../demo.mp4'])expect(document.assetURL(name)).toBe('data:,');
+    fs.set('demo.mp4',new Uint8Array([...mp4,1]));await document.read();expect(document.assetURL('demo.mp4')).not.toBe(first);
+    store.dispose();expect(document.assetURL('demo.mp4')).toBe('data:,');expect(fs.writes).toEqual([]);
+  });
   it('lists only direct XML files and rejects absolute/traversal names', async () => {
     const { fs, store } = await setup(); fs.set('more.XML', '<p/>'); fs.set('nested/other.xml', '<p/>'); fs.set('notes.txt', 'not an article');
     fs.hook = (stage, path) => { if (stage === 'read') throw new Error(`Listing must not read existing document contents: ${path}`); };

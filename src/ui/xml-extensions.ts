@@ -265,7 +265,7 @@ function protectedContent(inline: boolean, assetURL?: (path: string) => string, 
           const tag = current.attrs.lrTag;
           const attrs = current.attrs.lrAttrs || {};
           const attachment = attachmentView(current.attrs.rawXML, tag, inline);
-          if (attachment) { renderAttachment(dom, attachment, inline, assetURL, resolveResource); return; }
+          if (attachment) { destroyPreview=renderAttachment(dom, attachment, inline, assetURL, resolveResource, loadResource); return; }
           const resource = resolveResource?.(tag,attrs);
           let path: string | undefined;
           if (tag === 'whiteboard' && typeof current.attrs.rawXML === 'string') {
@@ -319,6 +319,7 @@ function protectedContent(inline: boolean, assetURL?: (path: string) => string, 
         editor.on('transaction',refresh);
         render();
         return { dom, ignoreMutation: () => true,
+          stopEvent(event) { return event.target instanceof Element && !!event.target.closest('.lr-attachment button,.lr-attachment a,.lr-attachment video,.lr-attachment audio,.lr-attachment pre'); },
           update(next) { if (next.type !== current.type) return false; if (next !== current) { current = next; render(); } return true; },
           destroy() { editor.off('transaction',refresh); destroyPreview?.(); },
         };
