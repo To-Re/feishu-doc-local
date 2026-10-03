@@ -16,7 +16,7 @@
 
 本地文件位置支持绝对路径和 `~/`；新建时也可填写以 `/` 结尾的目录，按项目名生成 XML 文件名。父目录需已存在。同一项目索引内，本地文件与实际飞书文档的绑定分别唯一；Wiki 链接会解析为实际 Docx 文档。
 
-Obsidian 使用库内文件列表或命令面板切换、新建 XML。[同步扩展](../obsidian-sync-plugin/README.md)提供关联和导入入口。当前不支持更换已有项目的飞书绑定。
+Obsidian 使用库内文件列表或命令面板切换、新建 XML。[完整插件的同步能力](../obsidian-sync-plugin/README.md)提供关联和导入入口。当前不支持更换已有项目的飞书绑定。
 
 ## 连接官方 CLI
 
@@ -42,7 +42,7 @@ npm start -- --file ~/articles/article.xml --cli-config ~/articles/cli.json
 | `--projects-file` | 指定项目索引；省略时新安装默认使用 `~/.lark-review/projects.json`，已有实例保留原位置。 |
 | `--cloud-config` | 兼容旧版固定目标配置，必须配合 `--file`，不能与 `--cli-config` 同用。 |
 
-Obsidian 在同步扩展设置中填写官方 CLI 独立可执行文件的绝对路径，Node 字段留空，无需额外安装 Node。若使用 npm 的 JavaScript 启动入口，可同时指定系统 Node 路径，详见[扩展设置](../obsidian-sync-plugin/README.md#安装与设置)。文档内容和项目索引不能指定要执行的程序。
+Obsidian 在完整插件设置中填写官方 CLI 独立可执行文件的绝对路径，Node 字段留空，无需额外安装 Node。若使用 npm 的 JavaScript 启动入口，可同时指定系统 Node 路径，详见[扩展设置](../obsidian-sync-plugin/README.md#安装与设置)。文档内容和项目索引不能指定要执行的程序。
 
 ## 拉取、推送和评论
 
@@ -68,9 +68,9 @@ Obsidian 在同步扩展设置中填写官方 CLI 独立可执行文件的绝对
 | 网页同步快照 | 当前项目配置目录的 `sync-history/` |
 | Obsidian 同步快照 | 稿件旁的 `.review-sync-history/` |
 
-网页的“项目管理”显示当前项目配置路径，可修改并保存。切换配置目录会合并项目登记，保留源索引，不搬移文章；重复或冲突绑定会阻止切换。Obsidian 同步扩展选择同一 `projects.json` 后可共用项目列表；它不会自动把文件同步到另一台电脑。
+网页的“项目管理”显示当前项目配置路径，可修改并保存。切换配置目录会合并项目登记，保留源索引，不搬移文章；重复或冲突绑定会阻止切换。Obsidian 完整插件选择同一 `projects.json` 后可共用项目列表；它不会自动把文件同步到另一台电脑。
 
-静态浏览器版和 Obsidian 基础插件使用各自的目录或库内文件导航，不管理共享索引。文件格式和接口细节见[本地协议](protocol.md)。
+静态浏览器版使用目录导航，不管理共享索引；Obsidian 完整插件默认使用库内文件导航，可按需配置 CLI 和共享项目索引。文件格式和接口细节见[本地协议](protocol.md)。
 
 ## 恢复上一快照
 

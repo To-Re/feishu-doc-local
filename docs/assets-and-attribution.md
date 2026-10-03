@@ -58,16 +58,15 @@ node scripts/generate-example-colors.mjs --output /tmp/feishu-doc-local-colors.p
 
 字体元数据中列出的保留字体名为 `KaTeX_AMS`、`KaTeX_Caligraphic`、`KaTeX_Fraktur`、`KaTeX_Main`、`KaTeX_Math`、`KaTeX_SansSerif`、`KaTeX_Script`、`KaTeX_Size1` 至 `KaTeX_Size4`、`KaTeX_Typewriter`。这些名称用于准确保留来源，项目没有修改这些字体。
 
-## 四种交付产物
+## 三种交付产物
 
 | 产物 | 随包内容与边界 |
 | --- | --- |
 | 本地服务版 `dist/` | 共享编辑器、服务端代码及依赖资源。包含许可证；不包含用户数据或 CLI 可执行文件。 |
 | 静态浏览器版 `dist/browser/` | 可直接托管的程序、样例、字体及许可证。不要将整个开发目录作为静态站点上传。 |
-| Obsidian 基础插件 `obsidian-plugin/dist/` | 共享编辑器、图示 / 公式渲染、字体、manifest 与许可证；`obsidian` 由宿主提供，不打包 Obsidian 应用。 |
-| Obsidian 同步扩展 `obsidian-sync-plugin/dist/` | 同步代码、差异视图、manifest 与许可证；不包含官方 CLI、登录态或用户项目索引。 |
+| Obsidian 完整插件 `obsidian-plugin/dist/` | 共享编辑器、可选 CLI 同步、差异视图、图示 / 公式、字体、manifest 与许可证；不包含 Obsidian 应用、官方 CLI、登录态或用户项目索引。 |
 
-Obsidian API 用于编译和宿主调用，Obsidian 应用由用户自行安装。本地服务版运行时需要 Node.js 22.13+；飞书同步按需使用用户配置的官方 CLI，程序与凭据不随本项目分发。第三方许可检查应覆盖以上四种构建结果，保留 `LICENSE`、`THIRD_PARTY_NOTICES.md` 与 `licenses/`，不能将包中的依赖代码全部改标项目 MIT。
+Obsidian API 用于编译和宿主调用，Obsidian 应用由用户自行安装。本地服务版运行时需要 Node.js 22.13+；飞书同步按需使用用户配置的官方 CLI，程序与凭据不随本项目分发。第三方许可检查应覆盖以上三种交付构建结果及同步模块回归构建，保留 `LICENSE`、`THIRD_PARTY_NOTICES.md` 与 `licenses/`，不能将包中的依赖代码全部改标项目 MIT。
 
 ## 私有文档、飞书预览与截图
 

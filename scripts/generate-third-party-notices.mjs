@@ -199,7 +199,7 @@ if (flags.has('--verify-bundle')) {
   for (const id of Object.keys(server.metafile.inputs)) collect(resolve(root, id));
   const pluginRoot=resolve(root,'obsidian-plugin');
   const plugin=await esbuild({absWorkingDir:pluginRoot,entryPoints:['src/main.ts'],outfile:'dist/main.js',bundle:true,
-    platform:'browser',format:'cjs',target:'es2022',external:['obsidian'],loader:{'.woff':'dataurl','.woff2':'dataurl','.ttf':'dataurl'},write:false,metafile:true,logLevel:'silent',define:{'process.env.NODE_ENV':'"production"'}});
+    platform:'node',format:'cjs',target:'es2022',external:['obsidian','electron'],loader:{'.woff':'dataurl','.woff2':'dataurl','.ttf':'dataurl'},write:false,metafile:true,logLevel:'silent',define:{'process.env.NODE_ENV':'"production"'}});
   for(const id of Object.keys(plugin.metafile.inputs))collect(resolve(pluginRoot,id));
   const syncRoot=resolve(root,'obsidian-sync-plugin');
   const sync=await esbuild({absWorkingDir:syncRoot,entryPoints:['src/main.tsx'],outfile:'dist/main.js',bundle:true,

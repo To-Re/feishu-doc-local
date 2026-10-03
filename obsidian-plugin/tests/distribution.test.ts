@@ -12,7 +12,7 @@ it('ships a desktop CommonJS plugin with isolated styles, bundled fonts and lice
   expect(main).toContain('module.exports');expect(main).toContain('require("obsidian")');
   expect(main).not.toContain('127.0.0.1:4318');expect(main).not.toContain('readWhiteboardResource');
   const styles=await readFile(directory+'styles.css','utf8');
-  postcss.parse(styles).walkRules(rule=>{for(const selector of rule.selectors)expect(/^\.feishu-doc-local-view(?:\s|$)/.test(selector)).toBe(true);});
+  postcss.parse(styles).walkRules(rule=>{for(const selector of rule.selectors)expect(/^\.feishu-doc-local-(?:view|sync-modal|sync-toolbar)(?:\s|>|$)/.test(selector)).toBe(true);});
   expect(styles).toContain('data:font/');expect(styles).not.toMatch(/url\(["']?(?:https?:|fonts\/)/);
   expect(await readFile(directory+'LICENSE','utf8')).toContain('MIT License');
   expect(await readFile(directory+'THIRD_PARTY_NOTICES.md','utf8')).toMatch(/mermaid/i);

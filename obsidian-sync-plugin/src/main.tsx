@@ -22,6 +22,7 @@ class XMLPicker extends FuzzySuggestModal<TFile>{
 }
 
 export default class FeishuSyncPlugin extends Plugin {
+  needsCLISetup(){return false;}
   settings:Preferences=defaultPreferences();configurationError='';private runner=new ManagedCLIRunner();private service?:SyncService;private dialogs=new Set<Modal>();private toolbars=new Set<SyncToolbar>();private stopping=false;
   async onload(){try{this.settings=readPreferences(await this.loadData());}catch(error){this.configurationError=readable(error);}
     this.runner=new ManagedCLIRunner(undefined,this.runnerOptions());
@@ -51,10 +52,10 @@ export default class FeishuSyncPlugin extends Plugin {
   private runnerOptions(){const adapter=this.app.vault.adapter;return {nodePath:this.settings.nodePath,...(adapter instanceof FileSystemAdapter?{cwd:adapter.getBasePath()}: {})};}
   refreshToolbars(){if(!this.stopping)for(const toolbar of this.toolbars)void toolbar.refresh();}
   confirm(title:string,explanation:string,action:()=>void){const modal=new ConfirmModal(this.app,title,explanation,()=>{if(!this.stopping)action();},()=>this.dialogs.delete(modal));this.dialogs.add(modal);modal.open();return modal;}
-  open(file:TFile){const modal=new SyncModal(this.app,this,file,()=>this.dialogs.delete(modal));this.dialogs.add(modal);modal.open();}
+  open(file:TFile){if(this.needsCLISetup()){this.openSettings();return;}const modal=new SyncModal(this.app,this,file,()=>this.dialogs.delete(modal));this.dialogs.add(modal);modal.open();}
   openPreview(file:TFile,direction:SyncDirection,onDirectionChange?:(direction:SyncDirection)=>void){const modal=new SyncModal(this.app,this,file,()=>this.dialogs.delete(modal),{direction,preview:true,onDirectionChange});this.dialogs.add(modal);modal.open();return modal;}
   openRestore(file:TFile){const modal=new SnapshotRestoreModal(this.app,this,file,()=>this.dialogs.delete(modal));this.dialogs.add(modal);modal.open();}
-  openImport(file?:TFile){const current=file?.extension.toLowerCase()==='xml'?file:undefined;const modal=new ImportModal(this.app,this,current,()=>this.dialogs.delete(modal));this.dialogs.add(modal);modal.open();}
+  openImport(file?:TFile){if(this.needsCLISetup()){this.openSettings();return;}const current=file?.extension.toLowerCase()==='xml'?file:undefined;const modal=new ImportModal(this.app,this,current,()=>this.dialogs.delete(modal));this.dialogs.add(modal);modal.open();}
   openProjects(file?:TFile){const current=file?.extension.toLowerCase()==='xml'?file:undefined;const modal=new ProjectsModal(this.app,this,current,()=>this.dialogs.delete(modal));this.dialogs.add(modal);modal.open();}
   openSettings(){const modal=new CLISettingsModal(this.app,this,()=>this.dialogs.delete(modal));this.dialogs.add(modal);modal.open();}
   async openRegistered(id:string){
@@ -78,11 +79,15 @@ class SyncToolbar {
   get isBusy(){return this.busy;}
   start(){this.container.addClass('feishu-doc-local-sync-toolbar');this.render();void this.refresh();}
   dispose(){this.alive=false;this.generation++;this.confirmation?.close();this.previewWindow?.close();this.container.empty();this.container.classList.remove('feishu-doc-local-sync-toolbar');}
-  async refresh(){const generation=++this.generation;try{if(this.file.path!==this.filePath)throw new Error('文档路径已变化，请重新打开文档。');const project=await this.plugin.backend().project(this.plugin.absolute(this.file));if(!this.alive||generation!==this.generation)return;if(!this.direction||project?.id!==this.project?.id)this.direction=project?.defaultDirection;this.project=project;this.error='';}catch(error){if(!this.alive||generation!==this.generation)return;this.error=readable(error);}this.loading=false;if(this.alive)this.render();}
+  async refresh(){const generation=++this.generation;if(this.plugin.needsCLISetup()){this.loading=false;this.render();return;}try{if(this.file.path!==this.filePath)throw new Error('文档路径已变化，请重新打开文档。');const project=await this.plugin.backend().project(this.plugin.absolute(this.file));if(!this.alive||generation!==this.generation)return;if(!this.direction||project?.id!==this.project?.id)this.direction=project?.defaultDirection;this.project=project;this.error='';}catch(error){if(!this.alive||generation!==this.generation)return;this.error=readable(error);}this.loading=false;if(this.alive)this.render();}
   private async comments(){if(this.busy||!this.alive)return;const path=this.filePath;this.busy=true;this.notice='正在同步评论…';this.render();try{if(this.file.path!==path)throw new Error('文档路径已变化，请重新打开文档。');const absolute=this.plugin.absolute(this.file);
     await withSyncLease(this.plugin.app.workspace,path,async()=>{if(!this.alive)throw new Error('文档已关闭，未启动评论同步。');if(this.file.path!==path)throw new Error('文档路径已变化，请重新打开文档。');const result=await this.plugin.backend().comments(absolute);this.notice=`评论同步完成：导入 ${result.report.imported}，新建 ${result.report.created}，回复 ${result.report.replies}，状态 ${result.report.resolved}。`+result.report.issues.join(' ');});
   }catch(error){this.notice=readable(error);}finally{this.busy=false;if(this.alive)this.render();this.plugin.refreshToolbars();}}
   private render(){if(!this.alive)return;const el=this.container;el.empty();
+    if(this.plugin.needsCLISetup()){
+      el.createEl('span',{text:this.plugin.configurationError||'本地功能可直接使用；同步飞书需先配置 CLI。',cls:'feishu-sync-toolbar-status',attr:{role:'status'}});
+      button(el,'配置 CLI（可选）',()=>this.plugin.openSettings());return;
+    }
     if(this.project?.cloud&&!this.error){
       button(el,'预览同步',()=>{this.previewWindow?.close();this.previewWindow=this.plugin.openPreview(this.file,this.direction??this.project?.defaultDirection??'push',direction=>{if(this.alive)this.direction=direction;});},true).disabled=this.busy;
       button(el,'同步评论',()=>{this.confirmation=this.plugin.confirm('同步评论','将读取飞书评论，并把本地新增评论、回复和处理状态同步到这篇关联文档。找不到可靠块位置的意见会保留在本地。',()=>void this.comments());}).disabled=this.busy;

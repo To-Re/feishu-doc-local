@@ -1,1 +1,2 @@
-export {default, FeishuXMLView, VIEW_TYPE} from './plugin';
+export {default} from './complete-plugin';
+export {FeishuXMLView, VIEW_TYPE} from './plugin';

@@ -1,4 +1,4 @@
-# 本地飞书文档 · Obsidian 基础插件
+# 本地飞书文档 · Obsidian 完整插件
 
 在 Obsidian 内编辑 DocxXML、查看排版和写评论，让 AI 直接读取本地文件继续改稿。复用网页端的编辑器和渲染组件，无需安装 Node、启动服务或登录飞书。
 
@@ -12,7 +12,7 @@
 
 ## 安装
 
-需要桌面 Obsidian **1.8.0+**。从[发布页](https://github.com/To-Re/feishu-doc-local/releases)下载基础插件 ZIP，功能以对应版本说明为准。
+需要桌面 Obsidian **1.8.0+**。从[发布页](https://github.com/To-Re/feishu-doc-local/releases)下载完整插件 ZIP，功能以对应版本说明为准。
 
 1. 将包中的 `feishu-doc-local/` 放入库的 `.obsidian/plugins/`，保留许可证文件。
 2. 重新加载 Obsidian，在第三方插件设置中启用“本地飞书文档”。目前需手动安装。
@@ -29,7 +29,20 @@
 
 ## 可选飞书同步
 
-安装[飞书同步扩展](../obsidian-sync-plugin/README.md)后，可导入或关联飞书，并在顶部预览正文同步、同步评论。正文始终先预览再确认；推送成功后回读更新本地，旧稿存档。两种插件都不需要另开网页服务，基础插件本身不调用 CLI。
+同步能力已包含在同一个插件内。未配置 CLI 时，本地阅读、编辑、评论、源码和缺失资源提示均可用；点击“配置 CLI（可选）”再填写路径。保存设置不会运行 CLI，也不会自动登录或下载。导入、正文及评论同步沿用原有预览、确认和恢复机制，详见[同步配置与操作](../obsidian-sync-plugin/README.md)。
+
+## 从双插件升级
+
+1. 等待文档显示“已保存到本地”，先处理未发送评论、无效源码或图源草稿；正常关闭 Obsidian。
+2. 备份两个插件目录和 `community-plugins.json`。用新包更新 `feishu-doc-local/`，保留原 `data.json` 和已有 `cli-settings.json`。
+3. 停用“本地飞书文档 · 飞书同步”（`feishu-doc-local-sync`），只启用“本地飞书文档”。旧目录保留以便恢复，不必删除。
+4. 重启后，完整插件优先使用自己的 `cli-settings.json`。首次发现旧扩展 `data.json` 时，先在完整插件目录的 `migration-*` 子目录备份旧配置及草稿文件，再迁入 CLI 配置；旧文件不改动。
+
+草稿继续使用完整插件原来的 `data.json`，同步配置单独存放，项目索引路径、固定参数和关联历史保持原值。已有新配置优先，重复启动不会再次覆盖。配置损坏或备份失败时保留原数据并提示，本地编辑不受同步配置影响。
+
+旧扩展仍启用时，完整插件不注册第二套同步命令和工具栏；停用旧扩展后重启完整插件即可。旧命令 ID `feishu-doc-local-sync:open-sync`、`:open-projects`、`:open-cli-settings`、`:import-cloud-document` 对应新的 `feishu-doc-local:` 同名后缀。自定义快捷键需在 Obsidian 中重新绑定；升级不自动覆盖用户快捷键。
+
+不需要安装两个插件。源码中的 `obsidian-sync-plugin/` 保留同步模块及回归测试，不再作为独立运行包发布。
 
 ## 限制
 

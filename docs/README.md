@@ -4,8 +4,8 @@
 | --- | --- |
 | 选择版本、开始使用 | [项目首页](../README.md) |
 | 在浏览器中直接读写本地文件 | [静态浏览器版](browser-version.md) |
-| 在 Obsidian 中编辑和评论 | [基础插件](../obsidian-plugin/README.md) |
-| 在 Obsidian 中连接飞书 | [飞书同步扩展](../obsidian-sync-plugin/README.md) |
+| 在 Obsidian 中编辑和评论 | [完整插件](../obsidian-plugin/README.md) |
+| 在 Obsidian 中连接飞书 | [可选 CLI 同步](../obsidian-sync-plugin/README.md) |
 | 创建项目、关联飞书、同步和恢复快照 | [项目与同步](projects-and-sync.md) |
 | 确认排版、白板等格式支持程度 | [格式支持与限制](style-coverage.md) |
 | 为本地编辑器或飞书撰写 DocxXML | [写稿协议](writing-protocol.md) |

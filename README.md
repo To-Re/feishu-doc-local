@@ -33,24 +33,23 @@
 
 ## 选择使用方式
 
-**在 Obsidian 里本地使用：下载并启用基础插件即可。无需安装 Node、npm 或飞书 CLI，无需启动网页服务，也无需登录飞书。** 编辑、评论、目录和源码模式均可直接使用。
+**在 Obsidian 里本地使用：下载并启用完整插件即可。无需安装 Node、npm 或飞书 CLI，无需启动网页服务，也无需登录飞书。** 编辑、评论、目录和源码模式均可直接使用。
 
 | 版本 | 需要安装什么 | 飞书同步 |
 | --- | --- | --- |
-| Obsidian 基础插件 | 桌面 Obsidian 1.8+，下载并启用插件 | 不支持 |
-| Obsidian 飞书同步扩展 | 基础插件 + 已配置身份和权限的官方 CLI 独立可执行文件 | 支持，无需额外安装 Node 或启动网页服务 |
+| Obsidian 完整插件 | 桌面 Obsidian 1.8+，安装一个插件 | 可选配置官方 CLI，无需另装同步扩展 |
 | 静态浏览器版 | 桌面 Chrome；打开部署好的网页并授权文档目录 | 不支持 |
 | 本地服务版 | Node.js 22.13+ | 可选，需要官方 CLI |
 
-只有需要与飞书交换文档时，才安装同步扩展并配置官方 CLI。使用 CLI 的独立可执行文件，两个 Obsidian 插件都不需要额外安装 Node。开发者从源码构建插件、运行本地网页版，或选择 npm 版 CLI 时才涉及 Node，见[同步扩展配置](obsidian-sync-plugin/README.md#安装与设置)。
+只有需要与飞书交换文档时，才在完整插件中配置官方 CLI。使用 CLI 的独立可执行文件，不需要额外安装 Node。开发者从源码构建插件、运行本地网页版，或选择 npm 版 CLI 时才涉及 Node，见[同步扩展配置](obsidian-sync-plugin/README.md#安装与设置)。
 
 ## 开始使用
 
 ### Obsidian
 
-从 [Releases](https://github.com/To-Re/feishu-doc-local/releases) 下载基础插件，将解压后的 `feishu-doc-local/` 放入库的 `.obsidian/plugins/`，在第三方插件设置中启用。在文件列表中点击 XML，插件会自动判断内容：DocxXML 进入文档编辑器，普通 XML 显示为只读原文。普通 XML 不创建评论文件，也不启用飞书同步。命令面板中的“本地飞书文档：打开飞书 XML 文档”也可选择文档。
+从 [Releases](https://github.com/To-Re/feishu-doc-local/releases) 下载完整插件，将解压后的 `feishu-doc-local/` 放入库的 `.obsidian/plugins/`，在第三方插件设置中启用。在文件列表中点击 XML，插件会自动判断内容：DocxXML 进入文档编辑器，普通 XML 显示为只读原文。普通 XML 不创建评论文件，也不启用飞书同步。命令面板中的“本地飞书文档：打开飞书 XML 文档”也可选择文档。
 
-只做本地编辑，到这里即可。需要同步飞书时，再安装可选扩展并配置官方 CLI 独立可执行文件的路径，Node 字段留空。详见[基础插件安装](obsidian-plugin/README.md)和[同步扩展配置](obsidian-sync-plugin/README.md)。
+只做本地编辑，到这里即可。需要同步飞书时，在同一插件中配置官方 CLI 路径，原生程序的 Node 字段留空。旧双插件用户先停用旧同步扩展，再按[升级与配置迁移](obsidian-plugin/README.md#从双插件升级)更新；不要删除旧配置。
 
 ### 本地网页版
 

@@ -1,3 +1,5 @@
+> v0.0.3 起，同步能力已合并到一个完整 Obsidian 插件。此目录保留模块源码与测试，不再单独发布安装包。旧扩展请停用并保留配置，参见[升级步骤](../obsidian-plugin/README.md#从双插件升级)。
+
 # 本地飞书文档 · Obsidian 飞书同步扩展
 
 为[基础插件](../obsidian-plugin/README.md)增加飞书导入、关联、正文和评论同步。扩展在 Obsidian 桌面版内运行，直接调用用户配置的官方 `lark-cli` 独立可执行文件，**无需额外安装 Node，也无需启动网页服务**。
@@ -6,7 +8,7 @@
 
 需要桌面 Obsidian **1.8.0+**、已启用的基础插件和自行安装的[官方 lark CLI](https://github.com/larksuite/cli)。无需 Node 的安装方式：从[官方 Releases](https://github.com/larksuite/cli/releases)下载适合当前系统的独立可执行文件；macOS 的 Apple 芯片选 `darwin-arm64`，Intel 选 `darwin-amd64`，按发布页校验文件后解压。
 
-1. 从[发布页](https://github.com/To-Re/feishu-doc-local/releases)下载同版本的同步扩展，将 `feishu-doc-local-sync/` 放入库的 `.obsidian/plugins/` 并启用。
+1. 安装并启用完整的 `feishu-doc-local` 插件；不再安装独立同步扩展。
 2. 按官方说明配置 CLI 应用、身份和权限。使用用户身份时，在终端运行 `lark-cli auth login` 并完成授权；机器人身份使用应用配置。
 3. 在命令面板选择“配置官方 CLI 与项目路径”，填写解压得到的 `lark-cli` **绝对路径**及固定参数，例如 `["--as", "bot"]`；**Node 可执行文件留空**。
 4. 如需与本地服务共用项目列表，选择同一 `projects.json`；默认位置为 `~/.lark-review/projects.json`。
@@ -49,4 +51,4 @@ npm test --prefix obsidian-sync-plugin
 npm run build --prefix obsidian-sync-plugin
 ```
 
-输出为 `obsidian-sync-plugin/dist/`。保留 `LICENSE`、`THIRD_PARTY_NOTICES.md` 和 `licenses/`；构建需要 Node，用户无需安装这些开发依赖。
+此命令用于同步模块独立回归，输出 `obsidian-sync-plugin/dist/` 不作为正式安装包发布。完整插件产物为 `obsidian-plugin/dist/`。保留 `LICENSE`、`THIRD_PARTY_NOTICES.md` 和 `licenses/`；构建需要 Node，用户无需安装这些开发依赖。
