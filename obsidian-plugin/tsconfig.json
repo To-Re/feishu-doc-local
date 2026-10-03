@@ -1,5 +1,9 @@
 {
   "extends": "../tsconfig.json",
-  "compilerOptions": { "types": ["node"], "baseUrl": "." },
+  "compilerOptions": {
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": { "obsidian": ["./node_modules/obsidian"] }
+  },
   "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "tests/**/*.tsx", "vitest.config.ts"]
 }
