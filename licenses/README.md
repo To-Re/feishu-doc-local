@@ -4,24 +4,24 @@
 
 ## 运行时依赖
 
-以下 187 项为运行时依赖闭包，覆盖构建入包依赖并包含被 tree shaking 去掉的包；不是声称每个包都进入最终 JS。
+以下 184 项为运行时依赖闭包，覆盖构建入包依赖并包含被 tree shaking 去掉的包；不是声称每个包都进入最终 JS。
 
 | 包 | 版本 | 本分发使用的许可 | 完整文本与通知 |
 | --- | --- | --- | --- |
 | @antfu/install-pkg | 2.0.1 | MIT | [LICENSE](packages/antfu__install-pkg-2.0.1/LICENSE) |
 | tinyexec | 1.3.1 | MIT | [LICENSE](packages/tinyexec-1.3.1/LICENSE) |
 | @braintree/sanitize-url | 7.1.2 | MIT | [LICENSE](packages/braintree__sanitize-url-7.1.2/LICENSE) |
-| @chevrotain/cst-dts-gen | 11.1.2 | Apache-2.0 | [LICENSE.txt](packages/chevrotain__cst-dts-gen-11.1.2/LICENSE.txt) |
-| @chevrotain/gast | 11.1.2 | Apache-2.0 | [LICENSE.txt](packages/chevrotain__gast-11.1.2/LICENSE.txt) |
-| @chevrotain/regexp-to-ast | 11.1.2 | Apache-2.0 | [LICENSE.txt](packages/chevrotain__regexp-to-ast-11.1.2/LICENSE.txt) |
-| @chevrotain/types | 11.1.2 | Apache-2.0 | [LICENSE.txt](packages/chevrotain__types-11.1.2/LICENSE.txt) |
-| @chevrotain/utils | 11.1.2 | Apache-2.0 | [LICENSE.txt](packages/chevrotain__utils-11.1.2/LICENSE.txt) |
+| @chevrotain/cst-dts-gen | 13.2.0 | Apache-2.0 | [LICENSE.txt](packages/chevrotain__cst-dts-gen-13.2.0/LICENSE.txt) |
+| @chevrotain/gast | 13.2.0 | Apache-2.0 | [LICENSE.txt](packages/chevrotain__gast-13.2.0/LICENSE.txt) |
+| @chevrotain/regexp-to-ast | 13.2.0 | Apache-2.0 | [LICENSE.txt](packages/chevrotain__regexp-to-ast-13.2.0/LICENSE.txt) |
+| @chevrotain/types | 13.2.0 | Apache-2.0 | [LICENSE.txt](packages/chevrotain__types-13.2.0/LICENSE.txt) |
+| @chevrotain/utils | 13.2.0 | Apache-2.0 | [LICENSE.txt](packages/chevrotain__utils-13.2.0/LICENSE.txt) |
 | @floating-ui/core | 1.8.0 | MIT | [LICENSE](packages/floating-ui__core-1.8.0/LICENSE) |
 | @floating-ui/dom | 1.8.0 | MIT | [LICENSE](packages/floating-ui__dom-1.8.0/LICENSE) |
 | @floating-ui/utils | 0.2.12 | MIT | [LICENSE](packages/floating-ui__utils-0.2.12/LICENSE) |
 | @iconify/types | 2.0.0 | MIT | [license.txt](packages/iconify__types-2.0.0/license.txt) |
 | @iconify/utils | 3.1.7 | MIT | [license.txt](packages/iconify__utils-3.1.7/license.txt) |
-| @mermaid-js/parser | 2.0.0 | MIT | [LICENSE](packages/mermaid-js__parser-2.0.0/LICENSE) |
+| @mermaid-js/parser | 2.0.1 | MIT | [LICENSE](packages/mermaid-js__parser-2.0.1/LICENSE) |
 | @tiptap/core | 3.31.3 | MIT | [LICENSE.md](packages/tiptap__core-3.31.3/LICENSE.md) |
 | @tiptap/extension-blockquote | 3.31.3 | MIT | [LICENSE.md](packages/tiptap__extension-blockquote-3.31.3/LICENSE.md) |
 | @tiptap/extension-bold | 3.31.3 | MIT | [LICENSE.md](packages/tiptap__extension-bold-3.31.3/LICENSE.md) |
@@ -90,7 +90,7 @@
 | @types/unist | 3.0.3 | MIT | [LICENSE](packages/types__unist-3.0.3/LICENSE) |
 | @types/use-sync-external-store | 0.0.6 | MIT | [LICENSE](packages/types__use-sync-external-store-0.0.6/LICENSE) |
 | @upsetjs/venn.js | 2.0.0 | MIT | [LICENSE](packages/upsetjs__venn.js-2.0.0/LICENSE) |
-| chevrotain | 11.1.2 | Apache-2.0 | [LICENSE.txt](packages/chevrotain-11.1.2/LICENSE.txt) |
+| chevrotain | 13.2.0 | Apache-2.0 | [LICENSE.txt](packages/chevrotain-13.2.0/LICENSE.txt) |
 | commander | 15.0.0 | MIT | [LICENSE](packages/commander-15.0.0/LICENSE) |
 | cose-base | 1.0.3 | MIT | [LICENSE](packages/cose-base-1.0.3/LICENSE) |
 | csstype | 3.2.3 | MIT | [LICENSE](packages/csstype-3.2.3/LICENSE) |
@@ -142,8 +142,8 @@
 | dequal | 2.0.3 | MIT | [license](packages/dequal-2.0.3/license) |
 | devlop | 1.1.0 | MIT | [license](packages/devlop-1.1.0/license) |
 | diff | 9.0.0 | BSD-3-Clause | [LICENSE](packages/diff-9.0.0/LICENSE) |
-| dompurify | 3.4.15 | Apache-2.0 | [LICENSE](packages/dompurify-3.4.15/LICENSE), [LICENSE-MPL](packages/dompurify-3.4.15/LICENSE-MPL), [COPYRIGHT.txt](packages/dompurify-3.4.15/COPYRIGHT.txt) |
-| elkjs | 0.9.3 | EPL-2.0 AND Apache-2.0 | [LICENSE.md](packages/elkjs-0.9.3/LICENSE.md), [COPYRIGHT.txt](packages/elkjs-0.9.3/COPYRIGHT.txt), [Apache-2.0.txt](packages/elkjs-0.9.3/Apache-2.0.txt) |
+| dompurify | 3.4.18 | Apache-2.0 | [LICENSE](packages/dompurify-3.4.18/LICENSE), [LICENSE-MPL](packages/dompurify-3.4.18/LICENSE-MPL), [COPYRIGHT.txt](packages/dompurify-3.4.18/COPYRIGHT.txt) |
+| elkjs | 0.12.1 | EPL-2.0 AND Apache-2.0 | [LICENSE.md](packages/elkjs-0.12.1/LICENSE.md), [COPYRIGHT.txt](packages/elkjs-0.12.1/COPYRIGHT.txt), [web-worker-COPYRIGHT.txt](packages/elkjs-0.12.1/web-worker-COPYRIGHT.txt), [Apache-2.0.txt](packages/elkjs-0.12.1/Apache-2.0.txt) |
 | es-toolkit | 1.52.0 | MIT | [LICENSE](packages/es-toolkit-1.52.0/LICENSE), [NOTICE](packages/es-toolkit-1.52.0/NOTICE) |
 | fast-equals | 5.4.2 | MIT | [LICENSE](packages/fast-equals-5.4.2/LICENSE) |
 | hachure-fill | 0.5.2 | MIT | [LICENSE](packages/hachure-fill-0.5.2/LICENSE) |
@@ -155,13 +155,11 @@
 | khroma | 2.1.0 | MIT | [license](packages/khroma-2.1.0/license) |
 | layout-base | 1.0.2 | MIT | [LICENSE](packages/layout-base-1.0.2/LICENSE) |
 | linkifyjs | 4.3.3 | MIT | [LICENSE](packages/linkifyjs-4.3.3/LICENSE) |
-| lodash-es | 4.17.23 | MIT | [LICENSE](packages/lodash-es-4.17.23/LICENSE) |
+| lodash-es | 4.18.1 | MIT | [LICENSE](packages/lodash-es-4.18.1/LICENSE) |
 | lowlight | 3.3.0 | MIT | [license](packages/lowlight-3.3.0/license) |
 | lucide-react | 1.31.0 | ISC | [LICENSE](packages/lucide-react-1.31.0/LICENSE) |
 | marked | 16.4.2 | MIT | [LICENSE.md](packages/marked-16.4.2/LICENSE.md) |
-| mermaid | 12.0.0 | MIT | [LICENSE](packages/mermaid-12.0.0/LICENSE) |
-| commander | 8.3.0 | MIT | [LICENSE](packages/commander-8.3.0/LICENSE) |
-| katex | 0.16.47 | MIT | [LICENSE](packages/katex-0.16.47/LICENSE) |
+| mermaid | 12.3.0 | MIT | [LICENSE](packages/mermaid-12.3.0/LICENSE) |
 | orderedmap | 2.1.1 | MIT | [LICENSE](packages/orderedmap-2.1.1/LICENSE) |
 | package-manager-detector | 1.8.0 | MIT | [LICENSE](packages/package-manager-detector-1.8.0/LICENSE) |
 | path-data-parser | 0.1.0 | MIT | [LICENSE](packages/path-data-parser-0.1.0/LICENSE) |
@@ -192,7 +190,6 @@
 | stylis | 4.4.0 | MIT | [LICENSE](packages/stylis-4.4.0/LICENSE) |
 | ts-dedent | 2.3.0 | MIT | [LICENSE](packages/ts-dedent-2.3.0/LICENSE) |
 | use-sync-external-store | 1.7.0 | MIT | [LICENSE](packages/use-sync-external-store-1.7.0/LICENSE) |
-| uuid | 14.0.2 | MIT | [LICENSE.md](packages/uuid-14.0.2/LICENSE.md) |
 | w3c-keyname | 2.2.8 | MIT | [LICENSE](packages/w3c-keyname-2.2.8/LICENSE) |
 | xmlchars | 2.2.0 | MIT | [LICENSE](packages/xmlchars-2.2.0/LICENSE) |
 

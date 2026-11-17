@@ -58,90 +58,90 @@
     },
     {
       "name": "@chevrotain/cst-dts-gen",
-      "version": "11.1.2",
+      "version": "13.2.0",
       "packagePath": "node_modules/@chevrotain/cst-dts-gen",
       "scope": "runtime-dependency-closure",
       "declaredLicense": "Apache-2.0",
       "selectedLicense": "Apache-2.0",
       "repository": "https://github.com/Chevrotain/chevrotain",
-      "sourceArchive": "https://registry.npmjs.org/@chevrotain/cst-dts-gen/-/cst-dts-gen-11.1.2.tgz",
-      "integrity": "sha512-XTsjvDVB5nDZBQB8o0o/0ozNelQtn2KrUVteIHSlPd2VAV2utEb6JzyCJaJ8tGxACR4RiBNWy5uYUHX2eji88Q==",
+      "sourceArchive": "https://registry.npmjs.org/@chevrotain/cst-dts-gen/-/cst-dts-gen-13.2.0.tgz",
+      "integrity": "sha512-bA9dvWlhAUcHkNwU+8w9yiUxJPlj/Lm3VqS7MD+NbIR/7LmpNLuK/AWNFdCo/T3SK5ND0/UHf3IJvl/Jn/i6yg==",
       "notices": [
         {
           "source": "node_modules/@chevrotain/cst-dts-gen/LICENSE.txt",
-          "path": "licenses/packages/chevrotain__cst-dts-gen-11.1.2/LICENSE.txt",
+          "path": "licenses/packages/chevrotain__cst-dts-gen-13.2.0/LICENSE.txt",
           "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
         }
       ]
     },
     {
       "name": "@chevrotain/gast",
-      "version": "11.1.2",
+      "version": "13.2.0",
       "packagePath": "node_modules/@chevrotain/gast",
       "scope": "runtime-dependency-closure",
       "declaredLicense": "Apache-2.0",
       "selectedLicense": "Apache-2.0",
       "repository": "https://github.com/Chevrotain/chevrotain",
-      "sourceArchive": "https://registry.npmjs.org/@chevrotain/gast/-/gast-11.1.2.tgz",
-      "integrity": "sha512-Z9zfXR5jNZb1Hlsd/p+4XWeUFugrHirq36bKzPWDSIacV+GPSVXdk+ahVWZTwjhNwofAWg/sZg58fyucKSQx5g==",
+      "sourceArchive": "https://registry.npmjs.org/@chevrotain/gast/-/gast-13.2.0.tgz",
+      "integrity": "sha512-bCARdAsG+eEbOveSXcOAC7pVxA04I1ionzeMOwIYf5NX7SaS7zgn4Dgug2BSqoL+iyKeMNSorQjsFSHJHsCNwg==",
       "notices": [
         {
           "source": "node_modules/@chevrotain/gast/LICENSE.txt",
-          "path": "licenses/packages/chevrotain__gast-11.1.2/LICENSE.txt",
+          "path": "licenses/packages/chevrotain__gast-13.2.0/LICENSE.txt",
           "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
         }
       ]
     },
     {
       "name": "@chevrotain/regexp-to-ast",
-      "version": "11.1.2",
+      "version": "13.2.0",
       "packagePath": "node_modules/@chevrotain/regexp-to-ast",
       "scope": "runtime-dependency-closure",
       "declaredLicense": "Apache-2.0",
       "selectedLicense": "Apache-2.0",
       "repository": "https://github.com/Chevrotain/chevrotain",
-      "sourceArchive": "https://registry.npmjs.org/@chevrotain/regexp-to-ast/-/regexp-to-ast-11.1.2.tgz",
-      "integrity": "sha512-nMU3Uj8naWer7xpZTYJdxbAs6RIv/dxYzkYU8GSwgUtcAAlzjcPfX1w+RKRcYG8POlzMeayOQ/znfwxEGo5ulw==",
+      "sourceArchive": "https://registry.npmjs.org/@chevrotain/regexp-to-ast/-/regexp-to-ast-13.2.0.tgz",
+      "integrity": "sha512-kxpUkLtiaK09ph+dib+Yvm+3sWSnuwlo25gqfKRgTPNmF6H7uW4gVkMjaRdtnN783S9sM6vUNWh9CsxYX4QwKw==",
       "notices": [
         {
           "source": "node_modules/@chevrotain/regexp-to-ast/LICENSE.txt",
-          "path": "licenses/packages/chevrotain__regexp-to-ast-11.1.2/LICENSE.txt",
+          "path": "licenses/packages/chevrotain__regexp-to-ast-13.2.0/LICENSE.txt",
           "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
         }
       ]
     },
     {
       "name": "@chevrotain/types",
-      "version": "11.1.2",
+      "version": "13.2.0",
       "packagePath": "node_modules/@chevrotain/types",
       "scope": "runtime-dependency-closure",
       "declaredLicense": "Apache-2.0",
       "selectedLicense": "Apache-2.0",
       "repository": "https://github.com/Chevrotain/chevrotain",
-      "sourceArchive": "https://registry.npmjs.org/@chevrotain/types/-/types-11.1.2.tgz",
-      "integrity": "sha512-U+HFai5+zmJCkK86QsaJtoITlboZHBqrVketcO2ROv865xfCMSFpELQoz1GkX5GzME8pTa+3kbKrZHQtI0gdbw==",
+      "sourceArchive": "https://registry.npmjs.org/@chevrotain/types/-/types-13.2.0.tgz",
+      "integrity": "sha512-7qrYHRlKfWf2AvBfJi5eVOrKAkbxvMFsy/iIHTGIiApNcEecCaVIdR+mIQhyCBsTDJxBz4JWXHMo6krbhR9hVg==",
       "notices": [
         {
           "source": "node_modules/@chevrotain/types/LICENSE.txt",
-          "path": "licenses/packages/chevrotain__types-11.1.2/LICENSE.txt",
+          "path": "licenses/packages/chevrotain__types-13.2.0/LICENSE.txt",
           "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
         }
       ]
     },
     {
       "name": "@chevrotain/utils",
-      "version": "11.1.2",
+      "version": "13.2.0",
       "packagePath": "node_modules/@chevrotain/utils",
       "scope": "runtime-dependency-closure",
       "declaredLicense": "Apache-2.0",
       "selectedLicense": "Apache-2.0",
       "repository": "https://github.com/Chevrotain/chevrotain",
-      "sourceArchive": "https://registry.npmjs.org/@chevrotain/utils/-/utils-11.1.2.tgz",
-      "integrity": "sha512-4mudFAQ6H+MqBTfqLmU7G1ZwRzCLfJEooL/fsF6rCX5eePMbGhoy5n4g+G4vlh2muDcsCTJtL+uKbOzWxs5LHA==",
+      "sourceArchive": "https://registry.npmjs.org/@chevrotain/utils/-/utils-13.2.0.tgz",
+      "integrity": "sha512-SzKYY68rseOrb9KILVzPsl6SjkQtdWw01SRGB5aCVI5kFcHltQsOYV3JB0Ffst72DgkvHCyDQ0NLwxtmCCf97Q==",
       "notices": [
         {
           "source": "node_modules/@chevrotain/utils/LICENSE.txt",
-          "path": "licenses/packages/chevrotain__utils-11.1.2/LICENSE.txt",
+          "path": "licenses/packages/chevrotain__utils-13.2.0/LICENSE.txt",
           "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
         }
       ]
@@ -238,18 +238,18 @@
     },
     {
       "name": "@mermaid-js/parser",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "packagePath": "node_modules/@mermaid-js/parser",
       "scope": "runtime-dependency-closure",
       "declaredLicense": "MIT",
       "selectedLicense": "MIT",
       "repository": "https://github.com/mermaid-js/mermaid",
-      "sourceArchive": "https://registry.npmjs.org/@mermaid-js/parser/-/parser-2.0.0.tgz",
-      "integrity": "sha512-K8BeapFUfrfxbRAUQAG5oBOCwo1+bNWzaVnPxTCutkfrTBn6T/j91FIhqxWJ32SUeQ9T3iy1zcmPZ5ROZEvDrg==",
+      "sourceArchive": "https://registry.npmjs.org/@mermaid-js/parser/-/parser-2.0.1.tgz",
+      "integrity": "sha512-j37dj/h6p6pots1L7pLPPNuABEEu9WP4OYg9pW1g+nYG331j0+3canE9OagtYdytYvdSAMG+2fKU5cxep6LgjA==",
       "notices": [
         {
           "source": "node_modules/@mermaid-js/parser/LICENSE",
-          "path": "licenses/packages/mermaid-js__parser-2.0.0/LICENSE",
+          "path": "licenses/packages/mermaid-js__parser-2.0.1/LICENSE",
           "sha256": "d374061c40bfb6f99c5033290caefda97a9b3e7e477e5ee02f487143ef2177e8"
         }
       ]
@@ -1498,18 +1498,18 @@
     },
     {
       "name": "chevrotain",
-      "version": "11.1.2",
+      "version": "13.2.0",
       "packagePath": "node_modules/chevrotain",
       "scope": "runtime-dependency-closure",
       "declaredLicense": "Apache-2.0",
       "selectedLicense": "Apache-2.0",
       "repository": "https://github.com/Chevrotain/chevrotain",
-      "sourceArchive": "https://registry.npmjs.org/chevrotain/-/chevrotain-11.1.2.tgz",
-      "integrity": "sha512-opLQzEVriiH1uUQ4Kctsd49bRoFDXGGSC4GUqj7pGyxM3RehRhvTlZJc1FL/Flew2p5uwxa1tUDWKzI4wNM8pg==",
+      "sourceArchive": "https://registry.npmjs.org/chevrotain/-/chevrotain-13.2.0.tgz",
+      "integrity": "sha512-GTouk5YzgBxlTPCaDn5q0q2EJKkrYmnPF+HmF8v0Qo4r3iyPG7HJivkN1wthCXZcm3sIcZFpGTRovLPNdJNRCA==",
       "notices": [
         {
           "source": "node_modules/chevrotain/LICENSE.txt",
-          "path": "licenses/packages/chevrotain-11.1.2/LICENSE.txt",
+          "path": "licenses/packages/chevrotain-13.2.0/LICENSE.txt",
           "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
         }
       ]
@@ -2439,57 +2439,62 @@
     },
     {
       "name": "dompurify",
-      "version": "3.4.15",
+      "version": "3.4.18",
       "packagePath": "node_modules/dompurify",
       "scope": "runtime-dependency-closure",
       "declaredLicense": "(MPL-2.0 OR Apache-2.0)",
       "selectedLicense": "Apache-2.0",
       "repository": "https://github.com/cure53/DOMPurify",
-      "sourceArchive": "https://registry.npmjs.org/dompurify/-/dompurify-3.4.15.tgz",
-      "integrity": "sha512-EUBjM+B+lkDE41iE82DDSCfkoPGfXx8IxFxPMjNzm/Uk4xDet77rTN9wqlxlVg71kK7XGuUMv6wUxJUwwv+Xyw==",
+      "sourceArchive": "https://registry.npmjs.org/dompurify/-/dompurify-3.4.18.tgz",
+      "integrity": "sha512-ofe3wI/uNm68HInABYFJYqQxRw1EaKAjNdrFVKqjUY+UZurvNd2L/HuQe097s/4RivWiZyP6tT7aoT8atjfhwg==",
       "notices": [
         {
           "source": "node_modules/dompurify/LICENSE",
-          "path": "licenses/packages/dompurify-3.4.15/LICENSE",
+          "path": "licenses/packages/dompurify-3.4.18/LICENSE",
           "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
         },
         {
           "source": "node_modules/dompurify/LICENSE-MPL",
-          "path": "licenses/packages/dompurify-3.4.15/LICENSE-MPL",
+          "path": "licenses/packages/dompurify-3.4.18/LICENSE-MPL",
           "sha256": "fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85"
         },
         {
           "source": "node_modules/dompurify/dist/purify.es.mjs (original first line)",
-          "path": "licenses/packages/dompurify-3.4.15/COPYRIGHT.txt",
-          "sha256": "cb607ccb053b7b3dd2991fbc14c2dd75e0e2a93d653e5364ab4e580174fd5e9b"
+          "path": "licenses/packages/dompurify-3.4.18/COPYRIGHT.txt",
+          "sha256": "de12c453e01992b985523a61b4c53f8f07fde0aa453ea00a67ec8e9899fc6d99"
         }
       ]
     },
     {
       "name": "elkjs",
-      "version": "0.9.3",
+      "version": "0.12.1",
       "packagePath": "node_modules/elkjs",
       "scope": "runtime-dependency-closure",
-      "declaredLicense": "EPL-2.0",
+      "declaredLicense": "EPL-2.0 OR GPL-3.0-or-later",
       "selectedLicense": "EPL-2.0 AND Apache-2.0",
       "repository": "https://github.com/kieler/elkjs",
-      "sourceArchive": "https://registry.npmjs.org/elkjs/-/elkjs-0.9.3.tgz",
-      "integrity": "sha512-f/ZeWvW/BCXbhGEf1Ujp29EASo/lk1FDnETgNKwJrsVvGZhUWCZyg3xLJjAsxfOmt8KjswHmI5EwCQcPMpOYhQ==",
+      "sourceArchive": "https://registry.npmjs.org/elkjs/-/elkjs-0.12.1.tgz",
+      "integrity": "sha512-IhMYKHE4S2vtx0QrhBP3lYOIKDeIiJXBrdq9MGYkuB8ZHqhrBnHNfSUndjXFewrX1CPK8chwq+2NA0K0hliYuw==",
       "notices": [
         {
           "source": "node_modules/elkjs/LICENSE.md",
-          "path": "licenses/packages/elkjs-0.9.3/LICENSE.md",
-          "sha256": "89591d4578fb1ebd91501312a3d25f021bd865a2e436641c1cf7b1bc7e3c1617"
+          "path": "licenses/packages/elkjs-0.12.1/LICENSE.md",
+          "sha256": "637e81f4a1b6b4079535c499fca05e238cf7605c1ff5b76d60d7da7ce96700c9"
         },
         {
           "source": "node_modules/elkjs/lib/elk.bundled.js (original copyright and license comments; trailing whitespace trimmed)",
-          "path": "licenses/packages/elkjs-0.9.3/COPYRIGHT.txt",
-          "sha256": "4dd37e6dda4be58f61a19bdf36d67790da52bf0080cfc9e6d6c793a1c9c1a948"
+          "path": "licenses/packages/elkjs-0.12.1/COPYRIGHT.txt",
+          "sha256": "f7bf7169d6a7873baa12b1c85ece146c38f3ab0729e22664edd5e97bf6e78a3c"
         },
         {
-          "source": "node_modules/dompurify/LICENSE (complete Apache 2.0 text for the embedded elkjs Worker)",
-          "path": "licenses/packages/elkjs-0.9.3/Apache-2.0.txt",
-          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+          "source": "licenses/upstream/web-worker-1.4.1-browser-source.txt (original header)",
+          "path": "licenses/packages/elkjs-0.12.1/web-worker-COPYRIGHT.txt",
+          "sha256": "6e31ca420ac6d3164b4ea2eeef1220b101338d0975584dfd9ad62a21f224637c"
+        },
+        {
+          "source": "licenses/upstream/web-worker-1.4.1-LICENSE.txt",
+          "path": "licenses/packages/elkjs-0.12.1/Apache-2.0.txt",
+          "sha256": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1"
         }
       ]
     },
@@ -2734,18 +2739,18 @@
     },
     {
       "name": "lodash-es",
-      "version": "4.17.23",
+      "version": "4.18.1",
       "packagePath": "node_modules/lodash-es",
       "scope": "runtime-dependency-closure",
       "declaredLicense": "MIT",
       "selectedLicense": "MIT",
       "repository": null,
-      "sourceArchive": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.17.23.tgz",
-      "integrity": "sha512-kVI48u3PZr38HdYz98UmfPnXl2DXrpdctLrFLCd3kOx1xUkOmpFPx7gCWWM5MPkL/fD8zb+Ph0QzjGFs4+hHWg==",
+      "sourceArchive": "https://registry.npmjs.org/lodash-es/-/lodash-es-4.18.1.tgz",
+      "integrity": "sha512-J8xewKD/Gk22OZbhpOVSwcs60zhd95ESDwezOFuA3/099925PdHJ7OFHNTGtajL3AlZkykD32HykiMo+BIBI8A==",
       "notices": [
         {
           "source": "node_modules/lodash-es/LICENSE",
-          "path": "licenses/packages/lodash-es-4.17.23/LICENSE",
+          "path": "licenses/packages/lodash-es-4.18.1/LICENSE",
           "sha256": "f71e8ed126b46346494aad5486874cd8f0aafe95092ed67d2e3cb6110f939abc"
         }
       ]
@@ -2806,55 +2811,19 @@
     },
     {
       "name": "mermaid",
-      "version": "12.0.0",
+      "version": "12.3.0",
       "packagePath": "node_modules/mermaid",
       "scope": "runtime-dependency-closure",
       "declaredLicense": "MIT",
       "selectedLicense": "MIT",
       "repository": "https://github.com/mermaid-js/mermaid",
-      "sourceArchive": "https://registry.npmjs.org/mermaid/-/mermaid-12.0.0.tgz",
-      "integrity": "sha512-/wQXC9iBxoGV8p3erbvaXs9h77VyLDBH6GdayVjj3hEcSQhFU4N1WUhUppotCEqlIxI2pRMwjwBSwTB1MfZBgQ==",
+      "sourceArchive": "https://registry.npmjs.org/mermaid/-/mermaid-12.3.0.tgz",
+      "integrity": "sha512-4113TdXeLAsMruJ79OpFL5O8+LTFXhQqZ260rF3tgUmiNAtRm4Uume04I+65PRN6yZ69J4f8rVYWW8zRk65UYw==",
       "notices": [
         {
           "source": "node_modules/mermaid/LICENSE",
-          "path": "licenses/packages/mermaid-12.0.0/LICENSE",
+          "path": "licenses/packages/mermaid-12.3.0/LICENSE",
           "sha256": "ec9fb67dcb25eccc416ed56e1aab819222c805a2a4bfe4cb19e7556bf2ffde80"
-        }
-      ]
-    },
-    {
-      "name": "commander",
-      "version": "8.3.0",
-      "packagePath": "node_modules/mermaid/node_modules/commander",
-      "scope": "runtime-dependency-closure",
-      "declaredLicense": "MIT",
-      "selectedLicense": "MIT",
-      "repository": "https://github.com/tj/commander.js",
-      "sourceArchive": "https://registry.npmjs.org/commander/-/commander-8.3.0.tgz",
-      "integrity": "sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==",
-      "notices": [
-        {
-          "source": "node_modules/mermaid/node_modules/commander/LICENSE",
-          "path": "licenses/packages/commander-8.3.0/LICENSE",
-          "sha256": "04512a63dce4d2d506ad612dc0bd7681ccf6e3655f7b6eaef7dfac8323d1ec0b"
-        }
-      ]
-    },
-    {
-      "name": "katex",
-      "version": "0.16.47",
-      "packagePath": "node_modules/mermaid/node_modules/katex",
-      "scope": "runtime-dependency-closure",
-      "declaredLicense": "MIT",
-      "selectedLicense": "MIT",
-      "repository": "https://github.com/KaTeX/KaTeX",
-      "sourceArchive": "https://registry.npmjs.org/katex/-/katex-0.16.47.tgz",
-      "integrity": "sha512-Eeo8Ys1doU1z+x8AZsPpQu+p/QcZBI5PeOo7QGQdy2x2m0MU/hYagBbGOmXwr5KVbEfVuWv9LpnQWeehogurjg==",
-      "notices": [
-        {
-          "source": "node_modules/mermaid/node_modules/katex/LICENSE",
-          "path": "licenses/packages/katex-0.16.47/LICENSE",
-          "sha256": "766ccc1f306c885aa45542a9846bbd0a505b27a0374f146778171c2254ce18e3"
         }
       ]
     },
@@ -3413,24 +3382,6 @@
           "source": "node_modules/use-sync-external-store/LICENSE",
           "path": "licenses/packages/use-sync-external-store-1.7.0/LICENSE",
           "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93"
-        }
-      ]
-    },
-    {
-      "name": "uuid",
-      "version": "14.0.2",
-      "packagePath": "node_modules/uuid",
-      "scope": "runtime-dependency-closure",
-      "declaredLicense": "MIT",
-      "selectedLicense": "MIT",
-      "repository": "https://github.com/uuidjs/uuid",
-      "sourceArchive": "https://registry.npmjs.org/uuid/-/uuid-14.0.2.tgz",
-      "integrity": "sha512-xZe/16rV4aa+HGSOCiY2YeLT1OybRLrrkL/Rqaq7p7GMVXjFh+6wN4oMYgjFmnSnhY8t6Xpdl2l9qmnHYuMHwQ==",
-      "notices": [
-        {
-          "source": "node_modules/uuid/LICENSE.md",
-          "path": "licenses/packages/uuid-14.0.2/LICENSE.md",
-          "sha256": "beaa6b04fb82e41dd2ad679e19e27953afb5999b1abbb455b6564e78ebfeb332"
         }
       ]
     },

@@ -84,24 +84,30 @@ for (const [path, entry] of Object.entries(lock.packages).sort(([a], [b]) => a.l
     const comments = [...(await read(source)).toString('utf8').matchAll(/\/\*[\s\S]*?\*\//g)]
       .map(match => match[0]).filter(comment => /copyright/i.test(comment));
     const expected = [
-      '9cba89b66d6fc021c4713addf7b3139ebcb04116c1fa5891752e61798a0ffb4c',
-      '62331fccefdebd6b35ba827022e702f544deacc38031b59c427bb33c58b214e9',
-      '9d0b9f85b5469b975a799fd9237d7939273647c5f9ee8f6b8ccbaaba0d7610cd',
+      'aa6ffc108f058cf757de6411505795b65ecf150ef23c0c57bc037e173e943280',
+      '50fd263d047fb56da4aa1dded3546ebd7dd0c797f61d6d8e17e9b579b6833158',
     ];
-    if (entry.version !== '0.9.3' || comments.length !== expected.length
+    if (entry.version !== '0.12.1' || comments.length !== expected.length
       || comments.some((comment, index) => hash(comment) !== expected[index])) {
       throw new Error('Review the elkjs bundled copyright and embedded license notices against the upstream version.');
     }
-    // Use the already installed, complete Apache text, verified independently of
-    // the DOMPurify package version; never substitute a short header for it.
-    const apache = await read('node_modules/dompurify/LICENSE');
-    if (hash(apache) !== 'cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30') {
-      throw new Error('Review the complete Apache 2.0 text used for the embedded elkjs Worker.');
-    }
+    // ELK 0.12.1 embeds web-worker 1.4.1's tiny browser entry without its
+    // source header. Preserve that exact upstream header and full Apache text.
+    const workerSource=await read('licenses/upstream/web-worker-1.4.1-browser-source.txt');
+    const apache=await read('licenses/upstream/web-worker-1.4.1-LICENSE.txt');
+    if(hash(workerSource)!=='5af8695e4e1a3830a2beb1b7482a293c811ac0f54302dc2ad577181f9e45e79d'
+      ||hash(apache)!=='43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1')
+      throw new Error('Review the pinned web-worker 1.4.1 source and license.');
+    const bundle=(await read(source)).toString('utf8');
+    if(!bundle.includes('var browser_default = typeof Worker < "u" ? Worker : void 0;'))
+      throw new Error('Review the embedded browser Worker adapter.');
+    const workerHeader=workerSource.toString('utf8').match(/\/\*[\s\S]*?\*\//)[0];
     notices.push({ source: `${source} (original copyright and license comments; trailing whitespace trimmed)`,
       ...add(`licenses/packages/${slug}/COPYRIGHT.txt`, `${comments.map(comment => comment.replace(/[ \t]+$/gm, '')).join('\n\n')}\n`) },
-    { source: 'node_modules/dompurify/LICENSE (complete Apache 2.0 text for the embedded elkjs Worker)',
-      ...add(`licenses/packages/${slug}/Apache-2.0.txt`, apache) });
+    {source:'licenses/upstream/web-worker-1.4.1-browser-source.txt (original header)',
+      ...add(`licenses/packages/${slug}/web-worker-COPYRIGHT.txt`, `${workerHeader}\n`)},
+    {source:'licenses/upstream/web-worker-1.4.1-LICENSE.txt',
+      ...add(`licenses/packages/${slug}/Apache-2.0.txt`,apache)});
     selectedLicense = 'EPL-2.0 AND Apache-2.0';
   }
   records.push({ name, version: entry.version, packagePath: path,
@@ -205,6 +211,13 @@ if (flags.has('--verify-bundle')) {
   const sync=await esbuild({absWorkingDir:syncRoot,entryPoints:['src/main.tsx'],outfile:'dist/main.js',bundle:true,
     platform:'node',format:'cjs',target:'es2022',external:['obsidian','electron'],write:false,metafile:true,logLevel:'silent',define:{'process.env.NODE_ENV':'"production"'}});
   for(const id of Object.keys(sync.metafile.inputs))collect(resolve(syncRoot,id));
+  const vscodeRoot=resolve(root,'vscode-plugin');
+  for(const [entry,platform] of [['src/extension.ts','node'],['src/webview.ts','browser']]){
+    const result=await esbuild({absWorkingDir:vscodeRoot,entryPoints:[entry],outfile:'dist/check.js',bundle:true,
+      platform,format:platform==='node'?'cjs':'iife',target:'es2022',external:platform==='node'?['vscode']:[],
+      loader:{'.woff':'dataurl','.woff2':'dataurl','.ttf':'dataurl'},write:false,metafile:true,logLevel:'silent',define:{'process.env.NODE_ENV':'"production"'}});
+    for(const id of Object.keys(result.metafile.inputs))collect(resolve(vscodeRoot,id));
+  }
   console.log(`Verified ${found.size} bundled package paths and emitted font assets.`);
 }
 

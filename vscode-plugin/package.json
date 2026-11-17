@@ -1,0 +1,86 @@
+{
+  "name": "feishu-doc-local",
+  "displayName": "本地飞书文档 · 只读预览",
+  "description": "在 VS Code 阅读本地飞书 DocxXML，支持表格、公式、图片、白板和已有评论。",
+  "version": "0.1.0",
+  "publisher": "to-re",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.107.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "main": "./dist/extension.cjs",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": false
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "feishuDoc.preview",
+        "title": "飞书文档：只读预览当前 XML",
+        "icon": "$(open-preview)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "feishuDoc.preview",
+          "when": "resourceExtname == .xml",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "feishuDoc.preview",
+          "when": "resourceExtname == .xml",
+          "group": "navigation"
+        }
+      ]
+    },
+    "customEditors": [
+      {
+        "viewType": "feishuDoc.reader",
+        "displayName": "飞书文档（只读）",
+        "selector": [
+          {
+            "filenamePattern": "*.feishu.xml"
+          }
+        ],
+        "priority": "default"
+      },
+      {
+        "viewType": "feishuDoc.legacyReader",
+        "displayName": "飞书 XML（手动只读预览）",
+        "selector": [
+          {
+            "filenamePattern": "*.xml"
+          }
+        ],
+        "priority": "option"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "../node_modules/.bin/tsc --noEmit -p tsconfig.json",
+    "test": "../node_modules/.bin/vitest run --config vitest.config.ts",
+    "package": "npm run build && vsce package --no-dependencies --out dist/feishu-doc-local-0.1.0.vsix"
+  },
+  "devDependencies": {
+    "@types/vscode": "1.107.0",
+    "@vscode/vsce": "4.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/To-Re/feishu-doc-local.git",
+    "directory": "vscode-plugin"
+  }
+}

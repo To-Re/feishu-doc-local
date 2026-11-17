@@ -22,6 +22,7 @@ async function fixture() {
   }
   for (const path of ['scripts/generate-third-party-notices.mjs',
     'licenses/upstream/saxes-6.0.0-LICENSE.txt', 'licenses/upstream/OFL-1.1-template.txt',
+    'licenses/upstream/web-worker-1.4.1-browser-source.txt','licenses/upstream/web-worker-1.4.1-LICENSE.txt',
     'node_modules/elkjs/package.json', 'node_modules/elkjs/LICENSE.md', 'node_modules/elkjs/lib/elk.bundled.js']) {
     await copyFile(resolve(repository, path), resolve(directory, path));
   }
@@ -49,33 +50,34 @@ describe('bundled ELK attribution', () => {
     const test = await fixture();
     await test.run();
     await test.run('--check');
-    const destination = resolve(test.directory, 'licenses/packages/elkjs-0.9.3');
+    const destination = resolve(test.directory, 'licenses/packages/elkjs-0.12.1');
     const source = await readFile(test.source, 'utf8');
     const original = [...source.matchAll(/\/\*[\s\S]*?\*\//g)]
       .map(match => match[0]).filter(comment => /copyright/i.test(comment));
-    expect(original).toHaveLength(3);
+    expect(original).toHaveLength(2);
     expect(await readFile(resolve(destination, 'COPYRIGHT.txt'), 'utf8'))
       .toBe(`${original.map(comment => comment.replace(/[ \t]+$/gm, '')).join('\n\n')}\n`);
     expect(await readFile(resolve(destination, 'LICENSE.md'), 'utf8'))
       .toBe(await readFile(resolve(repository, 'node_modules/elkjs/LICENSE.md'), 'utf8'));
     expect(await readFile(resolve(destination, 'Apache-2.0.txt'), 'utf8'))
-      .toBe(await readFile(resolve(repository, 'node_modules/dompurify/LICENSE'), 'utf8'));
+      .toBe(await readFile(resolve(repository, 'licenses/upstream/web-worker-1.4.1-LICENSE.txt'), 'utf8'));
+    expect(await readFile(resolve(destination, 'web-worker-COPYRIGHT.txt'),'utf8')).toContain('Copyright 2020 Google LLC');
     const manifest = JSON.parse(await readFile(resolve(test.directory, 'licenses/dependencies.json'), 'utf8'));
     expect(manifest.packages.find((item: { name: string }) => item.name === 'elkjs')).toMatchObject({
-      declaredLicense: 'EPL-2.0', selectedLicense: 'EPL-2.0 AND Apache-2.0',
+      declaredLicense: 'EPL-2.0 OR GPL-3.0-or-later', selectedLicense: 'EPL-2.0 AND Apache-2.0',
     });
     await writeFile(resolve(destination, 'COPYRIGHT.txt'), 'Incomplete attribution\n');
-    await expect(test.run('--check')).rejects.toThrow('Outdated generated file: licenses/packages/elkjs-0.9.3/COPYRIGHT.txt');
+    await expect(test.run('--check')).rejects.toThrow('Outdated generated file: licenses/packages/elkjs-0.12.1/COPYRIGHT.txt');
   });
 
-  it.each(['missing Kiel', 'missing Google', 'altered author', 'new notice'])(
+  it.each(['missing Kiel', 'missing second Kiel', 'altered author', 'new notice'])(
     'blocks generation after an unreviewed source change: %s', async change => {
       const test = await fixture();
       await test.run();
       const before = await readFile(resolve(test.directory, 'licenses/dependencies.json'), 'utf8');
       let source = await readFile(test.source, 'utf8');
-      if (change === 'missing Kiel' || change === 'missing Google') {
-        const author = change === 'missing Kiel' ? '2017 Kiel University' : '2020 Google LLC';
+      if (change === 'missing Kiel' || change === 'missing second Kiel') {
+        const author = change === 'missing Kiel' ? '2017 Kiel University' : '2021 Kiel University';
         source = source.replace(/\/\*[\s\S]*?\*\//g, comment => comment.includes(author) ? '' : comment);
       } else if (change === 'altered author') {
         source = source.replace('2017 Kiel University', '2017 Different Author');

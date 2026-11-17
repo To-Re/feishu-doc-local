@@ -2,7 +2,7 @@
 
 欢迎提交最小复现、文档改进和补丁。说明用户遇到的具体问题、预期行为和实际结果；涉及排版时，可附不含私人内容的 XML 与截图。
 
-当前贡献目标为 `master`：静态浏览器版、本地服务版，以及内置可选 CLI 同步的一个 Obsidian 完整插件。
+当前贡献目标为 `master`：静态浏览器版、本地服务版，内置可选 CLI 同步的一个 Obsidian 完整插件，以及 VS Code 只读插件。
 
 ## 本地开发
 
@@ -25,7 +25,7 @@ node scripts/generate-third-party-notices.mjs --check --verify-bundle
 
 测试使用临时文件和 loopback 端口，不要求飞书账号。图形和编辑交互的修改还需在浏览器实际操作；说明验证了哪些流程，不把单元测试替代为视觉或云端验收。
 
-按改动范围补充检查：静态浏览器版运行 `npm run build:browser`；Obsidian 完整插件和内部同步模块分别运行其目录内的类型检查、测试和构建，见 [完整插件构建](obsidian-plugin/README.md#构建) 和 [同步模块构建](obsidian-sync-plugin/README.md#构建)。当前 CI 覆盖共享网页、Obsidian 和三种发布包检查；图形界面和云端往返需另记实际操作与回读结果。
+按改动范围补充检查：静态浏览器版运行 `npm run build:browser`；Obsidian 完整插件和内部同步模块分别运行其目录内的类型检查、测试和构建，见 [完整插件构建](obsidian-plugin/README.md#构建) 和 [同步模块构建](obsidian-sync-plugin/README.md#构建)。VS Code 只读插件运行 `npm ci --prefix vscode-plugin`、`npm run typecheck --prefix vscode-plugin`、`npm run vscode:test` 和 `npm run vscode:package`。当前 CI 覆盖共享网页、Obsidian、VS Code 和安装包构建；图形界面和云端往返需另记实际操作与回读结果。
 
 ## 变更约定
 

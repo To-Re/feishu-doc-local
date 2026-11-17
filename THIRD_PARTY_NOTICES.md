@@ -16,7 +16,7 @@
 | Lucide React | 界面图标 | **ISC**；其 LICENSE 还列出来自 Feather 的图标及 **MIT** 文本。两部分和原始版权声明均完整保留。 |
 | KaTeX 字体 | 随 CSS 构建输出的数学字体 | **SIL OFL-1.1**，与 KaTeX 代码的 MIT 分开。已保留每个 TTF 内嵌的 Design Science / Khan Academy 版权、Reserved Font Name 与完整许可，见 [字体通知](licenses/KaTeX-fonts-OFL-1.1.txt)。字体未经修改，WOFF / WOFF2 按同名字体的 TTF 元数据对应。 |
 | DOMPurify | SVG 等活动内容清理 | 上游提供 **Apache-2.0 或 MPL-2.0**；本分发选择 **Apache-2.0**。保留上游完整双许可文件及原始版权标头。 |
-| elkjs（Mermaid 的依赖） | 图布局，属于实际浏览器构建模块 | **EPL-2.0**；内嵌 Worker 另有 **Apache-2.0** 通知。保留 2017/2021 Kiel University 与 2020 Google LLC 的三段原始版权标头，见 [COPYRIGHT.txt](licenses/packages/elkjs-0.9.3/COPYRIGHT.txt) 与 [Apache-2.0.txt](licenses/packages/elkjs-0.9.3/Apache-2.0.txt)。不改为本项目的 MIT。上游代码未在 node_modules 中修改；其 JS 源码与构建项目在 [elkjs 0.9.3](https://github.com/kieler/elkjs/tree/0.9.3)，对应 npm 源包及完整性值也记录在清单中。其 README 说明布局内核由 [Eclipse ELK](https://github.com/eclipse-elk/elk) 的 Java 代码经 GWT 生成，构建入口及版本依赖以该 tag 的上游工程为准。 |
+| elkjs（Mermaid 的依赖） | 图布局，属于实际浏览器构建模块 | 上游提供 EPL-2.0 或有条件的 GPL-3.0-or-later 路径，本分发采用 **EPL-2.0**。保留 2017/2021 Kiel University 的两段原始通知；内嵌 `web-worker@1.4.1` 浏览器入口的 **Apache-2.0** 全文与 Google 版权独立补齐，见 [ELK 通知](licenses/packages/elkjs-0.12.1/COPYRIGHT.txt)、[Worker 通知](licenses/packages/elkjs-0.12.1/web-worker-COPYRIGHT.txt) 和 [Apache 全文](licenses/packages/elkjs-0.12.1/Apache-2.0.txt)。上游代码未修改，源码与构建入口见 [elkjs](https://github.com/kieler/elkjs)，精确 npm 版本、源包与完整性值在机器可读清单中。 |
 | lightningcss | Vite 构建过程使用的 CSS 工具 | **MPL-2.0**。构建工具和平台二进制不作为编辑器运行时代码分发；许可文本仍在工具清单中保存。 |
 | saxes | XML 解析 | **ISC**。6.0.0 npm 包缺少许可文件，因此按该版本上游 tag 补入完整 LICENSE，包含 SAX 来源通知。来源与哈希见 [补充来源](licenses/upstream/README.md)。 |
 
@@ -37,6 +37,6 @@ node scripts/generate-third-party-notices.mjs
 node scripts/generate-third-party-notices.mjs --check --verify-bundle
 ```
 
-当前 `master` 分发范围为本地服务版、静态浏览器版、Obsidian 基础插件与可选飞书同步扩展，产物位置和外部运行时边界见 [素材说明](docs/assets-and-attribution.md#四种交付产物)。实际分发 JS、字体或完整构建产物时，同时保留 `LICENSE`、本文件及整个 `licenses/` 目录。`node scripts/copy-distribution-notices.mjs` 可将这些文件复制到已存在的 `dist/` 及 `dist/client/`；这是本地文件操作，不会发布站点或上传产物。不要仅摘出压缩后的脚本和字体而遗漏通知。
+当前 `master` 分发范围为本地服务版、静态浏览器版、Obsidian 完整插件（含可选飞书同步模块）与 VS Code 只读插件，产物位置和外部运行时边界见 [素材说明](docs/assets-and-attribution.md#四种交付产物)。实际分发 JS、字体或完整构建产物时，同时保留 `LICENSE`、本文件及整个 `licenses/` 目录。`node scripts/copy-distribution-notices.mjs` 可将这些文件复制到已存在的 `dist/` 及 `dist/client/`；这是本地文件操作，不会发布站点或上传产物。不要仅摘出压缩后的脚本和字体而遗漏通知。
 
 本清单没有将 Node.js、操作系统、完整 node_modules、所有测试工具或平台构建二进制纳入分发。若未来提供包含这些组件的桌面客户端、容器或插件包，应按该产物重新收集许可证，不能直接套用本次范围。

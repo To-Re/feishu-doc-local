@@ -53,7 +53,7 @@ node scripts/generate-example-colors.mjs --output /tmp/feishu-doc-local-colors.p
 | `lucide-react@1.31.0` | 工具栏、导航、资源树等 SVG 图标；来自安装包，不是从飞书页面截取。 | 包内 `LICENSE` 同时包含 Lucide 的 ISC 与 Feather 衍生图标的 MIT 两部分，均保留。公开依据：[Lucide License](https://lucide.dev/license)。 |
 | `katex@0.18.7` 的 JS / CSS | 本地公式排版；入口 `src/main.tsx` 引入 `katex/dist/katex.min.css`。 | 程序代码为 MIT，保留包内 `LICENSE`。公开依据：[KaTeX LICENSE](https://github.com/KaTeX/KaTeX/blob/main/LICENSE)。 |
 | `katex/dist/fonts/KaTeX_*` | 20 个字型文件组，各含 TTF、WOFF、WOFF2，共 60 个文件。构建随公式 CSS 引用复制字体。 | **字体为 SIL OFL 1.1，不能仅标 MIT。** 本次逐一读取 20 份 TTF 的 OpenType `name` 表，均有 OFL 声明、Design Science 与 Khan Academy 版权和保留字体名。分发时保留字体、版权与 OFL 文本；修改字体还须遵守保留字体名条款。依据：[OFL 官方文本](https://openfontlicense.org/open-font-license-official-text/)及实际字体元数据。 |
-| `mermaid@12.0.0` | 从当前文档的 Mermaid 文本生成本地 SVG；无附带平台空态图片。 | 渲染器为 MIT，保留包内许可。[Mermaid LICENSE](https://github.com/mermaid-js/mermaid/blob/develop/LICENSE)。渲染器许可不会替用户图源或嵌入素材授予分发权。 |
+| `mermaid@12.3.0` | 从当前文档的 Mermaid 文本生成本地 SVG；无附带平台空态图片。 | 渲染器为 MIT，保留包内许可。[Mermaid LICENSE](https://github.com/mermaid-js/mermaid/blob/develop/LICENSE)。渲染器许可不会替用户图源或嵌入素材授予分发权。 |
 | CSS 中的系统字体名称 | `PingFang SC`、`Segoe UI`、`SFMono-Regular` 等仅由操作系统选取；示例 SVG 也使用系统字体回退。 | 仓库未复制这些系统字体二进制。不要因为 CSS 中写了字体名称，就把对应商业字体打包进发布物。 |
 
 字体元数据中列出的保留字体名为 `KaTeX_AMS`、`KaTeX_Caligraphic`、`KaTeX_Fraktur`、`KaTeX_Main`、`KaTeX_Math`、`KaTeX_SansSerif`、`KaTeX_Script`、`KaTeX_Size1` 至 `KaTeX_Size4`、`KaTeX_Typewriter`。这些名称用于准确保留来源，项目没有修改这些字体。
@@ -88,3 +88,11 @@ S15.B 测试稿中间的蓝绿色插图来自**飞书白板下载预览**。本�
 添加视觉素材时同步记录来源文件、创作或获取方式、许可证和是否随发布包分发。可重建的几何图保留 SVG、图源或生成脚本；引入字体、图标包时检查实际文件许可，不能只读取 npm 的 `license` 字段。更新依赖版本或构建分发方式后重新核对通知文件和输出中的资源。
 
 本清单说明本次可查证的资源来源与分发范围，不将用户资源或未核对的新素材表述为已经获准开源。
+
+## VS Code 只读插件（2026-11-17）
+
+`vscode-plugin/dist/` 包含宿主脚本、Webview JS/CSS、随 CSS 内嵌的原始 KaTeX 字体和完整许可清单；VSIX 不包含用户文件、测试稿、node_modules 或 CLI。宿主运行时代码只使用 VS Code API、Node 内置模块及共享解析器；视图复用现有渲染依赖，没有新增运行时第三方包。`--verify-bundle` 同时检查这两个入口的实际依赖覆盖。
+
+`@types/vscode`（MIT）仅提供开发类型，`@vscode/vsce`（MIT）仅用于打包，两者及其工具依赖均不随 VSIX 分发；版本锁在 `vscode-plugin/package-lock.json`。VS Code 应用、原生图标和宿主界面不由本项目重新分发。
+
+此次运行时依赖核查更新了 DOMPurify 3.4.18、Mermaid 12.3.0 及其兼容依赖；ELK 0.12.1 的 Worker 适配归因按原包补齐。完整版本与文件哈希以生成后的清单为准。

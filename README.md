@@ -4,6 +4,8 @@
 
 正文保存为本地 `.xml`，评论、回复和处理记录保存在相邻 `.review.json`，AI 工具可以直接读文件继续改稿。DocxXML 是 XML 文本；JSON 是本项目的反馈协议。精确格式见[写稿协议](docs/writing-protocol.md)。
 
+VS Code 也提供[只读阅读插件](vscode-plugin/README.md)。新稿建议使用 `.feishu.xml`，方便自动选择阅读视图；旧 `.xml` 可手动预览，普通 XML 不会被默认接管。
+
 官方 CLI 用于可选的飞书同步：关联文档、预览差异后拉取或推送，并独立同步评论。CLI 由用户安装并管理登录和权限；纯本地编辑无需飞书账号、CLI 或 AI 服务。
 
 ## 项目能力
@@ -40,6 +42,7 @@
 | Obsidian 完整插件 | 桌面 Obsidian 1.8+，安装一个插件 | 可选配置官方 CLI，无需另装同步扩展 |
 | 静态浏览器版 | 桌面 Chrome；打开部署好的网页并授权文档目录 | 不支持 |
 | 本地服务版 | Node.js 22.13+ | 可选，需要官方 CLI |
+| VS Code 只读插件 | VS Code 1.107+，安装 VSIX | 不支持；阅读本地正文、资源和已有评论 |
 
 只有需要与飞书交换文档时，才在完整插件中配置官方 CLI。使用 CLI 的独立可执行文件，不需要额外安装 Node。开发者从源码构建插件、运行本地网页版，或选择 npm 版 CLI 时才涉及 Node，见[同步扩展配置](obsidian-sync-plugin/README.md#安装与设置)。
 

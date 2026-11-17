@@ -34,5 +34,9 @@ jobs:
       - run: npm run typecheck --prefix obsidian-sync-plugin
       - run: npm test --prefix obsidian-sync-plugin
       - run: npm run build --prefix obsidian-sync-plugin
+      - run: npm ci --prefix vscode-plugin
+      - run: npm run typecheck --prefix vscode-plugin
+      - run: npm run vscode:test
+      - run: npm run vscode:package
       - run: node scripts/generate-third-party-notices.mjs --check --verify-bundle
       - run: node scripts/package-release.mjs --output "$RUNNER_TEMP/feishu-release-packages"
